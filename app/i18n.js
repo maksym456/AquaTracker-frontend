@@ -14,7 +14,27 @@ const resources = {
       plantsDesc: "Discover aquatic plants for your tank",
       statistics: "Statistics",
       statsDesc: "Track your aquarium data and trends",
-      getStarted: "Get Started"
+      getStarted: "Get Started",
+      auth: {
+        login: "Sign In",
+        register: "Create Account",
+        logout: "Logout",
+        email: "Email Address",
+        password: "Password",
+        confirmPassword: "Confirm Password",
+        name: "Name",
+        loginButton: "Sign In",
+        registerButton: "Create Account",
+        alreadyHaveAccount: "Already have an account? Sign in",
+        dontHaveAccount: "Don't have an account? Sign up",
+        loading: "Loading...",
+        fillAllFields: "Please fill in all fields",
+        invalidEmail: "Please enter a valid email address",
+        passwordTooShort: "Password must be at least 6 characters",
+        passwordsDontMatch: "Passwords don't match",
+        loginError: "Invalid email or password",
+        registrationError: "Registration failed. Please try again."
+      }
     }
   },
   pl: {
@@ -29,7 +49,27 @@ const resources = {
       plantsDesc: "Odkryj rośliny wodne do swojego zbiornika",
       statistics: "Statystyki",
       statsDesc: "Śledź dane i trendy swojego akwarium",
-      getStarted: "Rozpocznij"
+      getStarted: "Rozpocznij",
+      auth: {
+        login: "Zaloguj się",
+        register: "Utwórz konto",
+        logout: "Wyloguj",
+        email: "Adres e-mail",
+        password: "Hasło",
+        confirmPassword: "Potwierdź hasło",
+        name: "Imię",
+        loginButton: "Zaloguj się",
+        registerButton: "Utwórz konto",
+        alreadyHaveAccount: "Masz już konto? Zaloguj się",
+        dontHaveAccount: "Nie masz konta? Zarejestruj się",
+        loading: "Ładowanie...",
+        fillAllFields: "Proszę wypełnić wszystkie pola",
+        invalidEmail: "Proszę podać prawidłowy adres e-mail",
+        passwordTooShort: "Hasło musi mieć co najmniej 6 znaków",
+        passwordsDontMatch: "Hasła nie pasują do siebie",
+        loginError: "Nieprawidłowy e-mail lub hasło",
+        registrationError: "Rejestracja nie powiodła się. Spróbuj ponownie."
+      }
     }
   }
 };
