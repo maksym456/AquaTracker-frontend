@@ -12,18 +12,30 @@ export default function LanguageSwitcher() {
   return (
     <div className="flex gap-2 items-center">
       <button
-        className="px-3 py-1 rounded border text-sm"
+        className="w-12 h-8 px-3 py-1 rounded border text-sm text-black border-gray-300"
         onClick={() => changeLanguage("en")}
         aria-pressed={i18n.language === "en"}
+        
+        style={{ backgroundImage: "url('/flags/us.svg')", 
+        backgroundRepeat: "no-repeat",
+        backgroundSize: "cover",
+        backgroundPosition: "center",
+        }}
       >
-        EN
+        
       </button>
       <button
-        className="px-3 py-1 rounded border text-sm"
+        className="w-12 h-8 px-3 py-1 rounded border text-sm bg-white text-black border-gray-300"
         onClick={() => changeLanguage("pl")}
         aria-pressed={i18n.language === "pl"}
+        style={{ backgroundImage: "url('/flags/pl.svg')", 
+          backgroundRepeat: "no-repeat",
+          backgroundSize: "cover",
+          backgroundPosition: "center",  
+          }}
+        
       >
-        PL
+        
       </button>
     </div>
   );
