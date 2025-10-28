@@ -80,7 +80,7 @@ export default function RegisterForm({ onSwitchToLogin }) {
         alignItems: "center",
         justifyContent: "center",
         padding: 2,
-        backgroundImage: 'url("/login-bg.jpg")',
+        backgroundImage: "image-set(url('/login-bg.avif') type('image/avif') 1x, url('/login-bg.jpg') type('image/jpeg') 1x)",
         backgroundSize: 'cover',
         backgroundPosition: 'center',
         backgroundRepeat: 'no-repeat'
