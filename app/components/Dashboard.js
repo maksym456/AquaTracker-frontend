@@ -128,12 +128,26 @@ export default function Dashboard() {
                size="small" 
                onClick={logout}
                sx={{ 
-                 bgcolor: '#E3F2FD', 
-                 color: 'black',
-                 '&:hover': { bgcolor: '#BBDEFB' }
+                 background: 'linear-gradient(90deg, #ff4444 0%, #ff6b35 100%)',
+                 color: 'white',
+                 width: '50px',
+                 height: '50px',
+                 borderRadius: '50%',
+                 display: 'flex',
+                 alignItems: 'center',
+                 justifyContent: 'center',
+                 minWidth: 'unset',
+                 transition: 'all 0.2s ease-in-out',
+                 '&:hover': { 
+                   background: 'linear-gradient(90deg, #ff3333 0%, #ff5a2a 100%)',
+                   transform: 'scale(1.05)',
+                   boxShadow: '0 4px 8px rgba(0,0,0,0.2)'
+                 }
                }}
              >
-               {t("auth.logout")}
+               <Box sx={{ fontSize: '0.6rem', fontWeight: 600, textAlign: 'center' }}>
+                 {t("auth.logout")}
+               </Box>
              </Button>
            </Box>
          </Box>

@@ -25,6 +25,7 @@ const resources = {
        historyDesc: "View activity logs and changes in your aquariums",
        settings: "Settings",
        settingsDesc: "Manage your profile and account settings",
+       
       auth: {
         login: "Sign In",
         register: "Create Account",
