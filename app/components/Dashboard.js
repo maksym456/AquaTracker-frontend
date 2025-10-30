@@ -5,6 +5,7 @@ import LanguageSwitcher from "./LanguageSwitcher";
 import { useAuth } from "../contexts/AuthContext";
 import { Button, Box, Typography } from "@mui/material";
 import { mockAquariums } from "../lib/mockData";
+import Link from "next/link";
 
 export default function Dashboard() {
   const { t } = useTranslation();
@@ -129,26 +130,12 @@ export default function Dashboard() {
                size="small" 
                onClick={logout}
                sx={{ 
-                 background: 'linear-gradient(90deg, #ff4444 0%, #ff6b35 100%)',
-                 color: 'white',
-                 width: '50px',
-                 height: '50px',
-                 borderRadius: '50%',
-                 display: 'flex',
-                 alignItems: 'center',
-                 justifyContent: 'center',
-                 minWidth: 'unset',
-                 transition: 'all 0.2s ease-in-out',
-                 '&:hover': { 
-                   background: 'linear-gradient(90deg, #ff3333 0%, #ff5a2a 100%)',
-                   transform: 'scale(1.05)',
-                   boxShadow: '0 4px 8px rgba(0,0,0,0.2)'
-                 }
+                 bgcolor: '#E3F2FD', 
+                 color: 'black',
+                 '&:hover': { bgcolor: '#BBDEFB' }
                }}
              >
-               <Box sx={{ fontSize: '0.6rem', fontWeight: 600, textAlign: 'center' }}>
-                 {t("auth.logout")}
-               </Box>
+               {t("auth.logout")}
              </Button>
            </Box>
          </Box>
@@ -208,6 +195,7 @@ export default function Dashboard() {
            gap: 2
          }}>
            {/* Top Row */}
+           <Link href="/my-aquariums" style={{ textDecoration: 'none' }}>
            <Box sx={{
              bgcolor: 'rgba(255, 255, 255, 0.4)',
              p: 2.5,
@@ -235,6 +223,7 @@ export default function Dashboard() {
                {t("aquariumsDesc")}
              </Typography>
            </Box>
+           </Link>
            
            <Box sx={{
              bgcolor: 'rgba(255, 255, 255, 0.4)',

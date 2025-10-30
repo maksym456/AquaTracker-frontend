@@ -25,7 +25,10 @@ const resources = {
        historyDesc: "View activity logs and changes in your aquariums",
        settings: "Settings",
        settingsDesc: "Manage your profile and account settings",
-       
+       createAquarium: "Create Aquarium",
+       addFish: "Add Fish",
+       addPlant: "Add Plant",
+      
       auth: {
         login: "Sign In",
         register: "Create Account",
@@ -71,6 +74,9 @@ const resources = {
        historyDesc: "Przeglądaj logi aktywności i zmiany w akwariach",
        settings: "Ustawienia",
        settingsDesc: "Zarządzaj profilem i ustawieniami konta",
+       createAquarium: "Utwórz akwarium",
+       addFish: "Dodaj ryby",
+       addPlant: "Dodaj rośliny",
       auth: {
         login: "Zaloguj się",
         register: "Utwórz konto",
