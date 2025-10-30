@@ -4,6 +4,7 @@ import { useTranslation } from "react-i18next";
 import LanguageSwitcher from "./LanguageSwitcher";
 import { useAuth } from "../contexts/AuthContext";
 import { Button, Box, Typography } from "@mui/material";
+import { mockAquariums } from "../lib/mockData";
 
 export default function Dashboard() {
   const { t } = useTranslation();
