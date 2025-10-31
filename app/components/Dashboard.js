@@ -142,7 +142,7 @@ export default function Dashboard() {
            gap: 2
          }}>
            {/* Top Row */}
-           <Link href="/my-aquariums" style={{ textDecoration: 'none' }}>
+           <Link href="/my-aquariums" style={{ textDecoration: 'none', display: 'block', height: '100%' }}>
            <Box sx={{
              bgcolor: 'rgba(255, 255, 255, 0.4)',
              p: 2.5,
@@ -160,7 +160,8 @@ export default function Dashboard() {
              display: 'flex',
              flexDirection: 'column',
              alignItems: 'center',
-             justifyContent: 'center'
+             justifyContent: 'center',
+             height: '100%'
            }}>
              <Typography sx={{ fontSize: 36, mb: 1.5, textAlign: 'center' }}>🏠</Typography>
              <Typography variant="h6" sx={{ fontWeight: 600, color: "text.primary", mb: 1, textAlign: 'center', fontSize: '1rem' }}>
@@ -172,7 +173,7 @@ export default function Dashboard() {
            </Box>
            </Link>
            
-          <Link href="/fish-database" style={{ textDecoration: 'none' }}>
+          <Link href="/fish-database" style={{ textDecoration: 'none', display: 'block', height: '100%' }}>
             <Box sx={{
               bgcolor: 'rgba(255, 255, 255, 0.4)',
               p: 2.5,
@@ -190,7 +191,8 @@ export default function Dashboard() {
               display: 'flex',
               flexDirection: 'column',
               alignItems: 'center',
-              justifyContent: 'center'
+              justifyContent: 'center',
+              height: '100%'
             }}>
               <Typography sx={{ fontSize: 36, mb: 1.5, textAlign: 'center' }}>🐠</Typography>
               <Typography variant="h6" sx={{ fontWeight: 600, color: "text.primary", mb: 1, textAlign: 'center', fontSize: '1rem' }}>
@@ -231,7 +233,7 @@ export default function Dashboard() {
              </Typography>
            </Box>
            
-          <Link href="/plant-database" style={{ textDecoration: 'none' }}>
+          <Link href="/plant-database" style={{ textDecoration: 'none', display: 'block', height: '100%' }}>
             <Box sx={{
               bgcolor: 'rgba(255, 255, 255, 0.4)',
               p: 2.5,
@@ -249,7 +251,8 @@ export default function Dashboard() {
               display: 'flex',
               flexDirection: 'column',
               alignItems: 'center',
-              justifyContent: 'center'
+              justifyContent: 'center',
+              height: '100%'
             }}>
               <Typography sx={{ fontSize: 36, mb: 1.5, textAlign: 'center' }}>🌿</Typography>
               <Typography variant="h6" sx={{ fontWeight: 600, color: "text.primary", mb: 1, textAlign: 'center', fontSize: '1rem' }}>
