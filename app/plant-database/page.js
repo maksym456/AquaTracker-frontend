@@ -9,31 +9,31 @@ import KeyboardReturnOutlinedIcon from '@mui/icons-material/KeyboardReturnOutlin
 import ArrowBackIosIcon from '@mui/icons-material/ArrowBackIos';
 import ArrowForwardIosIcon from '@mui/icons-material/ArrowForwardIos';
 
-export default function FishDatabasePage() {
+export default function PlantDatabasePage() {
   const { t } = useTranslation();
   
-  // Przykładowe dane kafelków 
-  const fishCards = [
-    { id: 1, name: "Goldfish", description: "Popularna ryba akwariowa", image: "/fish1.jpg" },
-    { id: 2, name: "Guppy", description: "Kolorowa, łatwa w hodowli", image: "/fish2.jpg" },
-    { id: 3, name: "Betta", description: "Piękna ryba bojowa", image: "/fish3.jpg" },
+  // Przykładowe dane kafelków roślin
+  const plantCards = [
+    { id: 1, name: "Anubias", description: "Odporna roślina akwariowa, idealna dla początkujących", image: "/plant1.jpg" },
+    { id: 2, name: "Moczarka", description: "Szybko rosnąca roślina tlenowa", image: "/plant2.jpg" },
+    { id: 3, name: "Kryptokoryna", description: "Piękna roślina z szerokimi liśćmi", image: "/plant3.jpg" },
   ];
   
   const [currentCard, setCurrentCard] = useState(0);
   
   const handleNext = () => {
-    setCurrentCard((prev) => (prev + 1) % fishCards.length);
+    setCurrentCard((prev) => (prev + 1) % plantCards.length);
   };
   
   const handlePrev = () => {
-    setCurrentCard((prev) => (prev - 1 + fishCards.length) % fishCards.length);
+    setCurrentCard((prev) => (prev - 1 + plantCards.length) % plantCards.length);
   };
 
   return (
     <Box sx={{ 
       minHeight: "100vh", 
       position: "relative",
-      backgroundImage: 'url("/fishPage-bg.jpg")',
+      backgroundImage: 'url("/plantPage-bg.jpg")',
       backgroundSize: 'cover',
       backgroundPosition: 'center',
       backgroundRepeat: 'no-repeat'
@@ -82,10 +82,10 @@ export default function FishDatabasePage() {
           width: { xs: '85%', sm: '60%', md: '40%' },
           maxWidth: 450,
         }}>
-          {/* Kafelek z informacjami o rybie */}
+          {/* Kafelek z informacjami o roślinie */}
           <Box sx={{
             position: 'relative',
-            bgcolor: 'rgba(20, 30, 50, 0.9)',
+            bgcolor: 'rgba(20, 50, 30, 0.9)',
             borderRadius: 4,
             overflow: 'hidden',
             boxShadow: '0 8px 32px rgba(0, 0, 0, 0.4)',
@@ -126,12 +126,12 @@ export default function FishDatabasePage() {
                 <ArrowForwardIosIcon />
               </IconButton>
             </Box>
-            {/* Obraz ryby */}
+            {/* Obraz rośliny */}
             <Box sx={{
               width: '100%',
               height: '250px',
-              bgcolor: 'rgba(40, 60, 100, 0.8)',
-              backgroundImage: `url("${fishCards[currentCard].image}")`,
+              bgcolor: 'rgba(40, 100, 60, 0.8)',
+              backgroundImage: `url("${plantCards[currentCard].image}")`,
               backgroundSize: 'cover',
               backgroundPosition: 'center',
               display: 'flex',
@@ -140,7 +140,7 @@ export default function FishDatabasePage() {
             }}>
               {/* Placeholder jeśli brak obrazu */}
               <Typography sx={{ color: 'white', opacity: 0.5 }}>
-                {fishCards[currentCard].image || 'Image'}
+                {plantCards[currentCard].image || 'Image'}
               </Typography>
             </Box>
 
@@ -154,7 +154,7 @@ export default function FishDatabasePage() {
                   fontWeight: 600 
                 }}
               >
-                {fishCards[currentCard].name}
+                {plantCards[currentCard].name}
               </Typography>
               <Typography 
                 variant="body1" 
@@ -164,7 +164,7 @@ export default function FishDatabasePage() {
                   mb: 'auto'
                 }}
               >
-                {fishCards[currentCard].description}
+                {plantCards[currentCard].description}
               </Typography>
               
               {/* Przycisk "Dodaj do akwarium" */}
@@ -175,7 +175,7 @@ export default function FishDatabasePage() {
                 pt: 3 
               }}>
                 <Button
-                  onClick={() => alert(`Dodano ${fishCards[currentCard].name} do akwarium!`)}
+                  onClick={() => alert(`Dodano ${plantCards[currentCard].name} do akwarium!`)}
                   variant="contained"
                   sx={{
                     bgcolor: '#FFD700',
@@ -210,7 +210,7 @@ export default function FishDatabasePage() {
             gap: 1,
             mt: 2
           }}>
-            {fishCards.map((_, index) => (
+            {plantCards.map((_, index) => (
               <Box
                 key={index}
                 sx={{

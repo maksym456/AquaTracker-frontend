@@ -231,33 +231,35 @@ export default function Dashboard() {
              </Typography>
            </Box>
            
-           <Box sx={{
-             bgcolor: 'rgba(255, 255, 255, 0.4)',
-             p: 2.5,
-             borderRadius: 2,
-             boxShadow: 3,
-             transition: "all 0.3s",
-             backdropFilter: 'blur(8px)',
-             "&:hover": { 
-               boxShadow: 5,
-               transform: "translateY(-4px)",
-               bgcolor: 'rgba(255, 255, 255, 0.6)'
-             },
-             cursor: 'pointer',
-             minHeight: '140px',
-             display: 'flex',
-             flexDirection: 'column',
-             alignItems: 'center',
-             justifyContent: 'center'
-           }}>
-             <Typography sx={{ fontSize: 36, mb: 1.5, textAlign: 'center' }}>🌿</Typography>
-             <Typography variant="h6" sx={{ fontWeight: 600, color: "text.primary", mb: 1, textAlign: 'center', fontSize: '1rem' }}>
-               {t("plantsDatabase")}
-             </Typography>
-             <Typography variant="body2" color="text.secondary" sx={{ textAlign: 'center', fontSize: '0.8rem', lineHeight: 1.3 }}>
-               {t("plantsDesc")}
-             </Typography>
-           </Box>
+          <Link href="/plant-database" style={{ textDecoration: 'none' }}>
+            <Box sx={{
+              bgcolor: 'rgba(255, 255, 255, 0.4)',
+              p: 2.5,
+              borderRadius: 2,
+              boxShadow: 3,
+              transition: "all 0.3s",
+              backdropFilter: 'blur(8px)',
+              "&:hover": { 
+                boxShadow: 5,
+                transform: "translateY(-4px)",
+                bgcolor: 'rgba(255, 255, 255, 0.6)'
+              },
+              cursor: 'pointer',
+              minHeight: '140px',
+              display: 'flex',
+              flexDirection: 'column',
+              alignItems: 'center',
+              justifyContent: 'center'
+            }}>
+              <Typography sx={{ fontSize: 36, mb: 1.5, textAlign: 'center' }}>🌿</Typography>
+              <Typography variant="h6" sx={{ fontWeight: 600, color: "text.primary", mb: 1, textAlign: 'center', fontSize: '1rem' }}>
+                {t("plantsDatabase")}
+              </Typography>
+              <Typography variant="body2" color="text.secondary" sx={{ textAlign: 'center', fontSize: '0.8rem', lineHeight: 1.3 }}>
+                {t("plantsDesc")}
+              </Typography>
+            </Box>
+          </Link>
          </Box>
        </Box>
 
