@@ -44,59 +44,6 @@ export default function Dashboard() {
            AquaTracker
          </Typography>
          <Box sx={{ display: "flex", gap: 1, alignItems: "center" }}>
-           {/* Secondary Feature Cards in Navbar */}
-           <Box sx={{
-             bgcolor: 'rgba(255, 255, 255, 0.4)',
-             p: 0.8,
-             borderRadius: 1.5,
-             boxShadow: 2,
-             transition: "all 0.3s",
-             backdropFilter: 'blur(8px)',
-             "&:hover": { 
-               boxShadow: 4,
-               transform: "translateY(-2px)",
-               bgcolor: 'rgba(255, 255, 255, 0.6)'
-             },
-             cursor: 'pointer',
-             minHeight: '60px',
-             minWidth: '80px',
-             display: 'flex',
-             flexDirection: 'column',
-             alignItems: 'center',
-             justifyContent: 'center'
-           }}>
-             <Typography sx={{ fontSize: 16, mb: 0.3, textAlign: 'center' }}>📊</Typography>
-             <Typography variant="body2" sx={{ fontWeight: 600, color: "text.primary", textAlign: 'center', fontSize: '0.65rem' }}>
-               {t("statistics")}
-             </Typography>
-           </Box>
-
-           <Box sx={{
-             bgcolor: 'rgba(255, 255, 255, 0.4)',
-             p: 0.8,
-             borderRadius: 1.5,
-             boxShadow: 2,
-             transition: "all 0.3s",
-             backdropFilter: 'blur(8px)',
-             "&:hover": { 
-               boxShadow: 4,
-               transform: "translateY(-2px)",
-               bgcolor: 'rgba(255, 255, 255, 0.6)'
-             },
-             cursor: 'pointer',
-             minHeight: '60px',
-             minWidth: '80px',
-             display: 'flex',
-             flexDirection: 'column',
-             alignItems: 'center',
-             justifyContent: 'center'
-           }}>
-             <Typography sx={{ fontSize: 16, mb: 0.3, textAlign: 'center' }}>📋</Typography>
-             <Typography variant="body2" sx={{ fontWeight: 600, color: "text.primary", textAlign: 'center', fontSize: '0.65rem' }}>
-               {t("history")}
-             </Typography>
-           </Box>
-
            <Box sx={{
              bgcolor: 'rgba(255, 255, 255, 0.4)',
              p: 0.8,

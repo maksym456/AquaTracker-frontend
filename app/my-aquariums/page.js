@@ -3,7 +3,9 @@
 import { useState } from "react";
 import { Box, Button, Typography } from "@mui/material";
 import { useTranslation } from "react-i18next";
+import Link from "next/link";
 import LanguageSwitcher from "../components/LanguageSwitcher";
+import KeyboardReturnOutlinedIcon from '@mui/icons-material/KeyboardReturnOutlined';
 
 export default function MyAquariumsPage() {
   const { t } = useTranslation();
@@ -50,6 +52,19 @@ export default function MyAquariumsPage() {
               {t("history")}
             </Typography>
           </Box>
+          <Link href="/" style={{ textDecoration: 'none' }}>
+            <Box sx={{
+              bgcolor: 'rgba(255, 255, 255, 0.4)', p: 0.8, borderRadius: 1.5, boxShadow: 2,
+              transition: "all 0.3s", backdropFilter: 'blur(8px)',
+              "&:hover": { boxShadow: 4, transform: "translateY(-2px)", bgcolor: 'rgba(255, 255, 255, 0.6)' },
+              cursor: 'pointer', minHeight: '60px', minWidth: '80px', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center'
+            }}>
+              <KeyboardReturnOutlinedIcon sx={{ fontSize: 16, mb: 0.3 }} />
+              <Typography variant="body2" sx={{ fontWeight: 600, color: "text.primary", textAlign: 'center', fontSize: '0.65rem' }}>
+                {t("return")}
+              </Typography>
+            </Box>
+          </Link>
         </Box>
         <Box sx={{ display: 'flex', alignItems: 'center' }}>
           <LanguageSwitcher />
@@ -99,7 +114,7 @@ export default function MyAquariumsPage() {
           <>
             <Button variant="contained" onClick={() => alert(t("addFish"))}>{t("addFish")}</Button>
             <Button variant="contained" onClick={() => alert(t("addPlant"))}>{t("addPlant")}</Button>
-            <Button variant="outlined" color="error" onClick={() => setHasAquarium(false)}>Remove</Button>
+            <Button variant="outlined" color="error" onClick={() => setHasAquarium(false)}>{t("remove")}</Button>
           </>
         )}
       </Box>
