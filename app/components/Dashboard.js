@@ -78,7 +78,7 @@ export default function Dashboard() {
                onClick={logout}
                sx={{ 
                  bgcolor: '#E3F2FD', 
-                 color: 'black',
+                 color: 'red',
                  '&:hover': { bgcolor: '#BBDEFB' }
                }}
              >

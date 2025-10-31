@@ -77,12 +77,69 @@ export default function MyAquariumsPage() {
           <Box
             sx={{
               position: 'absolute', inset: 0,
-              backgroundImage: 'url("/aquarium.jpg")',
+              backgroundImage: 'url("/aquarium.png")',
               backgroundRepeat: 'no-repeat',
               backgroundPosition: 'center',
               backgroundSize: 'cover',
               pointerEvents: 'none'
             }}
+          />
+          
+          <Box sx={{
+            position: 'absolute',
+            inset: 0,
+            pointerEvents: 'none',
+            overflow: 'hidden'
+          }}>
+           
+            {Array.from({ length: 15 }).map((_, i) => {
+             
+              const size = 8 + (i % 4) * 3;
+              
+              
+              const leftPosition = 5 + (i * 7) % 85;
+              
+              
+              const startDelay = i * 0.4;
+              
+              return (
+                <Box
+                  key={i} 
+                  className="bubble"
+                  sx={{
+                    
+                    position: 'absolute', 
+                    bottom: '5%', 
+                    left: `${leftPosition}%`, 
+                    width: `${size}px`, 
+                    height: `${size}px`, 
+                    borderRadius: '50%', 
+                    background: 'rgba(255, 255, 255, 0.25)', 
+                    border: '1px solid rgba(255, 255, 255, 0.4)', 
+                    animation: 'bubbleRise 4s infinite', 
+                    animationDelay: `${startDelay}s`, 
+                    filter: 'blur(0.8px)' 
+                  }}
+                />
+              );
+            })}
+          </Box>
+          
+          
+          <Box 
+            className="aquarium-light"
+            sx={{
+              position: 'absolute',
+              top: '15%',
+              left: '25%',
+              width: '200px',
+              height: '300px',
+              background: 'radial-gradient(ellipse at center, rgba(255,255,255,0.15) 0%, transparent 70%)',
+              borderRadius: '50%',
+              pointerEvents: 'none',
+              animation: 'lightShift 8s ease-in-out infinite alternate',
+              filter: 'blur(20px)'
+            }} 
           />
         </Box>
       )}
