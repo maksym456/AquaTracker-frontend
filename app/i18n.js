@@ -29,6 +29,7 @@ const resources = {
        createAquarium: "Create Aquarium",
        addFish: "Add Fish",
        addPlant: "Add Plant",
+       addToAquarium: "Add to Aquarium",
        remove: "Remove",
       
       auth: {
@@ -80,6 +81,7 @@ const resources = {
        createAquarium: "Utwórz akwarium",
        addFish: "Dodaj ryby",
        addPlant: "Dodaj rośliny",
+       addToAquarium: "Dodaj do akwarium",
        remove: "Usuń",
       auth: {
         login: "Zaloguj się",
