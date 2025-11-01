@@ -13,7 +13,9 @@ export default function Dashboard() {
   
   return (
     <Box sx={{ 
-      minHeight: "100vh", 
+      minHeight: "100vh",
+      display: 'flex',
+      flexDirection: 'column',
       backgroundImage: 'url("/main-bg.jpg")',
       backgroundSize: 'cover',
       backgroundPosition: 'center',
@@ -22,29 +24,34 @@ export default function Dashboard() {
     }}>
        {/* Navbar */}
        <Box sx={{ 
-         position: 'absolute',
-         top: 0,
-         left: 0,
-         right: 0,
          display: "flex", 
+         flexDirection: 'row',
          justifyContent: "space-between", 
          alignItems: "center",
-         px: 4,
+         px: { xs: 2, md: 4 },
          py: 2,
-         zIndex: 10
+         zIndex: 10,
+         gap: { xs: 1, md: 0 }
        }}>
          <Typography variant="h4" component="h1" sx={{ 
            fontWeight: 700, 
            color: "white",
-           fontSize: '2.2rem',
+           fontSize: { xs: '1.8rem', md: '2.2rem' },
            letterSpacing: '1px',
            fontFamily: 'var(--font-caveat)',
-           textShadow: '2px 2px 4px rgba(0,0,0,0.5)'
+           textShadow: '2px 2px 4px rgba(0,0,0,0.5)',
+           lineHeight: 1
          }}>
            AquaTracker
          </Typography>
-         <Box sx={{ display: "flex", gap: 1, alignItems: "center" }}>
+         <Box sx={{ 
+           display: "flex", 
+           gap: 1, 
+           alignItems: "center"
+         }}>
+           {/* Settings - ukryte na mobile, widoczne na desktop */}
            <Box sx={{
+             display: { xs: 'none', md: 'flex' },
              bgcolor: 'rgba(255, 255, 255, 0.4)',
              p: 0.8,
              borderRadius: 1.5,
@@ -59,7 +66,6 @@ export default function Dashboard() {
              cursor: 'pointer',
              minHeight: '60px',
              minWidth: '80px',
-             display: 'flex',
              flexDirection: 'column',
              alignItems: 'center',
              justifyContent: 'center'
@@ -70,72 +76,85 @@ export default function Dashboard() {
              </Typography>
            </Box>
 
-           <Box sx={{ ml: 2, display: "flex", gap: 1, alignItems: "center" }}>
-             <LanguageSwitcher />
-             <Button 
-               variant="contained" 
-               size="small" 
-               onClick={logout}
-               sx={{ 
-                 bgcolor: '#E3F2FD', 
-                 color: 'red',
-                 '&:hover': { bgcolor: '#BBDEFB' }
-               }}
-             >
-               {t("auth.logout")}
-             </Button>
-           </Box>
+
+           <LanguageSwitcher />
+           <Button 
+             variant="contained" 
+             size="small" 
+             onClick={logout}
+             sx={{ 
+               bgcolor: '#E3F2FD', 
+               color: 'black',
+               '&:hover': { bgcolor: '#BBDEFB' }
+             }}
+           >
+             {t("auth.logout")}
+           </Button>
          </Box>
        </Box>
 
        {/* Main Content */}
        <Box sx={{ 
-         position: 'absolute',
-         top: '30%',
-         left: '8%',
-         maxWidth: '550px',
-         zIndex: 10
+         flex: 1,
+         display: 'flex',
+         flexDirection: 'column',
+         gap: 4,
+         px: { xs: 2, md: 4 },
+         py: 4,
+         mt: { xs: 0, md: 40 },
+         ml: { xs: 0, md: '' },
+         zIndex: 10,
+         maxWidth: '1400px',
+         width: '100%',
+         mx: 'auto'
        }}>
+         {/* Tekst */}
          <Box sx={{
-           backgroundColor: 'rgba(0, 0, 0, 0.05)',
-           padding: '60px',
-           borderRadius: '12px',
-           backdropFilter: 'blur(15px)'
+           display: 'flex',
+           alignItems: 'center',
+           justifyContent: 'flex-start'
          }}>
-           <Typography 
-             variant="h2" 
-             component="h2" 
-             sx={{ 
-               fontWeight: "bold", 
-               color: "white", 
-               mb: 3,
-               fontSize: '2.5rem',
-               lineHeight: 1.2
-             }}
-           >
-             {t("mainHeader")}
-           </Typography>
-           <Typography 
-             variant="h6" 
-             sx={{ 
-               color: "white", 
-               lineHeight: 1.6,
-               fontSize: '1.1rem'
-             }}
-           >
-             {t("mainSubHeader")}
-           </Typography>
+           <Box sx={{
+             backgroundColor: 'rgba(0, 0, 0, 0.05)',
+             padding: { xs: '30px', md: '60px' },
+             borderRadius: '12px',
+             backdropFilter: 'blur(15px)',
+             maxWidth: '550px'
+           }}>
+             <Typography 
+               variant="h2" 
+               component="h2" 
+               sx={{ 
+                 fontWeight: "bold", 
+                 color: "white", 
+                 mb: 3,
+                 fontSize: { xs: '1.8rem', md: '2.5rem' },
+                 lineHeight: 1.2,
+                 textAlign: { xs: 'center', md: 'left' }
+               }}
+             >
+               {t("mainHeader")}
+             </Typography>
+             <Typography 
+               variant="h6" 
+               sx={{ 
+                 color: "white", 
+                 lineHeight: 1.6,
+                 fontSize: { xs: '1rem', md: '1.1rem' },
+                 textAlign: { xs: 'center', md: 'left' }
+               }}
+             >
+               {t("mainSubHeader")}
+             </Typography>
+           </Box>
          </Box>
-       </Box>
 
-       {/* Left Side Cards - Main Features */}
-       <Box sx={{ 
-         position: 'absolute',
-         bottom: '8%',
-         left: '5%',
-         width: '45%',
-         zIndex: 10
-       }}>
+         {/* Karty */}
+         <Box sx={{ 
+           display: 'flex',
+           alignItems: 'flex-start',
+           justifyContent: 'flex-start'
+         }}>
          <Box sx={{ 
            display: "grid", 
            gridTemplateColumns: "repeat(2, 1fr)",
@@ -261,10 +280,47 @@ export default function Dashboard() {
               <Typography variant="body2" color="text.secondary" sx={{ textAlign: 'center', fontSize: '0.8rem', lineHeight: 1.3 }}>
                 {t("plantsDesc")}
               </Typography>
-            </Box>
-          </Link>
+             </Box>
+           </Link>
          </Box>
        </Box>
+       </Box>
+
+      <Box sx={{ 
+        display: { xs: 'flex', md: 'none' },
+        justifyContent: 'center',
+        alignItems: 'center',
+        px: 2,
+        py: 2,
+        bgcolor: 'rgba(255, 255, 255, 0.6)',
+        backdropFilter: 'blur(8px)',
+        borderTop: '1px solid rgba(255, 255, 255, 0.3)',
+        zIndex: 10
+      }}>
+        <Box sx={{
+          bgcolor: 'rgba(255, 255, 255, 0.4)',
+          p: 1,
+          borderRadius: 1.5,
+          boxShadow: 2,
+          transition: "all 0.3s",
+          backdropFilter: 'blur(8px)',
+          "&:hover": { 
+            boxShadow: 4,
+            transform: "translateY(-2px)",
+            bgcolor: 'rgba(255, 255, 255, 0.6)'
+          },
+          cursor: 'pointer',
+          display: 'flex',
+          flexDirection: 'column',
+          alignItems: 'center',
+          justifyContent: 'center'
+        }}>
+          <Typography sx={{ fontSize: 16, mb: 0.3, textAlign: 'center' }}>⚙️</Typography>
+          <Typography variant="body2" sx={{ fontWeight: 600, color: "text.primary", textAlign: 'center', fontSize: '0.6rem' }}>
+            {t("settings")}
+          </Typography>
+        </Box>
+      </Box>
 
     </Box>
   );

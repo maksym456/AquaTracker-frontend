@@ -27,46 +27,46 @@ export default function MyAquariumsPage() {
       <Box sx={{ 
         position: 'absolute', top: 0, left: 0, right: 0,
         display: 'flex', justifyContent: 'space-between', alignItems: 'center',
-        px: 4, py: 2, zIndex: 10
+        px: { xs: 2, sm: 4 }, py: 2, zIndex: 10
       }}>
-        <Box sx={{ display: "flex", gap: 1 }}>
+        <Box sx={{ display: "flex", gap: { xs: 0.5, sm: 1 } }}>
           <Box sx={{
-            bgcolor: 'rgba(255, 255, 255, 0.4)', p: 0.8, borderRadius: 1.5, boxShadow: 2,
+            bgcolor: 'rgba(255, 255, 255, 0.4)', p: { xs: 0.5, sm: 0.8 }, borderRadius: 1.5, boxShadow: 2,
             transition: "all 0.3s", backdropFilter: 'blur(8px)',
             "&:hover": { boxShadow: 4, transform: "translateY(-2px)", bgcolor: 'rgba(255, 255, 255, 0.6)' },
-            cursor: 'pointer', minHeight: '60px', minWidth: '80px', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center'
+            cursor: 'pointer', minHeight: { xs: '50px', sm: '60px' }, minWidth: { xs: '60px', sm: '80px' }, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center'
           }}>
-            <Typography sx={{ fontSize: 16, mb: 0.3, textAlign: 'center' }}>📊</Typography>
-            <Typography variant="body2" sx={{ fontWeight: 600, color: "text.primary", textAlign: 'center', fontSize: '0.65rem' }}>
+            <Typography sx={{ fontSize: { xs: 14, sm: 16 }, mb: 0.3, textAlign: 'center' }}>📊</Typography>
+            <Typography variant="body2" sx={{ fontWeight: 600, color: "text.primary", textAlign: 'center', fontSize: { xs: '0.55rem', sm: '0.65rem' } }}>
               {t("statistics")}
             </Typography>
           </Box>
           <Box sx={{
-            bgcolor: 'rgba(255, 255, 255, 0.4)', p: 0.8, borderRadius: 1.5, boxShadow: 2,
+            bgcolor: 'rgba(255, 255, 255, 0.4)', p: { xs: 0.5, sm: 0.8 }, borderRadius: 1.5, boxShadow: 2,
             transition: "all 0.3s", backdropFilter: 'blur(8px)',
             "&:hover": { boxShadow: 4, transform: "translateY(-2px)", bgcolor: 'rgba(255, 255, 255, 0.6)' },
-            cursor: 'pointer', minHeight: '60px', minWidth: '80px', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center'
+            cursor: 'pointer', minHeight: { xs: '50px', sm: '60px' }, minWidth: { xs: '60px', sm: '80px' }, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center'
           }}>
-            <Typography sx={{ fontSize: 16, mb: 0.3, textAlign: 'center' }}>📋</Typography>
-            <Typography variant="body2" sx={{ fontWeight: 600, color: "text.primary", textAlign: 'center', fontSize: '0.65rem' }}>
+            <Typography sx={{ fontSize: { xs: 14, sm: 16 }, mb: 0.3, textAlign: 'center' }}>📋</Typography>
+            <Typography variant="body2" sx={{ fontWeight: 600, color: "text.primary", textAlign: 'center', fontSize: { xs: '0.55rem', sm: '0.65rem' } }}>
               {t("history")}
             </Typography>
           </Box>
           <Link href="/" style={{ textDecoration: 'none' }}>
             <Box sx={{
-              bgcolor: 'rgba(255, 255, 255, 0.4)', p: 0.8, borderRadius: 1.5, boxShadow: 2,
+              bgcolor: 'rgba(255, 255, 255, 0.4)', p: { xs: 0.5, sm: 0.8 }, borderRadius: 1.5, boxShadow: 2,
               transition: "all 0.3s", backdropFilter: 'blur(8px)',
               "&:hover": { boxShadow: 4, transform: "translateY(-2px)", bgcolor: 'rgba(255, 255, 255, 0.6)' },
-              cursor: 'pointer', minHeight: '60px', minWidth: '80px', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center'
+              cursor: 'pointer', minHeight: { xs: '50px', sm: '60px' }, minWidth: { xs: '60px', sm: '80px' }, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center'
             }}>
-              <KeyboardReturnOutlinedIcon sx={{ fontSize: 16, mb: 0.3 }} />
-              <Typography variant="body2" sx={{ fontWeight: 600, color: "text.primary", textAlign: 'center', fontSize: '0.65rem' }}>
+              <KeyboardReturnOutlinedIcon sx={{ fontSize: { xs: 14, sm: 16 }, mb: 0.3 }} />
+              <Typography variant="body2" sx={{ fontWeight: 600, color: "text.primary", textAlign: 'center', fontSize: { xs: '0.55rem', sm: '0.65rem' } }}>
                 {t("return")}
               </Typography>
             </Box>
           </Link>
         </Box>
-        <Box sx={{ display: 'flex', alignItems: 'center' }}>
+        <Box sx={{ display: 'flex', alignItems: 'center', ml: { xs: 1, sm: 2 } }}>
           <LanguageSwitcher />
         </Box>
       </Box>
