@@ -1,0 +1,25 @@
+# Changelog
+
+All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
+
+### 0.2.1 (2025-11-02)
+
+
+### Features
+
+* **dashboard:** enhance layout with new background, feature cards ([944244a](https://github.com/maksym456/AquaTracker-frontend/commit/944244a5e7c33056f450f5bb6906d630c9a6234d))
+* **dependencies:** add @mui/icons-material package and update translations ([2fa2763](https://github.com/maksym456/AquaTracker-frontend/commit/2fa2763fbe08d381869ae734bb18fb584ef4e544))
+* **setup:** add mock data, initial Next.js files, and new font ([ff28d67](https://github.com/maksym456/AquaTracker-frontend/commit/ff28d674f868baf11dd8f67ede616387500f5637))
+* **types:** add base TypeScript models for system entities ([6532cbf](https://github.com/maksym456/AquaTracker-frontend/commit/6532cbf9a1c71c553d356aa0ea8b03ba14cba117))
+* **ui:** add aquarium animations and update background image ([b67d900](https://github.com/maksym456/AquaTracker-frontend/commit/b67d900810cab014fee327648627027c45fe8900))
+* **ui:** add Fish Database subpage with background and navigation buttons ([337ec35](https://github.com/maksym456/AquaTracker-frontend/commit/337ec359b92f37bb6c7e3aefdebeeac3ff2ffdba))
+* **ui:** add new Aquariums subpage with actions ([8288eb1](https://github.com/maksym456/AquaTracker-frontend/commit/8288eb1a660902535d54d8bbc03012bbf375015c))
+* **ui:** add Plant Database subpage and link from dashboard ([7344682](https://github.com/maksym456/AquaTracker-frontend/commit/7344682d3146def1af362f23dd0c786b97a94ccc))
+* **ui:** enhance Fish Database page with card carousel and add to aquarium functionality ([65307ba](https://github.com/maksym456/AquaTracker-frontend/commit/65307ba117c14ded683495765543fa266240caa2))
+* **ui:** enhance logout button and add hover effect to language switcher ([35545fd](https://github.com/maksym456/AquaTracker-frontend/commit/35545fd3c71f461ff02a37ab890f4d79bc9505b0))
+* **ui:** improve layout and responsiveness of Dashboard and MyAquariums pages ([3cff323](https://github.com/maksym456/AquaTracker-frontend/commit/3cff323c13ca5393313dc933b358ee6b0c680ae3))
+
+
+### Bug Fixes
+
+* **ui:** correct grid card layout by updating Link and Box sizing ([1e52fe2](https://github.com/maksym456/AquaTracker-frontend/commit/1e52fe292d1441bb6a370e981511224cb2b3de4d))

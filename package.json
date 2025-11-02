@@ -1,12 +1,17 @@
 {
   "name": "aquatracker-frontend",
-  "version": "0.1.0",
+  "version": "0.2.1",
   "private": true,
   "scripts": {
     "dev": "next dev --turbopack",
     "build": "next build --turbopack",
     "start": "next start",
-    "lint": "eslint"
+    "lint": "eslint",
+    "version:bump": "node scripts/bump-version.js",
+    "release": "standard-version && npm run version:bump",
+    "release:minor": "standard-version --release-as minor && npm run version:bump",
+    "release:patch": "standard-version --release-as patch && npm run version:bump",
+    "release:major": "standard-version --release-as major && npm run version:bump"
   },
   "dependencies": {
     "@emotion/react": "^11.14.0",
@@ -25,6 +30,7 @@
     "@types/node": "24.9.2",
     "eslint": "^9",
     "eslint-config-next": "15.5.4",
+    "standard-version": "^9.5.0",
     "tailwindcss": "^4"
   }
 }
