@@ -32,12 +32,23 @@ export default function PlantDatabasePage() {
   return (
     <Box sx={{ 
       minHeight: "100vh", 
-      position: "relative",
-      backgroundImage: 'url("/plantPage-bg.jpg")',
-      backgroundSize: 'cover',
-      backgroundPosition: 'center',
-      backgroundRepeat: 'no-repeat'
+      position: "relative"
     }}>
+      <video
+        autoPlay
+        loop
+        muted
+        playsInline
+        style={{
+          position: 'absolute',
+          width: '100%',
+          height: '100%',
+          objectFit: 'cover',
+          zIndex: 0
+        }}
+      >
+        <source src="/plantPage-bg.mp4" type="video/mp4" />
+      </video>
       {/* Top bar z przyciskami */}
       <Box sx={{ 
         position: 'absolute', top: 0, left: 0, right: 0,
