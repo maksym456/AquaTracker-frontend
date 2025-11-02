@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+## [0.3.0](https://github.com/maksym456/AquaTracker-frontend/compare/v0.2.2...v0.3.0) (2025-11-02)
+
+
+### Features
+
+* **ui:** update background to video in Fish and Plant Database pages ([d1dc80e](https://github.com/maksym456/AquaTracker-frontend/commit/d1dc80e44cfe7e41a192f97f97180bcc7a2af8f7))
+
 ### [0.2.2](https://github.com/maksym456/AquaTracker-frontend/compare/v0.2.1...v0.2.2) (2025-11-02)
 
 
