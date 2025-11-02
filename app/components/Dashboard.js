@@ -1,27 +1,48 @@
 "use client";
 
+import { useState } from "react";
 import { useTranslation } from "react-i18next";
 import LanguageSwitcher from "./LanguageSwitcher";
 import { useAuth } from "../contexts/AuthContext";
-import { Button, Box, Typography } from "@mui/material";
+import { Button, Box, Typography, Modal } from "@mui/material";
 import { mockAquariums } from "../lib/mockData";
+import { APP_VERSION } from "../version";
 import Link from "next/link";
 
 export default function Dashboard() {
   const { t } = useTranslation();
   const { user, logout } = useAuth();
+  const [settingsOpen, setSettingsOpen] = useState(false);
+  const [dataSourceExpanded, setDataSourceExpanded] = useState(false);
+  
+  const handleOpenSettings = () => setSettingsOpen(true);
+  const handleCloseSettings = () => setSettingsOpen(false);
+  const toggleDataSource = () => setDataSourceExpanded(!dataSourceExpanded);
   
   return (
     <Box sx={{ 
       minHeight: "100vh",
       display: 'flex',
       flexDirection: 'column',
-      backgroundImage: 'url("/main-bg.jpg")',
-      backgroundSize: 'cover',
-      backgroundPosition: 'center',
-      backgroundRepeat: 'no-repeat',
       position: 'relative'
     }}>
+      {/* Tło wideo */}
+      <video
+        autoPlay
+        loop
+        muted
+        playsInline
+        style={{
+          position: 'absolute',
+          width: '100%',
+          height: '100%',
+          objectFit: 'cover',
+          zIndex: 0
+        }}
+      >
+        <source src="/main-bg-video.mp4" type="video/mp4" />
+      </video>
+      
        {/* Navbar */}
        <Box sx={{ 
          display: "flex", 
@@ -49,47 +70,7 @@ export default function Dashboard() {
            gap: 1, 
            alignItems: "center"
          }}>
-           {/* Settings - ukryte na mobile, widoczne na desktop */}
-           <Box sx={{
-             display: { xs: 'none', md: 'flex' },
-             bgcolor: 'rgba(255, 255, 255, 0.4)',
-             p: 0.8,
-             borderRadius: 1.5,
-             boxShadow: 2,
-             transition: "all 0.3s",
-             backdropFilter: 'blur(8px)',
-             "&:hover": { 
-               boxShadow: 4,
-               transform: "translateY(-2px)",
-               bgcolor: 'rgba(255, 255, 255, 0.6)'
-             },
-             cursor: 'pointer',
-             minHeight: '60px',
-             minWidth: '80px',
-             flexDirection: 'column',
-             alignItems: 'center',
-             justifyContent: 'center'
-           }}>
-             <Typography sx={{ fontSize: 16, mb: 0.3, textAlign: 'center' }}>⚙️</Typography>
-             <Typography variant="body2" sx={{ fontWeight: 600, color: "text.primary", textAlign: 'center', fontSize: '0.65rem' }}>
-               {t("settings")}
-             </Typography>
-           </Box>
-
-
            <LanguageSwitcher />
-           <Button 
-             variant="contained" 
-             size="small" 
-             onClick={logout}
-             sx={{ 
-               bgcolor: '#E3F2FD', 
-               color: 'black',
-               '&:hover': { bgcolor: '#BBDEFB' }
-             }}
-           >
-             {t("auth.logout")}
-           </Button>
          </Box>
        </Box>
 
@@ -115,7 +96,7 @@ export default function Dashboard() {
            justifyContent: 'flex-start'
          }}>
            <Box sx={{
-             backgroundColor: 'rgba(0, 0, 0, 0.05)',
+             backgroundColor: 'rgba(0, 0, 0, 0.01)',
              padding: { xs: '30px', md: '60px' },
              borderRadius: '12px',
              backdropFilter: 'blur(15px)',
@@ -157,8 +138,10 @@ export default function Dashboard() {
          }}>
          <Box sx={{ 
            display: "grid", 
-           gridTemplateColumns: "repeat(2, 1fr)",
-           gap: 2
+           gridTemplateColumns: { xs: "1fr", md: "repeat(2, 1fr)" },
+           gap: 2,
+           width: { xs: 'calc(100% - 80px)', md: 'auto' },
+           maxWidth: { xs: 'none', md: '600px' }
          }}>
            {/* Top Row */}
            <Link href="/my-aquariums" style={{ textDecoration: 'none', display: 'block', height: '100%' }}>
@@ -286,41 +269,269 @@ export default function Dashboard() {
        </Box>
        </Box>
 
-      <Box sx={{ 
-        display: { xs: 'flex', md: 'none' },
-        justifyContent: 'center',
-        alignItems: 'center',
-        px: 2,
-        py: 2,
-        bgcolor: 'rgba(255, 255, 255, 0.6)',
+      {/* Settings button - prawy dolny róg */}
+      <Box onClick={handleOpenSettings} sx={{
+        position: 'fixed',
+        bottom: 16,
+        right: 16,
+        bgcolor: 'rgba(255, 255, 255, 0.4)',
+        p: 1.5,
+        borderRadius: 2,
+        boxShadow: 2,
+        transition: "all 0.3s",
         backdropFilter: 'blur(8px)',
-        borderTop: '1px solid rgba(255, 255, 255, 0.3)',
+        "&:hover": { 
+          boxShadow: 4,
+          transform: "translateY(-2px)",
+          bgcolor: 'rgba(255, 255, 255, 0.6)'
+        },
+        cursor: 'pointer',
+        minHeight: { xs: '60px', md: '80px' },
+        minWidth: { xs: '60px', md: '80px' },
+        display: 'flex',
+        flexDirection: 'column',
+        alignItems: 'center',
+        justifyContent: 'center',
         zIndex: 10
       }}>
+        <Typography sx={{ fontSize: { xs: 20, md: 24 }, mb: 0.3, textAlign: 'center' }}>⚙️</Typography>
+        <Typography variant="body2" sx={{ fontWeight: 600, color: "text.primary", textAlign: 'center', fontSize: { xs: '0.55rem', md: '0.7rem' } }}>
+          {t("settings")}
+        </Typography>
+      </Box>
+
+      {/* Settings Panel */}
+      <Modal
+        open={settingsOpen}
+        onClose={handleCloseSettings}
+        sx={{
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'flex-end',
+          p: 2
+        }}
+      >
         <Box sx={{
-          bgcolor: 'rgba(255, 255, 255, 0.4)',
-          p: 1,
-          borderRadius: 1.5,
-          boxShadow: 2,
-          transition: "all 0.3s",
-          backdropFilter: 'blur(8px)',
-          "&:hover": { 
-            boxShadow: 4,
-            transform: "translateY(-2px)",
-            bgcolor: 'rgba(255, 255, 255, 0.6)'
-          },
-          cursor: 'pointer',
+          width: { xs: '90%', md: '400px' },
+          height: 'calc(100vh - 64px)',
+          mt: 8,
+          bgcolor: 'rgba(227, 242, 253, 0.95)',
+          backdropFilter: 'blur(20px)',
+          boxShadow: '0 8px 32px rgba(0, 0, 0, 0.3)',
           display: 'flex',
           flexDirection: 'column',
-          alignItems: 'center',
-          justifyContent: 'center'
+          outline: 'none',
+          animation: 'slideInRight 0.3s ease-out',
+          borderRadius: '16px 0 0 16px'
         }}>
-          <Typography sx={{ fontSize: 16, mb: 0.3, textAlign: 'center' }}>⚙️</Typography>
-          <Typography variant="body2" sx={{ fontWeight: 600, color: "text.primary", textAlign: 'center', fontSize: '0.6rem' }}>
-            {t("settings")}
-          </Typography>
+          {/* Header */}
+          <Box sx={{
+            display: 'flex',
+            justifyContent: 'space-between',
+            alignItems: 'center',
+            p: 3,
+            borderBottom: '1px solid rgba(0, 0, 0, 0.1)'
+          }}>
+            <Typography variant="h5" sx={{ fontWeight: 600 }}>
+              {t("settings")}
+            </Typography>
+            <Button onClick={handleCloseSettings} sx={{ minWidth: 'auto' }}>
+              ✕
+            </Button>
+          </Box>
+
+          {/* Content */}
+          <Box sx={{ flex: 1, overflowY: 'auto', p: 2 }}>
+            {/* Dark Mode */}
+            <Box 
+              sx={{ 
+                display: 'flex', 
+                alignItems: 'center', 
+                justifyContent: 'space-between',
+                p: 2,
+                mb: 1,
+                borderRadius: 2,
+                cursor: 'pointer',
+                '&:hover': { bgcolor: 'rgba(0, 0, 0, 0.05)' }
+              }}
+            >
+              <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
+                <Typography sx={{ fontSize: 24 }}>🌙</Typography>
+                <Typography variant="body1" sx={{ fontWeight: 500 }}>Dark Mode</Typography>
+              </Box>
+              <Typography sx={{ fontSize: 20 }}>⚪</Typography>
+            </Box>
+
+            {/* Edycja profilu */}
+            <Box 
+              onClick={() => alert('Edycja profilu')}
+              sx={{ 
+                display: 'flex', 
+                alignItems: 'center', 
+                justifyContent: 'space-between',
+                p: 2,
+                mb: 1,
+                borderRadius: 2,
+                cursor: 'pointer',
+                '&:hover': { bgcolor: 'rgba(0, 0, 0, 0.05)' }
+              }}
+            >
+              <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
+                <Typography sx={{ fontSize: 24 }}>👤</Typography>
+                <Typography variant="body1" sx={{ fontWeight: 500 }}>Edycja profilu</Typography>
+              </Box>
+              <Typography sx={{ fontSize: 20 }}>→</Typography>
+            </Box>
+
+            {/* Długość sesji */}
+            <Box 
+              onClick={() => alert('Długość sesji')}
+              sx={{ 
+                display: 'flex', 
+                alignItems: 'center', 
+                justifyContent: 'space-between',
+                p: 2,
+                mb: 1,
+                borderRadius: 2,
+                cursor: 'pointer',
+                '&:hover': { bgcolor: 'rgba(0, 0, 0, 0.05)' }
+              }}
+            >
+              <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
+                <Typography sx={{ fontSize: 24 }}>⏱️</Typography>
+                <Typography variant="body1" sx={{ fontWeight: 500 }}>Długość sesji</Typography>
+              </Box>
+              <Typography sx={{ fontSize: 20 }}>→</Typography>
+            </Box>
+
+            {/* Źródło danych */}
+            <Box sx={{ mb: 1 }}>
+              <Box 
+                onClick={toggleDataSource}
+                sx={{ 
+                  display: 'flex', 
+                  alignItems: 'center', 
+                  justifyContent: 'space-between',
+                  p: 2,
+                  borderRadius: 2,
+                  cursor: 'pointer',
+                  '&:hover': { bgcolor: 'rgba(0, 0, 0, 0.05)' }
+                }}
+              >
+                <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
+                  <Typography sx={{ fontSize: 24 }}>💾</Typography>
+                  <Typography variant="body1" sx={{ fontWeight: 500 }}>Źródło danych</Typography>
+                </Box>
+                <Typography sx={{ fontSize: 20 }}>{dataSourceExpanded ? '▼' : '→'}</Typography>
+              </Box>
+              
+              {/* Rozwinięte informacje o źródle danych */}
+              {dataSourceExpanded && (
+                <Box sx={{ pl: 4, pr: 2, pb: 2 }}>
+                  <Box sx={{ mb: 2, p: 1.5, bgcolor: 'rgba(255, 255, 255, 0.5)', borderRadius: 1.5 }}>
+                    <Typography variant="body2" sx={{ fontWeight: 600, mb: 0.5 }}>Typ źródła:</Typography>
+                    <Typography variant="body2" color="text.secondary">Mock Data (lokalne)</Typography>
+                  </Box>
+                  <Box sx={{ mb: 2, p: 1.5, bgcolor: 'rgba(255, 255, 255, 0.5)', borderRadius: 1.5 }}>
+                    <Typography variant="body2" sx={{ fontWeight: 600, mb: 0.5 }}>Środowisko:</Typography>
+                    <Typography variant="body2" color="text.secondary">Development</Typography>
+                  </Box>
+                  <Box sx={{ mb: 2, p: 1.5, bgcolor: 'rgba(255, 255, 255, 0.5)', borderRadius: 1.5 }}>
+                    <Typography variant="body2" sx={{ fontWeight: 600, mb: 0.5 }}>Status:</Typography>
+                    <Typography variant="body2" sx={{ color: '#4CAF50', fontWeight: 600 }}>● Połączono</Typography>
+                  </Box>
+                  <Box sx={{ p: 1.5, bgcolor: 'rgba(255, 255, 255, 0.5)', borderRadius: 1.5 }}>
+                    <Typography variant="body2" sx={{ fontWeight: 600, mb: 0.5 }}>Ostatnia synchronizacja:</Typography>
+                    <Typography variant="body2" color="text.secondary">W trybie offline</Typography>
+                    <Typography variant="caption" color="text.disabled" sx={{ display: 'block', mt: 0.5, fontSize: '0.7rem' }}>
+                      Dane przechowywane lokalnie (mock)
+                    </Typography>
+                  </Box>
+                </Box>
+              )}
+            </Box>
+
+            {/* Historia zmian */}
+            <Box 
+              onClick={() => alert('Historia zmian')}
+              sx={{ 
+                display: 'flex', 
+                alignItems: 'center', 
+                justifyContent: 'space-between',
+                p: 2,
+                mb: 1,
+                borderRadius: 2,
+                cursor: 'pointer',
+                '&:hover': { bgcolor: 'rgba(0, 0, 0, 0.05)' }
+              }}
+            >
+              <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
+                <Typography sx={{ fontSize: 24 }}>📋</Typography>
+                <Typography variant="body1" sx={{ fontWeight: 500 }}>Historia zmian</Typography>
+              </Box>
+              <Typography sx={{ fontSize: 20 }}>→</Typography>
+            </Box>
+
+            {/* Wersja aplikacji */}
+            <Box sx={{ 
+              display: 'flex', 
+              alignItems: 'center', 
+              justifyContent: 'space-between',
+              p: 2,
+              mb: 1,
+              borderRadius: 2
+            }}>
+              <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
+                <Typography sx={{ fontSize: 24 }}>ℹ️</Typography>
+                <Typography variant="body1" sx={{ fontWeight: 500 }}>Wersja</Typography>
+              </Box>
+              <Typography variant="body2" color="text.secondary">{APP_VERSION}</Typography>
+            </Box>
+
+            {/* Dezaktywacja konta */}
+            <Box 
+              onClick={() => alert('Dezaktywacja konta - potwierdź')}
+              sx={{ 
+                display: 'flex', 
+                alignItems: 'center', 
+                justifyContent: 'space-between',
+                p: 2,
+                mt: 2,
+                borderRadius: 2,
+                border: '2px solid #EF5350',
+                cursor: 'pointer',
+                '&:hover': { bgcolor: 'rgba(239, 83, 80, 0.1)' }
+              }}
+            >
+              <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
+                <Typography sx={{ fontSize: 24 }}>⚠️</Typography>
+                <Typography variant="body1" sx={{ fontWeight: 600, color: '#EF5350' }}>Dezaktywuj konto</Typography>
+              </Box>
+              <Typography sx={{ fontSize: 20, color: '#EF5350' }}>→</Typography>
+            </Box>
+          </Box>
+
+          {/* Footer z Logout */}
+          <Box sx={{
+            borderTop: '1px solid rgba(0, 0, 0, 0.1)',
+            p: 3,
+            display: 'flex',
+            justifyContent: 'center'
+          }}>
+            <Button 
+              variant="contained" 
+              onClick={logout}
+              sx={{ 
+                bgcolor: '#EF5350', 
+                color: 'white',
+                '&:hover': { bgcolor: '#E53935' }
+              }}
+            >
+              {t("auth.logout")}
+            </Button>
+          </Box>
         </Box>
-      </Box>
+      </Modal>
 
     </Box>
   );

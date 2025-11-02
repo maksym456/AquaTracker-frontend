@@ -102,6 +102,9 @@ export default function MyAquariumsPage() {
               
               const startDelay = i * 0.4;
               
+              
+              const bottomPosition = 5 + (i * 13) % 60;
+              
               return (
                 <Box
                   key={i} 
@@ -109,7 +112,7 @@ export default function MyAquariumsPage() {
                   sx={{
                     
                     position: 'absolute', 
-                    bottom: '5%', 
+                    bottom: `${bottomPosition}%`, 
                     left: `${leftPosition}%`, 
                     width: `${size}px`, 
                     height: `${size}px`, 
