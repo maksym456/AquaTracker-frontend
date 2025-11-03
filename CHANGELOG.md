@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [0.3.1](https://github.com/maksym456/AquaTracker-frontend/compare/v0.3.0...v0.3.1) (2025-11-03)
+
+
+### Features
+
+* **ui:** implement card carousel for Fish and Plant Database pages ([6eb187b](https://github.com/maksym456/AquaTracker-frontend/commit/6eb187bca8f8ab1a575cbb21c73e9815e07b13f9))
+
 ## [0.3.0](https://github.com/maksym456/AquaTracker-frontend/compare/v0.2.2...v0.3.0) (2025-11-02)
 
 
