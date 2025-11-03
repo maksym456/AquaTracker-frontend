@@ -28,6 +28,22 @@ export default function PlantDatabasePage() {
   const handlePrev = () => {
     setCurrentCard((prev) => (prev - 1 + plantCards.length) % plantCards.length);
   };
+  
+  // Funkcja do obliczania pozycji karty w karuzeli
+  const getCardPosition = (index) => {
+    const totalCards = plantCards.length;
+    const offset = (index - currentCard + totalCards) % totalCards;
+    
+    if (offset === 0) {
+      return { zIndex: 3, scale: 1, translateX: 0, opacity: 1 }; // Karta główna (środek)
+    } else if (offset === 1) {
+      return { zIndex: 2, scale: 0.85, translateX: 110, opacity: 0.7 }; // Karta z prawej (tył)
+    } else if (offset === totalCards - 1) {
+      return { zIndex: 2, scale: 0.85, translateX: -110, opacity: 0.7 }; // Karta z lewej (tył)
+    } else {
+      return { zIndex: 1, scale: 0.6, translateX: 0, opacity: 0 }; // Pozostałe karty (ukryte)
+    }
+  };
 
   return (
     <Box sx={{ 
@@ -90,128 +106,169 @@ export default function PlantDatabasePage() {
         {/* Karuzela kafelków */}
         <Box sx={{
           position: 'relative',
-          width: { xs: '85%', sm: '60%', md: '40%' },
-          maxWidth: 450,
+          width: '100%',
+          height: '650px',
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'center'
         }}>
-          {/* Kafelek z informacjami o roślinie */}
+          {/* Wewnętrzny kontener z większą szerokością dla kart */}
           <Box sx={{
             position: 'relative',
-            bgcolor: 'rgba(20, 50, 30, 0.9)',
-            borderRadius: 4,
-            overflow: 'hidden',
-            boxShadow: '0 8px 32px rgba(0, 0, 0, 0.4)',
-            minHeight: '600px',
-            display: 'flex',
-            flexDirection: 'column'
+            width: { xs: '85%', md: '45%' },
+            maxWidth: 350,
+            height: '650px'
           }}>
-            {/* Strzałki nawigacyjne wewnątrz kafelka */}
-            <Box sx={{
-              position: 'absolute',
-              top: 16,
-              left: 0,
-              right: 0,
-              display: 'flex',
-              justifyContent: 'space-between',
-              alignItems: 'center',
-              px: 2,
-              zIndex: 10
-            }}>
-              <IconButton 
-                onClick={handlePrev}
-                sx={{
-                  color: 'white',
-                  bgcolor: 'rgba(0, 0, 0, 0.4)',
-                  '&:hover': { bgcolor: 'rgba(0, 0, 0, 0.6)' }
-                }}
-              >
-                <ArrowBackIosIcon />
-              </IconButton>
-              <IconButton 
-                onClick={handleNext}
-                sx={{
-                  color: 'white',
-                  bgcolor: 'rgba(0, 0, 0, 0.4)',
-                  '&:hover': { bgcolor: 'rgba(0, 0, 0, 0.6)' }
-                }}
-              >
-                <ArrowForwardIosIcon />
-              </IconButton>
-            </Box>
-            {/* Obraz rośliny */}
-            <Box sx={{
-              width: '100%',
-              height: '250px',
-              bgcolor: 'rgba(40, 100, 60, 0.8)',
-              backgroundImage: `url("${plantCards[currentCard].image}")`,
-              backgroundSize: 'cover',
-              backgroundPosition: 'center',
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'center'
-            }}>
-              {/* Placeholder jeśli brak obrazu */}
-              <Typography sx={{ color: 'white', opacity: 0.5 }}>
-                {plantCards[currentCard].image || 'Image'}
-              </Typography>
-            </Box>
-
-            {/* Treść kafelka */}
-            <Box sx={{ p: 3, flex: 1, display: 'flex', flexDirection: 'column' }}>
-              <Typography 
-                variant="h5" 
-                sx={{ 
-                  color: 'white', 
-                  mb: 2, 
-                  fontWeight: 600 
-                }}
-              >
-                {plantCards[currentCard].name}
-              </Typography>
-              <Typography 
-                variant="body1" 
-                sx={{ 
-                  color: 'rgba(255, 255, 255, 0.8)',
-                  lineHeight: 1.6,
-                  mb: 'auto'
-                }}
-              >
-                {plantCards[currentCard].description}
-              </Typography>
-              
-              {/* Przycisk "Dodaj do akwarium" */}
-              <Box sx={{ 
-                display: 'flex', 
-                justifyContent: 'center', 
-                mt: 3, 
-                pt: 3 
-              }}>
-                <Button
-                  onClick={() => alert(`Dodano ${plantCards[currentCard].name} do akwarium!`)}
-                  variant="contained"
+            {/* Renderuj wszystkie karty */}
+            {plantCards.map((plant, index) => {
+              const position = getCardPosition(index);
+              return (
+                <Box
+                  key={plant.id}
                   sx={{
-                    bgcolor: '#FFD700',
-                    color: '#000',
-                    borderRadius: 3,
-                    px: 4,
-                    py: 1.5,
-                    fontSize: '1rem',
-                    fontWeight: 600,
-                    boxShadow: '0 4px 12px rgba(255, 215, 0, 0.3)',
-                    transition: 'all 0.3s',
-                    '&:hover': {
-                      bgcolor: '#FFC700',
-                      boxShadow: '0 6px 16px rgba(255, 215, 0, 0.4)',
-                      transform: 'translateY(-2px)'
-                    },
-                    '&:active': {
-                      transform: 'translateY(0)'
+                    position: 'absolute',
+                    width: '100%',
+                    top: '50%',
+                    left: '50%',
+                    transform: `translate(${position.translateX}%, -50%) scale(${position.scale})`,
+                    transformOrigin: 'center center',
+                    bgcolor: 'rgba(20, 50, 30, 0.95)',
+                    borderRadius: 4,
+                    overflow: 'hidden',
+                    boxShadow: '0 8px 32px rgba(0, 0, 0, 0.4)',
+                    minHeight: '600px',
+                    display: 'flex',
+                    flexDirection: 'column',
+                    zIndex: position.zIndex,
+                    opacity: position.opacity,
+                    transition: 'all 0.5s cubic-bezier(0.4, 0, 0.2, 1)',
+                    cursor: position.zIndex === 3 ? 'default' : 'pointer',
+                    '&:hover': position.zIndex === 3 ? {} : {
+                      opacity: 0.85,
+                      transform: `translate(${position.translateX * 0.9}%, -50%) scale(${position.scale * 1.05})`
                     }
                   }}
+                  onClick={() => position.zIndex !== 3 && setCurrentCard(index)}
                 >
-                  {t("addToAquarium", { defaultValue: "Add to Aquarium" })}
-                </Button>
+                {/* Strzałki nawigacyjne tylko na głównej karcie */}
+                {position.zIndex === 3 && (
+                  <Box sx={{
+                    position: 'absolute',
+                    top: 16,
+                    left: 0,
+                    right: 0,
+                    display: 'flex',
+                    justifyContent: 'space-between',
+                    alignItems: 'center',
+                    px: 2,
+                    zIndex: 10
+                  }}>
+                    <IconButton 
+                      onClick={(e) => { e.stopPropagation(); handlePrev(); }}
+                      sx={{
+                        color: 'white',
+                        bgcolor: 'rgba(0, 0, 0, 0.4)',
+                        '&:hover': { bgcolor: 'rgba(0, 0, 0, 0.6)' }
+                      }}
+                    >
+                      <ArrowBackIosIcon />
+                    </IconButton>
+                    <IconButton 
+                      onClick={(e) => { e.stopPropagation(); handleNext(); }}
+                      sx={{
+                        color: 'white',
+                        bgcolor: 'rgba(0, 0, 0, 0.4)',
+                        '&:hover': { bgcolor: 'rgba(0, 0, 0, 0.6)' }
+                      }}
+                    >
+                      <ArrowForwardIosIcon />
+                    </IconButton>
+                  </Box>
+                )}
+                
+                {/* Obraz rośliny */}
+                <Box sx={{
+                  width: '100%',
+                  height: '250px',
+                  bgcolor: 'rgba(40, 100, 60, 0.8)',
+                  backgroundImage: `url("${plant.image}")`,
+                  backgroundSize: 'cover',
+                  backgroundPosition: 'center',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center'
+                }}>
+                  {/* Placeholder jeśli brak obrazu */}
+                  <Typography sx={{ color: 'white', opacity: 0.5 }}>
+                    {plant.image || 'Image'}
+                  </Typography>
+                </Box>
+
+                {/* Treść kafelka */}
+                <Box sx={{ p: 3, flex: 1, display: 'flex', flexDirection: 'column' }}>
+                  <Typography 
+                    variant="h5" 
+                    sx={{ 
+                      color: 'white', 
+                      mb: 2, 
+                      fontWeight: 600 
+                    }}
+                  >
+                    {plant.name}
+                  </Typography>
+                  <Typography 
+                    variant="body1" 
+                    sx={{ 
+                      color: 'rgba(255, 255, 255, 0.8)',
+                      lineHeight: 1.6,
+                      mb: 'auto'
+                    }}
+                  >
+                    {plant.description}
+                  </Typography>
+                  
+                  {/* Przycisk "Dodaj do akwarium" tylko na głównej karcie */}
+                  {position.zIndex === 3 && (
+                    <Box sx={{ 
+                      display: 'flex', 
+                      justifyContent: 'center', 
+                      mt: 3, 
+                      pt: 3 
+                    }}>
+                      <Button
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          alert(`Dodano ${plant.name} do akwarium!`);
+                        }}
+                        variant="contained"
+                        sx={{
+                          bgcolor: '#FFD700',
+                          color: '#000',
+                          borderRadius: 3,
+                          px: 4,
+                          py: 1.5,
+                          fontSize: '1rem',
+                          fontWeight: 600,
+                          boxShadow: '0 4px 12px rgba(255, 215, 0, 0.3)',
+                          transition: 'all 0.3s',
+                          '&:hover': {
+                            bgcolor: '#FFC700',
+                            boxShadow: '0 6px 16px rgba(255, 215, 0, 0.4)',
+                            transform: 'translateY(-2px)'
+                          },
+                          '&:active': {
+                            transform: 'translateY(0)'
+                          }
+                        }}
+                      >
+                        {t("addToAquarium", { defaultValue: "Add to Aquarium" })}
+                      </Button>
+                    </Box>
+                  )}
+                </Box>
               </Box>
-            </Box>
+            );
+          })}
           </Box>
 
           {/* Wskaźnik aktualnego kafelka */}

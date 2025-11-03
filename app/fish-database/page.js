@@ -17,6 +17,8 @@ export default function FishDatabasePage() {
     { id: 1, name: "Goldfish", description: "Popularna ryba akwariowa", image: "/fish1.jpg" },
     { id: 2, name: "Guppy", description: "Kolorowa, łatwa w hodowli", image: "/fish2.jpg" },
     { id: 3, name: "Betta", description: "Piękna ryba bojowa", image: "/fish3.jpg" },
+    { id: 4, name: "RybaX", description: "Tutaj będzie opis ryby", image: "/fish4.jpg" },
+    { id: 5, name: "Tetra", description: "Mała, kolorowa ryba", image: "/fish5.jpg" },
   ];
   
   const [currentCard, setCurrentCard] = useState(0);
@@ -27,6 +29,22 @@ export default function FishDatabasePage() {
   
   const handlePrev = () => {
     setCurrentCard((prev) => (prev - 1 + fishCards.length) % fishCards.length);
+  };
+  
+  // Funkcja do obliczania pozycji karty w karuzeli
+  const getCardPosition = (index) => {
+    const totalCards = fishCards.length;
+    const offset = (index - currentCard + totalCards) % totalCards;
+    
+    if (offset === 0) {
+      return { zIndex: 3, scale: 1, translateX: 0, opacity: 1 }; // Karta główna (środek)
+    } else if (offset === 1) {
+      return { zIndex: 2, scale: 0.85, translateX: 110, opacity: 0.7 }; // Karta z prawej (tył)
+    } else if (offset === totalCards - 1) {
+      return { zIndex: 2, scale: 0.85, translateX: -110, opacity: 0.7 }; // Karta z lewej (tył)
+    } else {
+      return { zIndex: 1, scale: 0.6, translateX: 0, opacity: 0 }; // Pozostałe karty (ukryte)
+    }
   };
 
   return (
@@ -92,128 +110,169 @@ export default function FishDatabasePage() {
         {/* Karuzela kafelków */}
         <Box sx={{
           position: 'relative',
-          width: { xs: '85%', sm: '60%', md: '40%' },
-          maxWidth: 450,
+          width: '100%',
+          height: '650px',
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'center'
         }}>
-          {/* Kafelek z informacjami o rybie */}
+          {/* Wewnętrzny kontener z większą szerokością dla kart */}
           <Box sx={{
             position: 'relative',
-            bgcolor: 'rgba(20, 30, 50, 0.9)',
-            borderRadius: 4,
-            overflow: 'hidden',
-            boxShadow: '0 8px 32px rgba(0, 0, 0, 0.4)',
-            minHeight: '600px',
-            display: 'flex',
-            flexDirection: 'column'
+            width: { xs: '85%', md: '45%' },
+            maxWidth: 350,
+            height: '650px'
           }}>
-            {/* Strzałki nawigacyjne wewnątrz kafelka */}
-            <Box sx={{
-              position: 'absolute',
-              top: 16,
-              left: 0,
-              right: 0,
-              display: 'flex',
-              justifyContent: 'space-between',
-              alignItems: 'center',
-              px: 2,
-              zIndex: 10
-            }}>
-              <IconButton 
-                onClick={handlePrev}
-                sx={{
-                  color: 'white',
-                  bgcolor: 'rgba(0, 0, 0, 0.4)',
-                  '&:hover': { bgcolor: 'rgba(0, 0, 0, 0.6)' }
-                }}
-              >
-                <ArrowBackIosIcon />
-              </IconButton>
-              <IconButton 
-                onClick={handleNext}
-                sx={{
-                  color: 'white',
-                  bgcolor: 'rgba(0, 0, 0, 0.4)',
-                  '&:hover': { bgcolor: 'rgba(0, 0, 0, 0.6)' }
-                }}
-              >
-                <ArrowForwardIosIcon />
-              </IconButton>
-            </Box>
-            {/* Obraz ryby */}
-            <Box sx={{
-              width: '100%',
-              height: '250px',
-              bgcolor: 'rgba(40, 60, 100, 0.8)',
-              backgroundImage: `url("${fishCards[currentCard].image}")`,
-              backgroundSize: 'cover',
-              backgroundPosition: 'center',
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'center'
-            }}>
-              {/* Placeholder jeśli brak obrazu */}
-              <Typography sx={{ color: 'white', opacity: 0.5 }}>
-                {fishCards[currentCard].image || 'Image'}
-              </Typography>
-            </Box>
-
-            {/* Treść kafelka */}
-            <Box sx={{ p: 3, flex: 1, display: 'flex', flexDirection: 'column' }}>
-              <Typography 
-                variant="h5" 
-                sx={{ 
-                  color: 'white', 
-                  mb: 2, 
-                  fontWeight: 600 
-                }}
-              >
-                {fishCards[currentCard].name}
-              </Typography>
-              <Typography 
-                variant="body1" 
-                sx={{ 
-                  color: 'rgba(255, 255, 255, 0.8)',
-                  lineHeight: 1.6,
-                  mb: 'auto'
-                }}
-              >
-                {fishCards[currentCard].description}
-              </Typography>
-              
-              {/* Przycisk "Dodaj do akwarium" */}
-              <Box sx={{ 
-                display: 'flex', 
-                justifyContent: 'center', 
-                mt: 3, 
-                pt: 3 
-              }}>
-                <Button
-                  onClick={() => alert(`Dodano ${fishCards[currentCard].name} do akwarium!`)}
-                  variant="contained"
+            {/* Renderuj wszystkie karty */}
+            {fishCards.map((fish, index) => {
+              const position = getCardPosition(index);
+              return (
+                <Box
+                  key={fish.id}
                   sx={{
-                    bgcolor: '#FFD700',
-                    color: '#000',
-                    borderRadius: 3,
-                    px: 4,
-                    py: 1.5,
-                    fontSize: '1rem',
-                    fontWeight: 600,
-                    boxShadow: '0 4px 12px rgba(255, 215, 0, 0.3)',
-                    transition: 'all 0.3s',
-                    '&:hover': {
-                      bgcolor: '#FFC700',
-                      boxShadow: '0 6px 16px rgba(255, 215, 0, 0.4)',
-                      transform: 'translateY(-2px)'
-                    },
-                    '&:active': {
-                      transform: 'translateY(0)'
+                    position: 'absolute',
+                    width: '100%',
+                    top: '50%',
+                    left: '50%',
+                    transform: `translate(${position.translateX}%, -50%) scale(${position.scale})`,
+                    transformOrigin: 'center center',
+                    bgcolor: 'rgba(20, 30, 50, 0.95)',
+                    borderRadius: 4,
+                    overflow: 'hidden',
+                    boxShadow: '0 8px 32px rgba(0, 0, 0, 0.4)',
+                    minHeight: '600px',
+                    display: 'flex',
+                    flexDirection: 'column',
+                    zIndex: position.zIndex,
+                    opacity: position.opacity,
+                    transition: 'all 0.5s cubic-bezier(0.4, 0, 0.2, 1)',
+                    cursor: position.zIndex === 3 ? 'default' : 'pointer',
+                    '&:hover': position.zIndex === 3 ? {} : {
+                      opacity: 0.85,
+                      transform: `translate(${position.translateX * 0.9}%, -50%) scale(${position.scale * 1.05})`
                     }
                   }}
+                  onClick={() => position.zIndex !== 3 && setCurrentCard(index)}
                 >
-                  {t("addToAquarium", { defaultValue: "Add to Aquarium" })}
-                </Button>
+                {/* Strzałki nawigacyjne tylko na głównej karcie */}
+                {position.zIndex === 3 && (
+                  <Box sx={{
+                    position: 'absolute',
+                    top: 16,
+                    left: 0,
+                    right: 0,
+                    display: 'flex',
+                    justifyContent: 'space-between',
+                    alignItems: 'center',
+                    px: 2,
+                    zIndex: 10
+                  }}>
+                    <IconButton 
+                      onClick={(e) => { e.stopPropagation(); handlePrev(); }}
+                      sx={{
+                        color: 'white',
+                        bgcolor: 'rgba(0, 0, 0, 0.4)',
+                        '&:hover': { bgcolor: 'rgba(0, 0, 0, 0.6)' }
+                      }}
+                    >
+                      <ArrowBackIosIcon />
+                    </IconButton>
+                    <IconButton 
+                      onClick={(e) => { e.stopPropagation(); handleNext(); }}
+                      sx={{
+                        color: 'white',
+                        bgcolor: 'rgba(0, 0, 0, 0.4)',
+                        '&:hover': { bgcolor: 'rgba(0, 0, 0, 0.6)' }
+                      }}
+                    >
+                      <ArrowForwardIosIcon />
+                    </IconButton>
+                  </Box>
+                )}
+                
+                {/* Obraz ryby */}
+                <Box sx={{
+                  width: '100%',
+                  height: '250px',
+                  bgcolor: 'rgba(40, 60, 100, 0.8)',
+                  backgroundImage: `url("${fish.image}")`,
+                  backgroundSize: 'cover',
+                  backgroundPosition: 'center',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center'
+                }}>
+                  {/* Placeholder jeśli brak obrazu */}
+                  <Typography sx={{ color: 'white', opacity: 0.5 }}>
+                    {fish.image || 'Image'}
+                  </Typography>
+                </Box>
+
+                {/* Treść kafelka */}
+                <Box sx={{ p: 3, flex: 1, display: 'flex', flexDirection: 'column' }}>
+                  <Typography 
+                    variant="h5" 
+                    sx={{ 
+                      color: 'white', 
+                      mb: 2, 
+                      fontWeight: 600 
+                    }}
+                  >
+                    {fish.name}
+                  </Typography>
+                  <Typography 
+                    variant="body1" 
+                    sx={{ 
+                      color: 'rgba(255, 255, 255, 0.8)',
+                      lineHeight: 1.6,
+                      mb: 'auto'
+                    }}
+                  >
+                    {fish.description}
+                  </Typography>
+                  
+                  {/* Przycisk "Dodaj do akwarium" tylko na głównej karcie */}
+                  {position.zIndex === 3 && (
+                    <Box sx={{ 
+                      display: 'flex', 
+                      justifyContent: 'center', 
+                      mt: 3, 
+                      pt: 3 
+                    }}>
+                      <Button
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          alert(`Dodano ${fish.name} do akwarium!`);
+                        }}
+                        variant="contained"
+                        sx={{
+                          bgcolor: '#FFD700',
+                          color: '#000',
+                          borderRadius: 3,
+                          px: 4,
+                          py: 1.5,
+                          fontSize: '1rem',
+                          fontWeight: 600,
+                          boxShadow: '0 4px 12px rgba(255, 215, 0, 0.3)',
+                          transition: 'all 0.3s',
+                          '&:hover': {
+                            bgcolor: '#FFC700',
+                            boxShadow: '0 6px 16px rgba(255, 215, 0, 0.4)',
+                            transform: 'translateY(-2px)'
+                          },
+                          '&:active': {
+                            transform: 'translateY(0)'
+                          }
+                        }}
+                      >
+                        {t("addToAquarium", { defaultValue: "Add to Aquarium" })}
+                      </Button>
+                    </Box>
+                  )}
+                </Box>
               </Box>
-            </Box>
+            );
+          })}
           </Box>
 
           {/* Wskaźnik aktualnego kafelka */}
