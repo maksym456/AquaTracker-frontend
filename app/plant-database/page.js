@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { Box, Typography, IconButton, Button } from "@mui/material";
+import { Box, Typography, IconButton, Button, useTheme, useMediaQuery } from "@mui/material";
 import { useTranslation } from "react-i18next";
 import Link from "next/link";
 import LanguageSwitcher from "../components/LanguageSwitcher";
@@ -11,6 +11,8 @@ import ArrowForwardIosIcon from '@mui/icons-material/ArrowForwardIos';
 
 export default function PlantDatabasePage() {
   const { t } = useTranslation();
+  const theme = useTheme();
+  const isMobile = useMediaQuery(theme.breakpoints.down('md'));
   
   // Przykładowe dane kafelków roślin
   const plantCards = [
@@ -34,12 +36,23 @@ export default function PlantDatabasePage() {
     const totalCards = plantCards.length;
     const offset = (index - currentCard + totalCards) % totalCards;
     
+    // Na mobile: wyświetl tylko jedną kartę (główną)
+    if (isMobile) {
+      if (offset === 0) {
+        return { zIndex: 3, scale: 1, translateX: 0, opacity: 1 }; // Tylko główna karta - wyśrodkowana
+      } else {
+        return { zIndex: 1, scale: 0.6, translateX: 0, opacity: 0 }; // Wszystkie inne ukryte
+      }
+    }
+    
+    // Na desktop: wyświetl 3 karty (główna + 2 boczne)
+    // translateX w pikselach względem środka
     if (offset === 0) {
       return { zIndex: 3, scale: 1, translateX: 0, opacity: 1 }; // Karta główna (środek)
     } else if (offset === 1) {
-      return { zIndex: 2, scale: 0.85, translateX: 110, opacity: 0.7 }; // Karta z prawej (tył)
+      return { zIndex: 2, scale: 0.85, translateX: 180, opacity: 0.7 }; // Karta z prawej (tył)
     } else if (offset === totalCards - 1) {
-      return { zIndex: 2, scale: 0.85, translateX: -110, opacity: 0.7 }; // Karta z lewej (tył)
+      return { zIndex: 2, scale: 0.85, translateX: -180, opacity: 0.7 }; // Karta z lewej (tył)
     } else {
       return { zIndex: 1, scale: 0.6, translateX: 0, opacity: 0 }; // Pozostałe karty (ukryte)
     }
@@ -103,21 +116,25 @@ export default function PlantDatabasePage() {
         pt: 14,
         pb: 4
       }}>
-        {/* Karuzela kafelków */}
+        {/* Karuzela kafelków - kontener flexbox wyśrodkowujący wszystko */}
         <Box sx={{
-          position: 'relative',
-          width: '100%',
-          height: '650px',
           display: 'flex',
+          flexDirection: 'column',
           alignItems: 'center',
-          justifyContent: 'center'
+          justifyContent: 'center',
+          width: '100%',
+          minHeight: '650px',
+          gap: 2
         }}>
           {/* Wewnętrzny kontener z większą szerokością dla kart */}
           <Box sx={{
             position: 'relative',
-            width: { xs: '85%', md: '45%' },
-            maxWidth: 350,
-            height: '650px'
+            width: { xs: '90%', md: '45%' },
+            maxWidth: { xs: '100%', md: 350 },
+            height: '650px',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center'
           }}>
             {/* Renderuj wszystkie karty */}
             {plantCards.map((plant, index) => {
@@ -130,7 +147,9 @@ export default function PlantDatabasePage() {
                     width: '100%',
                     top: '50%',
                     left: '50%',
-                    transform: `translate(${position.translateX}%, -50%) scale(${position.scale})`,
+                    transform: position.translateX === 0 
+                      ? `translate(-50%, -50%) scale(${position.scale})`
+                      : `translate(calc(-50% + ${position.translateX}px), -50%) scale(${position.scale})`,
                     transformOrigin: 'center center',
                     bgcolor: 'rgba(20, 50, 30, 0.95)',
                     borderRadius: 4,
@@ -145,7 +164,9 @@ export default function PlantDatabasePage() {
                     cursor: position.zIndex === 3 ? 'default' : 'pointer',
                     '&:hover': position.zIndex === 3 ? {} : {
                       opacity: 0.85,
-                      transform: `translate(${position.translateX * 0.9}%, -50%) scale(${position.scale * 1.05})`
+                      transform: position.translateX === 0
+                        ? `translate(-50%, -50%) scale(${position.scale * 1.05})`
+                        : `translate(calc(-50% + ${position.translateX * 0.9}px), -50%) scale(${position.scale * 1.05})`
                     }
                   }}
                   onClick={() => position.zIndex !== 3 && setCurrentCard(index)}
@@ -160,7 +181,7 @@ export default function PlantDatabasePage() {
                     display: 'flex',
                     justifyContent: 'space-between',
                     alignItems: 'center',
-                    px: 2,
+                    px: { xs: 1, md: 2 },
                     zIndex: 10
                   }}>
                     <IconButton 
@@ -271,12 +292,11 @@ export default function PlantDatabasePage() {
           })}
           </Box>
 
-          {/* Wskaźnik aktualnego kafelka */}
+          {/* Wskaźnik aktualnego kafelka - ukryty na mobile */}
           <Box sx={{
-            display: 'flex',
+            display: { xs: 'none', md: 'flex' },
             justifyContent: 'center',
-            gap: 1,
-            mt: 2
+            gap: 1
           }}>
             {plantCards.map((_, index) => (
               <Box
