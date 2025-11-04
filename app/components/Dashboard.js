@@ -4,7 +4,7 @@ import { useState } from "react";
 import { useTranslation } from "react-i18next";
 import LanguageSwitcher from "./LanguageSwitcher";
 import { useAuth } from "../contexts/AuthContext";
-import { Button, Box, Typography, Modal } from "@mui/material";
+import { Button, Box, Typography, Modal, TextField } from "@mui/material";
 import { mockAquariums } from "../lib/mockData";
 import { APP_VERSION } from "../version";
 import Link from "next/link";
@@ -14,10 +14,20 @@ export default function Dashboard() {
   const { user, logout } = useAuth();
   const [settingsOpen, setSettingsOpen] = useState(false);
   const [dataSourceExpanded, setDataSourceExpanded] = useState(false);
+  const [collaborationFlipped, setCollaborationFlipped] = useState(false);
+  const [collaborationEmail, setCollaborationEmail] = useState('');
   
   const handleOpenSettings = () => setSettingsOpen(true);
   const handleCloseSettings = () => setSettingsOpen(false);
   const toggleDataSource = () => setDataSourceExpanded(!dataSourceExpanded);
+  const handleCollaborationClick = () => setCollaborationFlipped(!collaborationFlipped);
+  const handleSendInvite = () => {
+    if (collaborationEmail.trim()) {
+      alert(`${t("inviteSent")}: ${collaborationEmail}`);
+      setCollaborationEmail('');
+      setCollaborationFlipped(false);
+    }
+  };
   
   return (
     <Box sx={{ 
@@ -206,33 +216,125 @@ export default function Dashboard() {
             </Box>
           </Link>
 
-           {/* Bottom Row */}
-           <Box sx={{
-             bgcolor: 'rgba(255, 255, 255, 0.4)',
-             p: 2.5,
-             borderRadius: 2,
-             boxShadow: 3,
-             transition: "all 0.3s",
-             backdropFilter: 'blur(8px)',
-             "&:hover": { 
-               boxShadow: 5,
-               transform: "translateY(-4px)",
-               bgcolor: 'rgba(255, 255, 255, 0.6)'
-             },
-             cursor: 'pointer',
-             minHeight: '140px',
-             display: 'flex',
-             flexDirection: 'column',
-             alignItems: 'center',
-             justifyContent: 'center'
-           }}>
-             <Typography sx={{ fontSize: 36, mb: 1.5, textAlign: 'center' }}>👥</Typography>
-             <Typography variant="h6" sx={{ fontWeight: 600, color: "text.primary", mb: 1, textAlign: 'center', fontSize: '1rem' }}>
-               {t("collaboration")}
-             </Typography>
-             <Typography variant="body2" color="text.secondary" sx={{ textAlign: 'center', fontSize: '0.8rem', lineHeight: 1.3 }}>
-               {t("collaborationDesc")}
-             </Typography>
+           {/* Bottom Row - Collaboration Flip Card */}
+           <Box 
+             onClick={handleCollaborationClick}
+             className="flip-card-container"
+             sx={{
+               cursor: 'pointer',
+               minHeight: '140px',
+               height: '100%'
+             }}
+           >
+             <Box className={`flip-card ${collaborationFlipped ? 'flipped' : ''}`}>
+               {/* Front side */}
+               <Box className="flip-card-front" sx={{
+                 bgcolor: 'rgba(255, 255, 255, 0.4)',
+                 p: 2.5,
+                 borderRadius: 2,
+                 boxShadow: 3,
+                 transition: "boxShadow 0.3s, bgcolor 0.3s",
+                 backdropFilter: 'blur(8px)',
+                 "&:hover": { 
+                   boxShadow: 5,
+                   bgcolor: 'rgba(255, 255, 255, 0.6)'
+                 },
+                 minHeight: '140px',
+                 display: 'flex',
+                 flexDirection: 'column',
+                 alignItems: 'center',
+                 justifyContent: 'center',
+                 height: '100%'
+               }}>
+                 <Typography sx={{ fontSize: 36, mb: 1.5, textAlign: 'center' }}>👥</Typography>
+                 <Typography variant="h6" sx={{ fontWeight: 600, color: "text.primary", mb: 1, textAlign: 'center', fontSize: '1rem' }}>
+                   {t("collaboration")}
+                 </Typography>
+                 <Typography variant="body2" color="text.secondary" sx={{ textAlign: 'center', fontSize: '0.8rem', lineHeight: 1.3 }}>
+                   {t("collaborationDesc")}
+                 </Typography>
+               </Box>
+               
+               {/* Back side */}
+               <Box className="flip-card-back" sx={{
+                 bgcolor: 'rgba(255, 255, 255, 0.4)',
+                 p: 2.5,
+                 borderRadius: 2,
+                 boxShadow: 3,
+                 backdropFilter: 'blur(8px)',
+                 minHeight: '140px',
+                 display: 'flex',
+                 flexDirection: 'column',
+                 alignItems: 'center',
+                 justifyContent: 'center',
+                 height: '100%',
+                 gap: 1.5
+               }}>
+                 <Typography variant="h6" sx={{ 
+                   fontWeight: 600, 
+                   color: "text.primary", 
+                   textAlign: 'center', 
+                   fontSize: '1rem',
+                   mb: 0.5
+                 }}>
+                   {t("inviteToCollaboration")}
+                 </Typography>
+                 <TextField
+                   fullWidth
+                   size="small"
+                   type="email"
+                   placeholder={t("collaborationEmail")}
+                   value={collaborationEmail}
+                   onChange={(e) => setCollaborationEmail(e.target.value)}
+                   onClick={(e) => e.stopPropagation()}
+                  sx={{
+                    bgcolor: 'rgba(255, 255, 255, 0.8)',
+                    borderRadius: 1,
+                    '& .MuiOutlinedInput-root': {
+                      '& fieldset': {
+                        borderColor: 'rgba(0, 0, 0, 0.2)',
+                      },
+                      '&:hover fieldset': {
+                        borderColor: 'rgba(0, 0, 0, 0.3)',
+                      },
+                      '&.Mui-focused fieldset': {
+                        borderColor: 'rgba(0, 0, 0, 0.5)',
+                      },
+                    },
+                  }}
+                 />
+                 <Box sx={{ display: 'flex', gap: 1, width: '100%', mt: 0.5 }}>
+                   <Button
+                     size="small"
+                     variant="outlined"
+                     onClick={(e) => {
+                       e.stopPropagation();
+                       setCollaborationFlipped(false);
+                     }}
+                     sx={{ flex: 1, fontSize: '0.75rem' }}
+                   >
+                     {t("back")}
+                   </Button>
+                   <Button
+                     size="small"
+                     variant="contained"
+                     onClick={(e) => {
+                       e.stopPropagation();
+                       handleSendInvite();
+                     }}
+                     disabled={!collaborationEmail.trim()}
+                     sx={{ 
+                       flex: 1, 
+                       fontSize: '0.75rem',
+                       bgcolor: '#1976d2',
+                       '&:hover': { bgcolor: '#1565c0' }
+                     }}
+                   >
+                     {t("sendInvite")}
+                   </Button>
+                 </Box>
+               </Box>
+             </Box>
            </Box>
            
           <Link href="/plant-database" style={{ textDecoration: 'none', display: 'block', height: '100%' }}>
