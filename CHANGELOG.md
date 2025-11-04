@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [0.3.3](https://github.com/maksym456/AquaTracker-frontend/compare/v0.3.2...v0.3.3) (2025-11-04)
+
+
+### Features
+
+* **ui:** add collaboration invite feature to Dashboard ([dbd424e](https://github.com/maksym456/AquaTracker-frontend/commit/dbd424eb6c917185d269d7d3bd6bd0338b2d7c34))
+
 ### [0.3.2](https://github.com/maksym456/AquaTracker-frontend/compare/v0.3.1...v0.3.2) (2025-11-03)
 
 
