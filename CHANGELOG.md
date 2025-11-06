@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+## [0.4.0](https://github.com/maksym456/AquaTracker-frontend/compare/v0.3.3...v0.4.0) (2025-11-06)
+
+
+### Features
+
+* **ui:** enhance Fish and Plant Database pages with filtering and search functionality ([033ac8c](https://github.com/maksym456/AquaTracker-frontend/commit/033ac8c6687b6c55dbe2f47c54f0b1eebb0d743d))
+
 ### [0.3.3](https://github.com/maksym456/AquaTracker-frontend/compare/v0.3.2...v0.3.3) (2025-11-04)
 
 
