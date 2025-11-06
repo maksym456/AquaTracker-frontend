@@ -1,13 +1,15 @@
 "use client";
 
 import { useState } from "react";
-import { Box, Typography, IconButton, Button, useTheme, useMediaQuery } from "@mui/material";
+import { Box, Typography, IconButton, Button, useTheme, useMediaQuery, List, ListItemButton, ListItemText, Divider, TextField } from "@mui/material";
 import { useTranslation } from "react-i18next";
 import Link from "next/link";
 import LanguageSwitcher from "../components/LanguageSwitcher";
 import KeyboardReturnOutlinedIcon from '@mui/icons-material/KeyboardReturnOutlined';
 import ArrowBackIosIcon from '@mui/icons-material/ArrowBackIos';
 import ArrowForwardIosIcon from '@mui/icons-material/ArrowForwardIos';
+import ChevronRightIcon from '@mui/icons-material/ChevronRight';
+import ChevronLeftIcon from '@mui/icons-material/ChevronLeft';
 
 export default function PlantDatabasePage() {
   const { t } = useTranslation();
@@ -22,6 +24,13 @@ export default function PlantDatabasePage() {
   ];
   
   const [currentCard, setCurrentCard] = useState(0);
+  const [panelOpen, setPanelOpen] = useState(false);
+  const [searchQuery, setSearchQuery] = useState("");
+
+  const filteredPlants = plantCards.filter((p) => {
+    const q = searchQuery.trim().toLowerCase();
+    return q === "" || p.name.toLowerCase().includes(q) || p.description.toLowerCase().includes(q);
+  });
   
   const handleNext = () => {
     setCurrentCard((prev) => (prev + 1) % plantCards.length);
@@ -45,7 +54,7 @@ export default function PlantDatabasePage() {
       }
     }
     
-    // Na desktop: wyświetl 3 karty (główna + 2 boczne)
+    // Na desktop: wyświetlanie trzech kart (główna + 2 boczne)
     // translateX w pikselach względem środka
     if (offset === 0) {
       return { zIndex: 3, scale: 1, translateX: 0, opacity: 1 }; // Karta główna (środek)
@@ -63,6 +72,84 @@ export default function PlantDatabasePage() {
       minHeight: "100vh", 
       position: "relative"
     }}>
+      {/* Slide-out left panel: search + list of all plants */}
+      <Box
+        sx={{
+          position: 'fixed',
+          top: { xs: 80, md: 90 },
+          bottom: { xs: 88, md: 0 },
+          left: 0,
+          width: { xs: 240, md: 300 },
+          bgcolor: 'rgba(15, 45, 25, 0.80)',
+          backdropFilter: 'blur(10px)',
+          borderRight: '1px solid rgba(255,255,255,0.12)',
+          zIndex: 9,
+          transform: panelOpen ? 'translateX(0)' : 'translateX(-100%)',
+          transition: 'transform 0.35s ease',
+          display: 'flex',
+          flexDirection: 'column',
+          pt: 2,
+        }}
+      >
+        <Typography sx={{ color: 'white', px: 2.5, pb: 1.5, fontWeight: 600 }}>
+          {t('allPlants', { defaultValue: 'Wszystkie rośliny' })}
+        </Typography>
+        <Divider sx={{ borderColor: 'rgba(255,255,255,0.2)' }} />
+        <Box sx={{ px: 2.5, pt: 1.5 }}>
+          <TextField
+            value={searchQuery}
+            onChange={(e) => setSearchQuery(e.target.value)}
+            size="small"
+            placeholder={t('searchPlants', { defaultValue: 'Szukaj roślin...' })}
+            variant="outlined"
+            InputProps={{ sx: { bgcolor: 'rgba(255,255,255,0.08)', color: 'white' } }}
+            fullWidth
+          />
+        </Box>
+        <Divider sx={{ mt: 1, borderColor: 'rgba(255,255,255,0.2)' }} />
+        <Box sx={{ overflowY: 'auto' }}>
+          <List>
+            {filteredPlants.map((plant) => (
+              <ListItemButton
+                key={plant.id}
+                selected={plantCards[currentCard]?.id === plant.id}
+                onClick={() => {
+                  const idx = plantCards.findIndex((p) => p.id === plant.id);
+                  if (idx >= 0) setCurrentCard(idx);
+                  if (isMobile) setPanelOpen(false);
+                }}
+                sx={{ '&.Mui-selected': { bgcolor: 'rgba(255,255,255,0.12)' }, '&:hover': { bgcolor: 'rgba(255,255,255,0.08)' } }}
+              >
+                <ListItemText
+                  primary={plant.name}
+                  secondary={plant.description}
+                  primaryTypographyProps={{ sx: { color: 'white', fontWeight: 600 } }}
+                  secondaryTypographyProps={{ sx: { color: 'rgba(255,255,255,0.7)', fontSize: '0.8rem' } }}
+                />
+              </ListItemButton>
+            ))}
+          </List>
+        </Box>
+      </Box>
+
+      {/* Panel toggle handle */}
+      <Box
+        sx={{
+          position: 'fixed',
+          left: panelOpen ? { xs: 240, md: 300 } : 0,
+          top: '50%',
+          transform: 'translateY(-50%)',
+          zIndex: 13,
+        }}
+      >
+        <IconButton
+          onClick={() => setPanelOpen((v) => !v)}
+          sx={{ color: 'white', bgcolor: 'rgba(0,0,0,0.5)', borderRadius: '0 20px 20px 0', '&:hover': { bgcolor: 'rgba(0,0,0,0.7)' } }}
+          aria-label={panelOpen ? t('close', { defaultValue: 'Zamknij' }) : t('open', { defaultValue: 'Otwórz' })}
+        >
+          {panelOpen ? <ChevronLeftIcon /> : <ChevronRightIcon />}
+        </IconButton>
+      </Box>
       <video
         autoPlay
         loop

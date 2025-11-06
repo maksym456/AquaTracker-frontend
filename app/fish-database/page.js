@@ -1,29 +1,49 @@
 "use client";
 
 import { useState } from "react";
-import { Box, Typography, IconButton, Button, useTheme, useMediaQuery } from "@mui/material";
+import { Box, Typography, IconButton, Button, useTheme, useMediaQuery, List, ListItemButton, ListItemText, Divider, TextField, FormControl, InputLabel, Select, MenuItem } from "@mui/material";
 import { useTranslation } from "react-i18next";
 import Link from "next/link";
 import LanguageSwitcher from "../components/LanguageSwitcher";
 import KeyboardReturnOutlinedIcon from '@mui/icons-material/KeyboardReturnOutlined';
 import ArrowBackIosIcon from '@mui/icons-material/ArrowBackIos';
 import ArrowForwardIosIcon from '@mui/icons-material/ArrowForwardIos';
+import ChevronRightIcon from '@mui/icons-material/ChevronRight';
+import ChevronLeftIcon from '@mui/icons-material/ChevronLeft';
 
 export default function FishDatabasePage() {
   const { t } = useTranslation();
   const theme = useTheme();
   const isMobile = useMediaQuery(theme.breakpoints.down('md'));
   
-  // Przykładowe dane kafelków 
+  // Przykładowe dane kafelków (rozszerzone o parametry środowiskowe)
   const fishCards = [
-    { id: 1, name: "Goldfish", description: "Popularna ryba akwariowa", image: "/fish1.jpg" },
-    { id: 2, name: "Guppy", description: "Kolorowa, łatwa w hodowli", image: "/fish2.jpg" },
-    { id: 3, name: "Betta", description: "Piękna ryba bojowa", image: "/fish3.jpg" },
-    { id: 4, name: "RybaX", description: "Tutaj będzie opis ryby", image: "/fish4.jpg" },
-    { id: 5, name: "Tetra", description: "Mała, kolorowa ryba", image: "/fish5.jpg" },
+    { id: 1, name: "Goldfish", description: "Popularna ryba akwariowa", image: "/fish1.jpg", aggressiveness: 1, waterType: "freshwater", tempRange: [18, 22], phRange: [7.0, 7.8], hardness: [5, 19] },
+    { id: 2, name: "Guppy", description: "Kolorowa, łatwa w hodowli", image: "/fish2.jpg", aggressiveness: 1, waterType: "freshwater", tempRange: [22, 28], phRange: [6.8, 7.8], hardness: [8, 12] },
+    { id: 3, name: "Betta", description: "Piękna ryba bojowa", image: "/fish3.jpg", aggressiveness: 3, waterType: "freshwater", tempRange: [24, 30], phRange: [6.5, 7.5], hardness: [3, 5] },
+    { id: 4, name: "RybaX", description: "Tutaj będzie opis ryby", image: "/fish4.jpg", aggressiveness: 2, waterType: "brackish", tempRange: [20, 26], phRange: [7.2, 8.2], hardness: [10, 20] },
+    { id: 5, name: "Tetra", description: "Mała, kolorowa ryba", image: "/fish5.jpg", aggressiveness: 1, waterType: "freshwater", tempRange: [22, 26], phRange: [5.5, 7.0], hardness: [2, 10] },
   ];
   
   const [currentCard, setCurrentCard] = useState(0);
+  const [panelOpen, setPanelOpen] = useState(false);
+  const [searchQuery, setSearchQuery] = useState("");
+  const [waterFilter, setWaterFilter] = useState("all"); // all | freshwater | brackish | saltwater
+  const [sortAggressiveness, setSortAggressiveness] = useState("none"); // none | asc | desc
+
+  // Lista przefiltrowana i posortowana dla panelu
+  const filteredFish = fishCards
+    .filter((f) => {
+      const q = searchQuery.trim().toLowerCase();
+      const matchesQuery = q === "" || f.name.toLowerCase().includes(q) || f.description.toLowerCase().includes(q);
+      const matchesWater = waterFilter === "all" || f.waterType === waterFilter;
+      return matchesQuery && matchesWater;
+    })
+    .sort((a, b) => {
+      if (sortAggressiveness === "asc") return a.aggressiveness - b.aggressiveness;
+      if (sortAggressiveness === "desc") return b.aggressiveness - a.aggressiveness;
+      return 0;
+    });
   
   const handleNext = () => {
     setCurrentCard((prev) => (prev + 1) % fishCards.length);
@@ -81,7 +101,120 @@ export default function FishDatabasePage() {
       <source src="/fishPage-bg.mp4" type="video/mp4" />
     </video>
 
-    
+      {/* Slide-out left panel: filters + list of all fish */}
+      <Box
+        sx={{
+          position: 'fixed',
+          top: { xs: 80, md: 90 },
+          bottom: { xs: 88, md: 0 },
+          left: 0,
+          width: { xs: 240, md: 300 },
+          bgcolor: 'rgba(15, 25, 45, 0.80)',
+          backdropFilter: 'blur(10px)',
+          borderRight: '1px solid rgba(255,255,255,0.12)',
+          zIndex: 9,
+          transform: panelOpen ? 'translateX(0)' : 'translateX(-100%)',
+          transition: 'transform 0.35s ease',
+          display: 'flex',
+          flexDirection: 'column',
+          pt: 2,
+        }}
+      >
+        <Typography sx={{ color: 'white', px: 2.5, pb: 1.5, fontWeight: 600 }}>
+          {t('allFish', { defaultValue: 'Wszystkie ryby' })}
+        </Typography>
+        <Divider sx={{ borderColor: 'rgba(255,255,255,0.2)' }} />
+        {/* Filters */}
+        <Box sx={{ px: 2.5, pt: 1.5, display: 'flex', flexDirection: 'column', gap: 1.5 }}>
+          <TextField
+            value={searchQuery}
+            onChange={(e) => setSearchQuery(e.target.value)}
+            size="small"
+            placeholder={t('searchFish', { defaultValue: 'Szukaj ryb...' })}
+            variant="outlined"
+            InputProps={{ sx: { bgcolor: 'rgba(255,255,255,0.08)', color: 'white' } }}
+          />
+          <FormControl size="small">
+            <InputLabel sx={{ color: 'white' }}>{t('waterType', { defaultValue: 'Typ wody' })}</InputLabel>
+            <Select
+              value={waterFilter}
+              label={t('waterType', { defaultValue: 'Typ wody' })}
+              onChange={(e) => setWaterFilter(e.target.value)}
+              sx={{ color: 'white', '& .MuiOutlinedInput-notchedOutline': { borderColor: 'rgba(255,255,255,0.2)' } }}
+            >
+              <MenuItem value="all">{t('all', { defaultValue: 'Wszystkie' })}</MenuItem>
+              <MenuItem value="freshwater">{t('freshwater', { defaultValue: 'Słodka' })}</MenuItem>
+              <MenuItem value="brackish">{t('brackish', { defaultValue: 'Słonawa' })}</MenuItem>
+              <MenuItem value="saltwater">{t('saltwater', { defaultValue: 'Słona' })}</MenuItem>
+            </Select>
+          </FormControl>
+          <FormControl size="small">
+            <InputLabel sx={{ color: 'white' }}>{t('aggressiveness', { defaultValue: 'Agresywność' })}</InputLabel>
+            <Select
+              value={sortAggressiveness}
+              label={t('aggressiveness', { defaultValue: 'Agresywność' })}
+              onChange={(e) => setSortAggressiveness(e.target.value)}
+              sx={{ color: 'white', '& .MuiOutlinedInput-notchedOutline': { borderColor: 'rgba(255,255,255,0.2)' } }}
+            >
+              <MenuItem value="none">{t('noSort', { defaultValue: 'Bez sortowania' })}</MenuItem>
+              <MenuItem value="asc">{t('leastAggressive', { defaultValue: 'Najmniej agresywne' })}</MenuItem>
+              <MenuItem value="desc">{t('mostAggressive', { defaultValue: 'Najbardziej agresywne' })}</MenuItem>
+            </Select>
+          </FormControl>
+        </Box>
+        <Divider sx={{ mt: 1, borderColor: 'rgba(255,255,255,0.2)' }} />
+        <Box sx={{ overflowY: 'auto' }}>
+          <List>
+            {filteredFish.map((fish) => (
+              <ListItemButton
+                key={fish.id}
+                selected={fishCards[currentCard]?.id === fish.id}
+                onClick={() => {
+                  const idx = fishCards.findIndex((f) => f.id === fish.id);
+                  if (idx >= 0) setCurrentCard(idx);
+                  if (isMobile) setPanelOpen(false);
+                }}
+                sx={{
+                  '&.Mui-selected': { bgcolor: 'rgba(255,255,255,0.12)' },
+                  '&:hover': { bgcolor: 'rgba(255,255,255,0.08)' },
+                }}
+              >
+                <ListItemText
+                  primary={fish.name}
+                  secondary={`${fish.description} • ${t('water', { defaultValue: 'Woda' })}: ${fish.waterType} • ${t('agg', { defaultValue: 'Agres.' })}: ${fish.aggressiveness}`}
+                  primaryTypographyProps={{ sx: { color: 'white', fontWeight: 600 } }}
+                  secondaryTypographyProps={{ sx: { color: 'rgba(255,255,255,0.7)', fontSize: '0.8rem' } }}
+                />
+              </ListItemButton>
+            ))}
+          </List>
+        </Box>
+      </Box>
+
+      {/* Panel toggle handle */}
+      <Box
+        sx={{
+          position: 'fixed',
+          left: panelOpen ? { xs: 240, md: 300 } : 0,
+          top: '50%',
+          transform: 'translateY(-50%)',
+          zIndex: 13,
+        }}
+      >
+        <IconButton
+          onClick={() => setPanelOpen((v) => !v)}
+          sx={{
+            color: 'white',
+            bgcolor: 'rgba(0,0,0,0.5)',
+            borderRadius: '0 20px 20px 0',
+            '&:hover': { bgcolor: 'rgba(0,0,0,0.7)' },
+          }}
+          aria-label={panelOpen ? t('close', { defaultValue: 'Zamknij' }) : t('open', { defaultValue: 'Otwórz' })}
+        >
+          {panelOpen ? <ChevronLeftIcon /> : <ChevronRightIcon />}
+        </IconButton>
+      </Box>
+
       {/* Top bar z przyciskami */}
       <Box sx={{ 
         position: 'absolute', top: 0, left: 0, right: 0,
