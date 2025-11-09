@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [0.4.1](https://github.com/maksym456/AquaTracker-frontend/compare/v0.4.0...v0.4.1) (2025-11-09)
+
+
+### Bug Fixes
+
+* **ui:** enhance Dashboard with settings dropdown and animation ([d11ec44](https://github.com/maksym456/AquaTracker-frontend/commit/d11ec441b9714624d8ef9966372f81bbef2cafef))
+
 ## [0.4.0](https://github.com/maksym456/AquaTracker-frontend/compare/v0.3.3...v0.4.0) (2025-11-06)
 
 
