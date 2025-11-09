@@ -78,9 +78,40 @@ export default function Dashboard() {
          <Box sx={{ 
            display: "flex", 
            gap: 1, 
-           alignItems: "center"
+           alignItems: "center",
+           ml: 'auto'
          }}>
            <LanguageSwitcher />
+           {/* Settings button */}
+           <Box 
+             onClick={handleOpenSettings}
+             sx={{
+               bgcolor: 'rgba(255, 255, 255, 0.4)',
+               p: 1,
+               borderRadius: 1.5,
+               boxShadow: 2,
+               transition: "all 0.3s",
+               backdropFilter: 'blur(8px)',
+               "&:hover": { 
+                 boxShadow: 4,
+                 transform: "translateY(-2px)",
+                 bgcolor: 'rgba(255, 255, 255, 0.6)'
+               },
+               cursor: 'pointer',
+               minHeight: { xs: '40px', md: '48px' },
+               minWidth: { xs: '40px', md: '48px' },
+               display: 'flex',
+               flexDirection: 'column',
+               alignItems: 'center',
+               justifyContent: 'center',
+               position: 'relative'
+             }}
+           >
+             <Typography sx={{ fontSize: { xs: 18, md: 20 }, mb: 0.2, textAlign: 'center' }}>⚙️</Typography>
+             <Typography variant="body2" sx={{ fontWeight: 600, color: "text.primary", textAlign: 'center', fontSize: { xs: '0.5rem', md: '0.6rem' } }}>
+               {t("settings")}
+             </Typography>
+           </Box>
          </Box>
        </Box>
 
@@ -371,61 +402,28 @@ export default function Dashboard() {
        </Box>
        </Box>
 
-      {/* Settings button - prawy dolny róg */}
-      <Box onClick={handleOpenSettings} sx={{
-        position: 'fixed',
-        bottom: 16,
-        right: 16,
-        bgcolor: 'rgba(255, 255, 255, 0.4)',
-        p: 1.5,
-        borderRadius: 2,
-        boxShadow: 2,
-        transition: "all 0.3s",
-        backdropFilter: 'blur(8px)',
-        "&:hover": { 
-          boxShadow: 4,
-          transform: "translateY(-2px)",
-          bgcolor: 'rgba(255, 255, 255, 0.6)'
-        },
-        cursor: 'pointer',
-        minHeight: { xs: '60px', md: '80px' },
-        minWidth: { xs: '60px', md: '80px' },
-        display: 'flex',
-        flexDirection: 'column',
-        alignItems: 'center',
-        justifyContent: 'center',
-        zIndex: 10
-      }}>
-        <Typography sx={{ fontSize: { xs: 20, md: 24 }, mb: 0.3, textAlign: 'center' }}>⚙️</Typography>
-        <Typography variant="body2" sx={{ fontWeight: 600, color: "text.primary", textAlign: 'center', fontSize: { xs: '0.55rem', md: '0.7rem' } }}>
-          {t("settings")}
-        </Typography>
-      </Box>
-
-      {/* Settings Panel */}
-      <Modal
-        open={settingsOpen}
-        onClose={handleCloseSettings}
-        sx={{
-          display: 'flex',
-          alignItems: 'center',
-          justifyContent: 'flex-end',
-          p: 2
-        }}
-      >
-        <Box sx={{
-          width: { xs: '90%', md: '400px' },
-          height: 'calc(100vh - 64px)',
-          mt: 8,
-          bgcolor: 'rgba(227, 242, 253, 0.95)',
-          backdropFilter: 'blur(20px)',
-          boxShadow: '0 8px 32px rgba(0, 0, 0, 0.3)',
-          display: 'flex',
-          flexDirection: 'column',
-          outline: 'none',
-          animation: 'slideInRight 0.3s ease-out',
-          borderRadius: '16px 0 0 16px'
-        }}>
+      {/* Settings Panel - Dropdown */}
+      {settingsOpen && (
+        <Box
+          onClick={(e) => e.stopPropagation()}
+          sx={{
+            position: 'fixed',
+            top: { xs: 72, md: 80 },
+            right: { xs: 16, md: 32 },
+            width: { xs: 'calc(100% - 32px)', md: '400px' },
+            maxHeight: 'calc(100vh - 100px)',
+            bgcolor: 'rgba(227, 242, 253, 0.95)',
+            backdropFilter: 'blur(20px)',
+            boxShadow: '0 8px 32px rgba(0, 0, 0, 0.3)',
+            display: 'flex',
+            flexDirection: 'column',
+            outline: 'none',
+            animation: 'slideDown 0.3s ease-out',
+            borderRadius: '16px',
+            zIndex: 1000,
+            overflow: 'hidden'
+          }}
+        >
           {/* Header */}
           <Box sx={{
             display: 'flex',
@@ -633,7 +631,23 @@ export default function Dashboard() {
             </Button>
           </Box>
         </Box>
-      </Modal>
+      )}
+      
+      {/* Overlay to close settings */}
+      {settingsOpen && (
+        <Box
+          onClick={handleCloseSettings}
+          sx={{
+            position: 'fixed',
+            top: 0,
+            left: 0,
+            right: 0,
+            bottom: 0,
+            zIndex: 999,
+            bgcolor: 'rgba(0, 0, 0, 0.1)'
+          }}
+        />
+      )}
 
     </Box>
   );
