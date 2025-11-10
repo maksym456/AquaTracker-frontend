@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+## [0.5.0](https://github.com/maksym456/AquaTracker-frontend/compare/v0.4.1...v0.5.0) (2025-11-10)
+
+
+### Features
+
+* **ui:** enhance My Aquariums page with aquarium creation modal and improved UI ([1f1a630](https://github.com/maksym456/AquaTracker-frontend/commit/1f1a63098eb66a84428692b56a26b6145d91f85d))
+
 ### [0.4.1](https://github.com/maksym456/AquaTracker-frontend/compare/v0.4.0...v0.4.1) (2025-11-09)
 
 
