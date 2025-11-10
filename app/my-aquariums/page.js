@@ -7,6 +7,7 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import LanguageSwitcher from "../components/LanguageSwitcher";
 import KeyboardReturnOutlinedIcon from '@mui/icons-material/KeyboardReturnOutlined';
+import PersonAddIcon from '@mui/icons-material/PersonAdd';
 import { mockAquariums, addAquarium } from "../lib/mockData";
 
 export default function MyAquariumsPage() {
@@ -217,6 +218,21 @@ export default function MyAquariumsPage() {
         boxShadow: '0 -6px 16px rgba(0,0,0,0.2)',
         zIndex: 20
       }}>
+        <Button 
+          variant="outlined" 
+          startIcon={<PersonAddIcon />}
+          onClick={() => router.push('/contacts')}
+          sx={{
+            borderColor: '#1976d2',
+            color: '#1976d2',
+            '&:hover': {
+              borderColor: '#1565c0',
+              bgcolor: 'rgba(25, 118, 210, 0.08)'
+            }
+          }}
+        >
+          {t("inviteFriend", { defaultValue: "Zaproś przyjaciela" })}
+        </Button>
         <Button variant="contained" color="primary" onClick={handleCreateAquarium}>
           {t("createAquarium")}
         </Button>
