@@ -1,18 +1,48 @@
 "use client";
 
-import { useState } from "react";
-import { Box, Button, Typography } from "@mui/material";
+import { useState, useEffect } from "react";
+import { Box, Button, Typography, Modal, TextField, Grid, Card, CardContent, CardActionArea } from "@mui/material";
 import { useTranslation } from "react-i18next";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 import LanguageSwitcher from "../components/LanguageSwitcher";
 import KeyboardReturnOutlinedIcon from '@mui/icons-material/KeyboardReturnOutlined';
+import { mockAquariums, addAquarium } from "../lib/mockData";
 
 export default function MyAquariumsPage() {
   const { t } = useTranslation();
-  const [hasAquarium, setHasAquarium] = useState(false);
+  const router = useRouter();
+  const [aquariums, setAquariums] = useState([]);
+  const [createModalOpen, setCreateModalOpen] = useState(false);
+  const [newAquariumName, setNewAquariumName] = useState("");
+  const [newAquariumVolume, setNewAquariumVolume] = useState("");
+
+  useEffect(() => {
+    // Załaduj akwaria z mockData
+    setAquariums(mockAquariums);
+  }, []);
 
   function handleCreateAquarium() {
-    setHasAquarium(true);
+    setCreateModalOpen(true);
+  }
+
+  function handleSaveAquarium() {
+    if (newAquariumName.trim() && newAquariumVolume.trim()) {
+      const newAquarium = {
+        name: newAquariumName,
+        volume: parseInt(newAquariumVolume),
+        description: ""
+      };
+      addAquarium(newAquarium);
+      setAquariums([...mockAquariums]);
+      setNewAquariumName("");
+      setNewAquariumVolume("");
+      setCreateModalOpen(false);
+    }
+  }
+
+  function handleOpenAquarium(aquariumId) {
+    router.push(`/my-aquariums/${aquariumId}`);
   }
 
   return (
@@ -71,89 +101,110 @@ export default function MyAquariumsPage() {
         </Box>
       </Box>
 
-      {hasAquarium && (
-        <Box sx={{ position: 'absolute', left: 0, right: 0, top: 96, bottom: 0, zIndex: 1 }}>
-          {/* warstwa obrazu */}
-          <Box
-            sx={{
-              position: 'absolute', inset: 0,
-              backgroundImage: 'url("/aquarium.png")',
-              backgroundRepeat: 'no-repeat',
-              backgroundPosition: 'center',
-              backgroundSize: 'cover',
-              pointerEvents: 'none'
-            }}
-          />
-          
-          <Box sx={{
-            position: 'absolute',
-            inset: 0,
-            pointerEvents: 'none',
-            overflow: 'hidden'
-          }}>
-           
-            {Array.from({ length: 15 }).map((_, i) => {
-             
-              const size = 8 + (i % 4) * 3;
-              
-              
-              const leftPosition = 5 + (i * 7) % 85;
-              
-              
-              const startDelay = i * 0.4;
-              
-              
-              const bottomPosition = 5 + (i * 13) % 60;
-              
-              return (
-                <Box
-                  key={i} 
-                  className="bubble"
-                  sx={{
-                    
-                    position: 'absolute', 
-                    bottom: `${bottomPosition}%`, 
-                    left: `${leftPosition}%`, 
-                    width: `${size}px`, 
-                    height: `${size}px`, 
-                    borderRadius: '50%', 
-                    background: 'rgba(255, 255, 255, 0.25)', 
-                    border: '1px solid rgba(255, 255, 255, 0.4)', 
-                    animation: 'bubbleRise 4s infinite', 
-                    animationDelay: `${startDelay}s`, 
-                    filter: 'blur(0.8px)' 
-                  }}
-                />
-              );
-            })}
-          </Box>
-          
-          
-          <Box 
-            className="aquarium-light"
-            sx={{
-              position: 'absolute',
-              top: '15%',
-              left: '25%',
-              width: '200px',
-              height: '300px',
-              background: 'radial-gradient(ellipse at center, rgba(255,255,255,0.15) 0%, transparent 70%)',
-              borderRadius: '50%',
-              pointerEvents: 'none',
-              animation: 'lightShift 8s ease-in-out infinite alternate',
-              filter: 'blur(20px)'
-            }} 
-          />
-        </Box>
-      )}
-
-      {}
+      {/* Główna sekcja z kafelkami akwariów */}
       <Box sx={{ position: "relative", zIndex: 2, p: 4, pt: 14, pb: 14 }}>
-        {/* Główna sekcja */}
-        {!hasAquarium ? (
-          <></>
+        {aquariums.length === 0 ? (
+          <Box sx={{ 
+            display: 'flex', 
+            flexDirection: 'column', 
+            alignItems: 'center', 
+            justifyContent: 'center',
+            minHeight: '400px',
+            textAlign: 'center'
+          }}>
+            <Typography variant="h5" sx={{ mb: 2, color: 'text.secondary' }}>
+              {t("noAquariums", { defaultValue: "Nie masz jeszcze żadnych akwariów" })}
+            </Typography>
+            <Typography variant="body1" sx={{ color: 'text.secondary', mb: 4 }}>
+              {t("createFirstAquarium", { defaultValue: "Kliknij przycisk poniżej, aby utworzyć swoje pierwsze akwarium" })}
+            </Typography>
+          </Box>
         ) : (
-          <></>
+          <Grid container spacing={3}>
+            {aquariums.map((aquarium) => (
+              <Grid item xs={12} sm={6} md={4} lg={3} key={aquarium.id} sx={{ display: 'flex' }}>
+                <Card
+                  sx={{
+                    width: '250px',
+                    height: '280px',
+                    display: 'flex',
+                    flexDirection: 'column',
+                    cursor: 'pointer',
+                    transition: 'all 0.3s',
+                    '&:hover': {
+                      transform: 'translateY(-4px)',
+                      boxShadow: 6
+                    }
+                  }}
+                  onClick={() => handleOpenAquarium(aquarium.id)}
+                >
+                  <CardActionArea sx={{ flex: 1, display: 'flex', flexDirection: 'column', alignItems: 'stretch', height: '100%' }}>
+                    <Box
+                      sx={{
+                        width: '100%',
+                        height: '140px',
+                        flexShrink: 0,
+                        bgcolor: 'rgba(46, 127, 169, 0.2)',
+                        backgroundImage: 'linear-gradient(135deg, #cfeef6 0%, #87cde1 50%, #2e7fa9 100%)',
+                        display: 'flex',
+                        alignItems: 'center',
+                        justifyContent: 'center',
+                        position: 'relative',
+                        overflow: 'hidden'
+                      }}
+                    >
+                      <Typography sx={{ fontSize: 48, opacity: 0.6 }}>🐠</Typography>
+                    </Box>
+                    <CardContent sx={{ 
+                      flex: 1, 
+                      display: 'flex', 
+                      flexDirection: 'column',
+                      py: 1.5,
+                      overflow: 'hidden'
+                    }}>
+                      <Typography 
+                        variant="h6" 
+                        sx={{ 
+                          fontWeight: 600, 
+                          mb: 1,
+                          overflow: 'hidden',
+                          textOverflow: 'ellipsis',
+                          display: '-webkit-box',
+                          WebkitLineClamp: 1,
+                          WebkitBoxOrient: 'vertical'
+                        }}
+                      >
+                        {aquarium.name}
+                      </Typography>
+                      <Typography 
+                        variant="body2" 
+                        color="text.secondary" 
+                        sx={{ 
+                          mb: 1,
+                          flex: 1,
+                          overflow: 'hidden',
+                          textOverflow: 'ellipsis',
+                          display: '-webkit-box',
+                          WebkitLineClamp: 2,
+                          WebkitBoxOrient: 'vertical'
+                        }}
+                      >
+                        {aquarium.description || t("noDescription", { defaultValue: "Brak opisu" })}
+                      </Typography>
+                      <Box sx={{ display: 'flex', gap: 2, mt: 'auto', pt: 1 }}>
+                        <Typography variant="caption" color="text.secondary">
+                          🐟 {aquarium.fishes?.length || 0}
+                        </Typography>
+                        <Typography variant="caption" color="text.secondary">
+                          🌿 {aquarium.plants?.length || 0}
+                        </Typography>
+                      </Box>
+                    </CardContent>
+                  </CardActionArea>
+                </Card>
+              </Grid>
+            ))}
+          </Grid>
         )}
       </Box>
 
@@ -166,18 +217,57 @@ export default function MyAquariumsPage() {
         boxShadow: '0 -6px 16px rgba(0,0,0,0.2)',
         zIndex: 20
       }}>
-        {!hasAquarium ? (
-          <Button variant="contained" color="primary" onClick={handleCreateAquarium}>
-            {t("createAquarium")}
-          </Button>
-        ) : (
-          <>
-            <Button variant="contained" onClick={() => alert(t("addFish"))}>{t("addFish")}</Button>
-            <Button variant="contained" onClick={() => alert(t("addPlant"))}>{t("addPlant")}</Button>
-            <Button variant="outlined" color="error" onClick={() => setHasAquarium(false)}>{t("remove")}</Button>
-          </>
-        )}
+        <Button variant="contained" color="primary" onClick={handleCreateAquarium}>
+          {t("createAquarium")}
+        </Button>
       </Box>
+
+      {/* Modal do tworzenia akwarium */}
+      <Modal
+        open={createModalOpen}
+        onClose={() => setCreateModalOpen(false)}
+        sx={{
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'center',
+          p: 2
+        }}
+      >
+        <Box sx={{
+          width: { xs: '90%', sm: 400 },
+          bgcolor: 'background.paper',
+          borderRadius: 2,
+          p: 3,
+          boxShadow: 24
+        }}>
+          <Typography variant="h6" sx={{ mb: 3, fontWeight: 600 }}>
+            {t("createAquarium")}
+          </Typography>
+          <TextField
+            fullWidth
+            label={t("aquariumName", { defaultValue: "Nazwa akwarium" })}
+            value={newAquariumName}
+            onChange={(e) => setNewAquariumName(e.target.value)}
+            sx={{ mb: 2 }}
+          />
+          <TextField
+            fullWidth
+            type="number"
+            label={t("volume", { defaultValue: "Pojemność (litry)" })}
+            value={newAquariumVolume}
+            onChange={(e) => setNewAquariumVolume(e.target.value)}
+            sx={{ mb: 3 }}
+          />
+          <Box sx={{ display: 'flex', gap: 2, justifyContent: 'flex-end' }}>
+            <Button onClick={() => setCreateModalOpen(false)}>
+              {t("cancel", { defaultValue: "Anuluj" })}
+            </Button>
+            <Button variant="contained" onClick={handleSaveAquarium} disabled={!newAquariumName.trim() || !newAquariumVolume.trim()}>
+              {t("create", { defaultValue: "Utwórz" })}
+            </Button>
+          </Box>
+        </Box>
+      </Modal>
     </Box>
   );
 }

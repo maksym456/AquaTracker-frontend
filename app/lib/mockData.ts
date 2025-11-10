@@ -1,6 +1,6 @@
 export let mockAquariums = [
     {id: '1', name: 'Moje pierwsze akwarium', volume: 150, fishes: ['1'], plants:['1', '2'], description: 'Pierwsze domowe akwarium'},
-    {id: '2', name: 'Drugie akwarium', volume: 200, fishes: ['2'], plants:['3'], description:['Drugie domowe akwarium']}
+    {id: '2', name: 'Drugie akwarium', volume: 200, fishes: ['2'], plants:['3'], description: 'Drugie domowe akwarium'}
 ];
 export let mockFishes = [
   { id: '1', name: 'Gupik', species: 'Poecilia reticulata', aquariumId: '1' },
