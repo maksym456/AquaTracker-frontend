@@ -1,0 +1,192 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<robot generator="Robot 7.3.2 (Python 3.14.0 on win32)" generated="2025-11-10T18:42:36.850376" rpa="false" schemaversion="5">
+<suite id="s1" name="Aquarium Management" source="E:\Frontend\AquaTracker-frontend\tests\aquarium_management.robot">
+<test id="s1-t1" name="User Can Login And Create Aquarium With Species" line="7">
+<kw name="Open App" owner="setup">
+<kw name="New Browser" owner="Browser">
+<msg time="2025-11-10T18:42:37.349616" level="INFO">{"browser": "chromium", "headless": true, "chromiumSandbox": false, "devtools": false, "handleSIGHUP": true, "handleSIGINT": true, "handleSIGTERM": true, "slowMo": 0.0, "timeout": 30000.0, "tracesDir": "E:\\Frontend\\AquaTracker-frontend\\browser\\traces\\temp\\847df7e1-508a-4734-8cff-e6c2448dd197"}</msg>
+<msg time="2025-11-10T18:42:37.386215" level="INFO">Starting Browser process C:\Users\Mark\AppData\Roaming\Python\Python314\site-packages\Browser\wrapper\index.js using at 127.0.0.1:53934</msg>
+<msg time="2025-11-10T18:42:39.580595" level="INFO">Successfully created browser with options: {"browser":"chromium","headless":true,"chromiumSandbox":false,"devtools":false,"handleSIGHUP":true,"handleSIGINT":true,"handleSIGTERM":true,"slowMo":0,"timeout":30000,"tracesDir":"E:\\Frontend\\AquaTracker-frontend\\browser\\traces\\temp\\847df7e1-508a-4734-8cff-e6c2448dd197"}</msg>
+<arg>${BROWSER}</arg>
+<arg>headless=${HEADLESS}</arg>
+<tag>BrowserControl</tag>
+<tag>Setter</tag>
+<doc>Create a new playwright Browser with specified options.</doc>
+<status status="PASS" start="2025-11-10T18:42:37.348470" elapsed="2.232383"/>
+</kw>
+<kw name="New Page" owner="Browser">
+<msg time="2025-11-10T18:42:40.777545" level="INFO">Successfully initialized new page object and opened url: http://localhost:3000</msg>
+<msg time="2025-11-10T18:42:40.777663" level="INFO">No context was open. New context was automatically opened when this page is created.</msg>
+<arg>${BASE_URL}</arg>
+<tag>BrowserControl</tag>
+<tag>Setter</tag>
+<doc>Open a new Page.</doc>
+<status status="PASS" start="2025-11-10T18:42:39.581165" elapsed="1.196741"/>
+</kw>
+<status status="PASS" start="2025-11-10T18:42:37.347429" elapsed="3.430690"/>
+</kw>
+<kw name="Go To" owner="Browser">
+<msg time="2025-11-10T18:42:41.725906" level="INFO">Successfully opened URL http://localhost:3000</msg>
+<arg>${BASE_URL}</arg>
+<tag>BrowserControl</tag>
+<tag>Setter</tag>
+<doc>Navigates to the given ``url``.</doc>
+<status status="PASS" start="2025-11-10T18:42:40.790515" elapsed="0.935647"/>
+</kw>
+<kw name="Fill Text" owner="Browser">
+<msg time="2025-11-10T18:42:41.727788" level="INFO">Fills the text 'Test@123.pl' in the given field.</msg>
+<arg>id=email</arg>
+<arg>Test@123.pl</arg>
+<tag>PageContent</tag>
+<tag>Setter</tag>
+<doc>Clears and fills the given ``txt`` into the text field found by ``selector``.</doc>
+<status status="PASS" start="2025-11-10T18:42:41.726742" elapsed="0.097509"/>
+</kw>
+<kw name="Fill Text" owner="Browser">
+<msg time="2025-11-10T18:42:41.826324" level="INFO">Fills the text '1234567pl' in the given field.</msg>
+<arg>id=password</arg>
+<arg>1234567pl</arg>
+<tag>PageContent</tag>
+<tag>Setter</tag>
+<doc>Clears and fills the given ``txt`` into the text field found by ``selector``.</doc>
+<status status="PASS" start="2025-11-10T18:42:41.825470" elapsed="0.135413"/>
+</kw>
+<kw name="Click" owner="Browser">
+<msg time="2025-11-10T18:42:41.967790" level="INFO">Clicks the element 'button &gt;&gt; text=Sign In'.</msg>
+<arg>button &gt;&gt; text=Sign In</arg>
+<tag>PageContent</tag>
+<tag>Setter</tag>
+<doc>Simulates mouse click on the element found by ``selector``.</doc>
+<status status="PASS" start="2025-11-10T18:42:41.966782" elapsed="0.212153"/>
+</kw>
+<kw name="Click" owner="Browser">
+<msg time="2025-11-10T18:42:42.183531" level="INFO">Clicks the element 'css=button[aria-label="open drawer"]'.</msg>
+<msg time="2025-11-10T18:42:52.291822" level="INFO" html="true">&lt;/td&gt;&lt;/tr&gt;&lt;tr&gt;&lt;td colspan="3"&gt;&lt;a href="browser/screenshot/fail-screenshot-1.png" target="_blank"&gt;&lt;img src="browser/screenshot/fail-screenshot-1.png" width="800px"/&gt;&lt;/a&gt;</msg>
+<msg time="2025-11-10T18:42:52.292013" level="INFO">See also file:///E:/Frontend/AquaTracker-frontend/playwright-log.txt for additional details.</msg>
+<msg time="2025-11-10T18:42:52.292475" level="FAIL">TimeoutError: locator.click: Timeout 10000ms exceeded.
+Call log:
+  - waiting for locator('button[aria-label="open drawer"]')
+</msg>
+<arg>css=button[aria-label="open drawer"]</arg>
+<tag>PageContent</tag>
+<tag>Setter</tag>
+<doc>Simulates mouse click on the element found by ``selector``.</doc>
+<status status="FAIL" start="2025-11-10T18:42:42.182603" elapsed="10.115971">TimeoutError: locator.click: Timeout 10000ms exceeded.
+Call log:
+  - waiting for locator('button[aria-label="open drawer"]')
+</status>
+</kw>
+<kw name="Wait For Elements State" owner="Browser">
+<arg>link &gt;&gt; text=🏠 Aquariums View and manage</arg>
+<arg>visible</arg>
+<arg>timeout=20s</arg>
+<tag>PageContent</tag>
+<tag>Wait</tag>
+<doc>Waits for the element found by ``selector`` to satisfy state option.</doc>
+<status status="NOT RUN" start="2025-11-10T18:42:52.299049" elapsed="0.000192"/>
+</kw>
+<kw name="Click" owner="Browser">
+<arg>link &gt;&gt; text=🏠 Aquariums View and manage</arg>
+<tag>PageContent</tag>
+<tag>Setter</tag>
+<doc>Simulates mouse click on the element found by ``selector``.</doc>
+<status status="NOT RUN" start="2025-11-10T18:42:52.299582" elapsed="0.000189"/>
+</kw>
+<kw name="Click" owner="Browser">
+<arg>button &gt;&gt; text=Create Aquarium</arg>
+<tag>PageContent</tag>
+<tag>Setter</tag>
+<doc>Simulates mouse click on the element found by ``selector``.</doc>
+<status status="NOT RUN" start="2025-11-10T18:42:52.300104" elapsed="0.000133"/>
+</kw>
+<kw name="Fill Text" owner="Browser">
+<arg>id=name</arg>
+<arg>Test</arg>
+<tag>PageContent</tag>
+<tag>Setter</tag>
+<doc>Clears and fills the given ``txt`` into the text field found by ``selector``.</doc>
+<status status="NOT RUN" start="2025-11-10T18:42:52.300698" elapsed="0.000134"/>
+</kw>
+<kw name="Fill Text" owner="Browser">
+<arg>id=volume</arg>
+<arg>10</arg>
+<tag>PageContent</tag>
+<tag>Setter</tag>
+<doc>Clears and fills the given ``txt`` into the text field found by ``selector``.</doc>
+<status status="NOT RUN" start="2025-11-10T18:42:52.301084" elapsed="0.000129"/>
+</kw>
+<kw name="Click" owner="Browser">
+<arg>button &gt;&gt; text=Create</arg>
+<tag>PageContent</tag>
+<tag>Setter</tag>
+<doc>Simulates mouse click on the element found by ``selector``.</doc>
+<status status="NOT RUN" start="2025-11-10T18:42:52.301455" elapsed="0.000126"/>
+</kw>
+<kw name="Wait For Elements State" owner="Browser">
+<arg>css=div[data-testid="aquarium-card"] &gt;&gt; text=Test</arg>
+<arg>visible</arg>
+<arg>timeout=15s</arg>
+<tag>PageContent</tag>
+<tag>Wait</tag>
+<doc>Waits for the element found by ``selector`` to satisfy state option.</doc>
+<status status="NOT RUN" start="2025-11-10T18:42:52.301819" elapsed="0.000210"/>
+</kw>
+<kw name="Click" owner="Browser">
+<arg>css=div[data-testid="aquarium-card"] &gt;&gt; text=Test</arg>
+<tag>PageContent</tag>
+<tag>Setter</tag>
+<doc>Simulates mouse click on the element found by ``selector``.</doc>
+<status status="NOT RUN" start="2025-11-10T18:42:52.302345" elapsed="0.000161"/>
+</kw>
+<kw name="Click" owner="Browser">
+<arg>button &gt;&gt; text=Add Fish</arg>
+<tag>PageContent</tag>
+<tag>Setter</tag>
+<doc>Simulates mouse click on the element found by ``selector``.</doc>
+<status status="NOT RUN" start="2025-11-10T18:42:52.302795" elapsed="0.000132"/>
+</kw>
+<kw name="Handle Alert">
+<arg>action=accept</arg>
+<status status="NOT RUN" start="2025-11-10T18:42:52.303263" elapsed="0.000140"/>
+</kw>
+<kw name="Click" owner="Browser">
+<arg>button &gt;&gt; text=Add Plant</arg>
+<tag>PageContent</tag>
+<tag>Setter</tag>
+<doc>Simulates mouse click on the element found by ``selector``.</doc>
+<status status="NOT RUN" start="2025-11-10T18:42:52.303663" elapsed="0.000127"/>
+</kw>
+<kw name="Handle Alert">
+<arg>action=accept</arg>
+<status status="NOT RUN" start="2025-11-10T18:42:52.304467" elapsed="0.000148"/>
+</kw>
+<kw name="Close App" owner="setup" type="TEARDOWN">
+<kw name="Close Browser" owner="Browser">
+<msg time="2025-11-10T18:42:52.413520" level="INFO">Closed browser</msg>
+<tag>BrowserControl</tag>
+<tag>Setter</tag>
+<doc>Closes the current browser.</doc>
+<status status="PASS" start="2025-11-10T18:42:52.305703" elapsed="0.108032"/>
+</kw>
+<status status="PASS" start="2025-11-10T18:42:52.305274" elapsed="0.108626"/>
+</kw>
+<status status="FAIL" start="2025-11-10T18:42:37.346347" elapsed="15.067811">TimeoutError: locator.click: Timeout 10000ms exceeded.
+Call log:
+  - waiting for locator('button[aria-label="open drawer"]')
+</status>
+</test>
+<status status="FAIL" start="2025-11-10T18:42:36.853107" elapsed="15.567958"/>
+</suite>
+<statistics>
+<total>
+<stat pass="0" fail="1" skip="0">All Tests</stat>
+</total>
+<tag>
+</tag>
+<suite>
+<stat name="Aquarium Management" id="s1" pass="0" fail="1" skip="0">Aquarium Management</stat>
+</suite>
+</statistics>
+<errors>
+</errors>
+</robot>

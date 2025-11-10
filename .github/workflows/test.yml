@@ -1,0 +1,74 @@
+name: AquaTracker Frontend Tests
+on:
+  push:
+    branches: [ master ]
+  pull_request:
+    branches: [ master ]
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout Frontend Repo
+        uses: actions/checkout@v4
+        with:
+          path: frontend
+
+      - name: Checkout Backend Repo
+        uses: actions/checkout@v4
+        with:
+          repository: maksym456/AquaTracker-backend
+          path: backend
+
+      - name: Set up JDK for Backend
+        uses: actions/setup-java@v4
+        with:
+          java-version: '17'
+          distribution: 'temurin'
+
+      - name: Build and Start Backend
+        run: |
+          cd backend
+          mvn clean install -DskipTests
+          nohup mvn spring-boot:run &
+          sleep 45
+
+      - name: Set up Node.js for Frontend
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+
+      - name: Install Frontend Dependencies
+        run: |
+          cd frontend
+          npm ci
+
+      - name: Install Playwright Browsers
+        run: |
+          cd frontend
+          npx playwright install --with-deps
+
+      - name: Start Frontend Dev Server
+        run: |
+          cd frontend
+          nohup npm run dev &
+          sleep 45
+
+      - name: Run Playwright Tests
+        run: |
+          cd frontend
+          npx playwright test
+
+      - name: Upload Test Artifacts on Failure
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: playwright-test-results
+          path: |
+            frontend/playwright-report/
+            frontend/test-results/
+            frontend/test-results/videos/
+            frontend/test-results/traces/
+            frontend/test-results/screenshots/
+          retention-days: 30
