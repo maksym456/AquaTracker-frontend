@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [0.6.1](https://github.com/maksym456/AquaTracker-frontend/compare/v0.6.0...v0.6.1) (2025-11-10)
+
+
+### Bug Fixes
+
+* **ui:** update login and register forms with video background ([3a328b1](https://github.com/maksym456/AquaTracker-frontend/commit/3a328b1a69ac4a192200ef5afa70bbc5f8800efa))
+
 ## [0.6.0](https://github.com/maksym456/AquaTracker-frontend/compare/v0.5.0...v0.6.0) (2025-11-10)
 
 
