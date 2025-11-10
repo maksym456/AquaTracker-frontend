@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+## [0.6.0](https://github.com/maksym456/AquaTracker-frontend/compare/v0.5.0...v0.6.0) (2025-11-10)
+
+
+### Features
+
+* **ui:** update Dashboard and My Aquariums with contacts feature ([8d25115](https://github.com/maksym456/AquaTracker-frontend/commit/8d25115e26e2454ca1a08e9c453cef2cbc1c6b23))
+
 ## [0.5.0](https://github.com/maksym456/AquaTracker-frontend/compare/v0.4.1...v0.5.0) (2025-11-10)
 
 
