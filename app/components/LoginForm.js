@@ -72,13 +72,25 @@ export default function LoginForm({ onSwitchToRegister }) {
         alignItems: "center",
         justifyContent: "center",
         padding: 2,
-        backgroundImage: "image-set(url('/login-bg.avif') type('image/avif') 1x, url('/login-bg.jpg') type('image/jpeg') 1x)",
-        backgroundSize: 'cover',
-        backgroundPosition: 'center',
-        backgroundRepeat: 'no-repeat'
+        overflow: 'hidden'
       }}
     >
-      <Container maxWidth="sm">
+      <video
+        autoPlay
+        loop
+        muted
+        playsInline
+        style={{
+          position: 'absolute',
+          width: '100%',
+          height: '100%',
+          objectFit: 'cover',
+          zIndex: 0
+        }}
+      >
+        <source src="/loginPage-bg.mp4" type="video/mp4" />
+      </video>
+      <Container maxWidth="sm" sx={{ position: 'relative', zIndex: 1 }}>
         <Paper elevation={3} sx={{ width: "100%", padding: 4, position: "relative", zIndex: 1, bgcolor: '#E3F2FD' }}>
           <Box sx={{ display: "flex", justifyContent: "flex-end", mb: 2 }}>
             <LanguageSwitcher />
