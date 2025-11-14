@@ -4,7 +4,7 @@ import { useState } from "react";
 import { useTranslation } from "react-i18next";
 import LanguageSwitcher from "./LanguageSwitcher";
 import { useAuth } from "../contexts/AuthContext";
-import { Button, Box, Typography, Modal, TextField } from "@mui/material";
+import { Button, Box, Typography, Modal, TextField, Alert } from "@mui/material";
 import { mockAquariums } from "../lib/mockData";
 import { APP_VERSION } from "../version";
 import Link from "next/link";
@@ -14,10 +14,78 @@ export default function Dashboard() {
   const { user, logout } = useAuth();
   const [settingsOpen, setSettingsOpen] = useState(false);
   const [dataSourceExpanded, setDataSourceExpanded] = useState(false);
+  const [profileEditOpen, setProfileEditOpen] = useState(false);
+  const [profileEmail, setProfileEmail] = useState(user?.email || "");
+  const [currentPassword, setCurrentPassword] = useState("");
+  const [newPassword, setNewPassword] = useState("");
+  const [confirmPassword, setConfirmPassword] = useState("");
+  const [profileError, setProfileError] = useState("");
+  const [profileSuccess, setProfileSuccess] = useState("");
   
   const handleOpenSettings = () => setSettingsOpen(true);
   const handleCloseSettings = () => setSettingsOpen(false);
   const toggleDataSource = () => setDataSourceExpanded(!dataSourceExpanded);
+  
+  const handleOpenProfileEdit = () => {
+    setProfileEditOpen(true);
+    setProfileEmail(user?.email || "");
+    setCurrentPassword("");
+    setNewPassword("");
+    setConfirmPassword("");
+    setProfileError("");
+    setProfileSuccess("");
+  };
+  
+  const handleCloseProfileEdit = () => {
+    setProfileEditOpen(false);
+    setProfileError("");
+    setProfileSuccess("");
+  };
+  
+  const handleSaveProfile = () => {
+    setProfileError("");
+    setProfileSuccess("");
+    
+    // Walidacja
+    if (!profileEmail.includes("@")) {
+      setProfileError(t("auth.invalidEmail"));
+      return;
+    }
+    
+    // Jeśli użytkownik próbuje zmienić hasło
+    if (currentPassword || newPassword || confirmPassword) {
+      if (!currentPassword || !newPassword || !confirmPassword) {
+        setProfileError(t("fillAllPasswordFields", { defaultValue: "Aby zmienić hasło, wypełnij wszystkie pola hasła" }));
+        return;
+      }
+      
+      if (newPassword.length < 6) {
+        setProfileError(t("auth.passwordTooShort"));
+        return;
+      }
+      
+      if (newPassword !== confirmPassword) {
+        setProfileError(t("auth.passwordsDontMatch"));
+        return;
+      }
+    }
+    
+    // Aktualizacja danych użytkownika (mock - w przyszłości API call)
+    const updatedUser = {
+      ...user,
+      email: profileEmail.trim()
+    };
+    
+    localStorage.setItem("user", JSON.stringify(updatedUser));
+    // W prawdziwej aplikacji tutaj byłby API call do aktualizacji profilu
+    
+    setProfileSuccess(t("profileUpdated", { defaultValue: "Profil został zaktualizowany!" }));
+    setTimeout(() => {
+      handleCloseProfileEdit();
+      // Odświeżenie strony lub aktualizacja kontekstu
+      window.location.reload();
+    }, 1500);
+  };
   
   return (
     <Box sx={{ 
@@ -365,7 +433,7 @@ export default function Dashboard() {
 
             {/* Edycja profilu */}
             <Box 
-              onClick={() => alert('Edycja profilu')}
+              onClick={handleOpenProfileEdit}
               sx={{ 
                 display: 'flex', 
                 alignItems: 'center', 
@@ -549,6 +617,94 @@ export default function Dashboard() {
           }}
         />
       )}
+
+      {/* Modal edycji profilu */}
+      <Modal
+        open={profileEditOpen}
+        onClose={handleCloseProfileEdit}
+        sx={{
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'center',
+          p: 2
+        }}
+      >
+        <Box sx={{
+          width: { xs: '90%', sm: 500 },
+          bgcolor: 'background.paper',
+          borderRadius: 2,
+          p: 3,
+          boxShadow: 24,
+          maxHeight: '90vh',
+          overflowY: 'auto'
+        }}>
+          <Typography variant="h6" sx={{ mb: 3, fontWeight: 600 }}>
+            {t("editProfile", { defaultValue: "Edycja profilu" })}
+          </Typography>
+          
+          {profileError && (
+            <Alert severity="error" sx={{ mb: 2 }}>
+              {profileError}
+            </Alert>
+          )}
+          
+          {profileSuccess && (
+            <Alert severity="success" sx={{ mb: 2 }}>
+              {profileSuccess}
+            </Alert>
+          )}
+          
+          <TextField
+            fullWidth
+            type="email"
+            label={t("auth.email", { defaultValue: "Adres e-mail" })}
+            value={profileEmail}
+            onChange={(e) => setProfileEmail(e.target.value)}
+            sx={{ mb: 3 }}
+          />
+          
+          <Typography variant="subtitle2" sx={{ mb: 2, fontWeight: 600, color: 'text.secondary' }}>
+            {t("changePassword", { defaultValue: "Zmiana hasła (opcjonalnie)" })}
+          </Typography>
+          
+          <TextField
+            fullWidth
+            type="password"
+            label={t("currentPassword", { defaultValue: "Obecne hasło" })}
+            value={currentPassword}
+            onChange={(e) => setCurrentPassword(e.target.value)}
+            sx={{ mb: 2 }}
+          />
+          
+          <TextField
+            fullWidth
+            type="password"
+            label={t("newPassword", { defaultValue: "New Password" })}
+            value={newPassword}
+            onChange={(e) => setNewPassword(e.target.value)}
+            sx={{ mb: 2 }}
+            helperText={t("auth.passwordTooShort", { defaultValue: "Hasło musi mieć co najmniej 6 znaków" })}
+          />
+          
+          <TextField
+            fullWidth
+            type="password"
+            label={t("auth.confirmPassword", { defaultValue: "Potwierdź hasło" })}
+            value={confirmPassword}
+            onChange={(e) => setConfirmPassword(e.target.value)}
+            sx={{ mb: 3 }}
+          />
+          
+          <Box sx={{ display: 'flex', gap: 2, justifyContent: 'flex-end' }}>
+            <Button onClick={handleCloseProfileEdit}>
+              {t("cancel", { defaultValue: "Anuluj" })}
+            </Button>
+            <Button variant="contained" onClick={handleSaveProfile}>
+              {t("save", { defaultValue: "Zapisz" })}
+            </Button>
+          </Box>
+        </Box>
+      </Modal>
 
     </Box>
   );
