@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+## [0.8.0](https://github.com/maksym456/AquaTracker-frontend/compare/v0.7.0...v0.8.0) (2025-11-14)
+
+
+### Features
+
+* **session:** implement session duration tracking and display ([38a9622](https://github.com/maksym456/AquaTracker-frontend/commit/38a96223278cbdc5c45d3838bf29dea77a6fb69c))
+
 ## [0.7.0](https://github.com/maksym456/AquaTracker-frontend/compare/v0.6.2...v0.7.0) (2025-11-14)
 
 
