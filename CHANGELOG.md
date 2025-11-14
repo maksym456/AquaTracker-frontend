@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+## [0.7.0](https://github.com/maksym456/AquaTracker-frontend/compare/v0.6.2...v0.7.0) (2025-11-14)
+
+
+### Features
+
+* **ui:** add profile editing functionality ([4514892](https://github.com/maksym456/AquaTracker-frontend/commit/45148923f7873a466fd2082966d19fac3dd1e763))
+
 ### [0.6.2](https://github.com/maksym456/AquaTracker-frontend/compare/v0.6.1...v0.6.2) (2025-11-14)
 
 
