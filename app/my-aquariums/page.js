@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { Box, Button, Typography, Modal, TextField, Grid, Card, CardContent, CardActionArea } from "@mui/material";
+import { Box, Button, Typography, Modal, TextField, Grid, Card, CardContent, CardActionArea, Select, MenuItem, FormControl, InputLabel } from "@mui/material";
 import { useTranslation } from "react-i18next";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
@@ -16,7 +16,11 @@ export default function MyAquariumsPage() {
   const [aquariums, setAquariums] = useState([]);
   const [createModalOpen, setCreateModalOpen] = useState(false);
   const [newAquariumName, setNewAquariumName] = useState("");
-  const [newAquariumVolume, setNewAquariumVolume] = useState("");
+  const [newAquariumWaterType, setNewAquariumWaterType] = useState("freshwater");
+  const [newAquariumTemperature, setNewAquariumTemperature] = useState("24");
+  const [newAquariumBiotope, setNewAquariumBiotope] = useState("ameryka południowa");
+  const [newAquariumPh, setNewAquariumPh] = useState("7.0");
+  const [newAquariumHardness, setNewAquariumHardness] = useState("8");
 
   useEffect(() => {
     // Załaduj akwaria z mockData
@@ -28,16 +32,24 @@ export default function MyAquariumsPage() {
   }
 
   function handleSaveAquarium() {
-    if (newAquariumName.trim() && newAquariumVolume.trim()) {
+    if (newAquariumName.trim()) {
       const newAquarium = {
         name: newAquariumName,
-        volume: parseInt(newAquariumVolume),
+        waterType: newAquariumWaterType,
+        temperature: parseFloat(newAquariumTemperature),
+        biotope: newAquariumBiotope,
+        ph: parseFloat(newAquariumPh),
+        hardness: parseFloat(newAquariumHardness),
         description: ""
       };
       addAquarium(newAquarium);
       setAquariums([...mockAquariums]);
       setNewAquariumName("");
-      setNewAquariumVolume("");
+      setNewAquariumWaterType("freshwater");
+      setNewAquariumTemperature("24");
+      setNewAquariumBiotope("ameryka południowa");
+      setNewAquariumPh("7.0");
+      setNewAquariumHardness("8");
       setCreateModalOpen(false);
     }
   }
@@ -266,19 +278,66 @@ export default function MyAquariumsPage() {
             onChange={(e) => setNewAquariumName(e.target.value)}
             sx={{ mb: 2 }}
           />
+          <FormControl fullWidth sx={{ mb: 2 }}>
+            <InputLabel>{t("waterType", { defaultValue: "Typ wody" })}</InputLabel>
+            <Select
+              value={newAquariumWaterType}
+              label={t("waterType", { defaultValue: "Typ wody" })}
+              onChange={(e) => setNewAquariumWaterType(e.target.value)}
+            >
+              <MenuItem value="freshwater">{t("freshwater", { defaultValue: "Słodkowodne" })}</MenuItem>
+              <MenuItem value="saltwater">{t("saltwater", { defaultValue: "Słonowodne" })}</MenuItem>
+            </Select>
+          </FormControl>
           <TextField
             fullWidth
             type="number"
-            label={t("volume", { defaultValue: "Pojemność (litry)" })}
-            value={newAquariumVolume}
-            onChange={(e) => setNewAquariumVolume(e.target.value)}
+            label={t("temperature", { defaultValue: "Temperatura wody (°C)" })}
+            value={newAquariumTemperature}
+            onChange={(e) => setNewAquariumTemperature(e.target.value)}
+            inputProps={{ min: 18, max: 30, step: 0.5 }}
+            sx={{ mb: 2 }}
+            helperText={t("temperatureRange", { defaultValue: "Zakres: 18-30°C" })}
+          />
+          <FormControl fullWidth sx={{ mb: 2 }}>
+            <InputLabel>{t("biotope", { defaultValue: "Biotop" })}</InputLabel>
+            <Select
+              value={newAquariumBiotope}
+              label={t("biotope", { defaultValue: "Biotop" })}
+              onChange={(e) => setNewAquariumBiotope(e.target.value)}
+            >
+              <MenuItem value="ameryka południowa">{t("biotopeSouthAmerica", { defaultValue: "Ameryka Południowa" })}</MenuItem>
+              <MenuItem value="ameryka północna">{t("biotopeNorthAmerica", { defaultValue: "Ameryka Północna" })}</MenuItem>
+              <MenuItem value="azja">{t("biotopeAsia", { defaultValue: "Azja" })}</MenuItem>
+              <MenuItem value="afryka">{t("biotopeAfrica", { defaultValue: "Afryka" })}</MenuItem>
+              <MenuItem value="australia/Oceania">{t("biotopeAustralia", { defaultValue: "Australia/Oceania" })}</MenuItem>
+            </Select>
+          </FormControl>
+          <TextField
+            fullWidth
+            type="number"
+            label={t("ph", { defaultValue: "pH wody" })}
+            value={newAquariumPh}
+            onChange={(e) => setNewAquariumPh(e.target.value)}
+            inputProps={{ min: 5.5, max: 9.0, step: 0.1 }}
+            sx={{ mb: 2 }}
+            helperText={t("phRange", { defaultValue: "Zakres: 5.5-9.0" })}
+          />
+          <TextField
+            fullWidth
+            type="number"
+            label={t("hardness", { defaultValue: "Twardość wody (dGH)" })}
+            value={newAquariumHardness}
+            onChange={(e) => setNewAquariumHardness(e.target.value)}
+            inputProps={{ min: 1, max: 30, step: 1 }}
             sx={{ mb: 3 }}
+            helperText={t("hardnessRange", { defaultValue: "Zakres: 1-30 dGH" })}
           />
           <Box sx={{ display: 'flex', gap: 2, justifyContent: 'flex-end' }}>
             <Button onClick={() => setCreateModalOpen(false)}>
               {t("cancel", { defaultValue: "Anuluj" })}
             </Button>
-            <Button variant="contained" onClick={handleSaveAquarium} disabled={!newAquariumName.trim() || !newAquariumVolume.trim()}>
+            <Button variant="contained" onClick={handleSaveAquarium} disabled={!newAquariumName.trim()}>
               {t("create", { defaultValue: "Utwórz" })}
             </Button>
           </Box>
