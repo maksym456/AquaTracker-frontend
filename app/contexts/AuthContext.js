@@ -12,7 +12,14 @@ export function AuthProvider({ children }) {
   useEffect(() => {
     const storedUser = localStorage.getItem("user");
     if (storedUser) {
-      setUser(JSON.parse(storedUser));
+      const userData = JSON.parse(storedUser);
+      if (!userData.loginTime) {
+        const loginTime = new Date().toISOString();
+        userData.loginTime = loginTime;
+        localStorage.setItem("user", JSON.stringify(userData));
+        localStorage.setItem("sessionLoginTime", loginTime);
+      }
+      setUser(userData);
     }
     setLoading(false);
   }, []);
@@ -29,14 +36,17 @@ export function AuthProvider({ children }) {
     // const data = await response.json();
     
     // For now, simulate API call
+    const loginTime = new Date().toISOString();
     const mockUser = {
       id: 1,
       email: email,
       name: email.split("@")[0],
-      token: "mock-token-" + Date.now()
+      token: "mock-token-" + Date.now(),
+      loginTime: loginTime
     };
     
     localStorage.setItem("user", JSON.stringify(mockUser));
+    localStorage.setItem("sessionLoginTime", loginTime);
     setUser(mockUser);
     
     return { success: true, user: mockUser };
@@ -54,14 +64,17 @@ export function AuthProvider({ children }) {
     // const data = await response.json();
     
     // For now, simulate API call
+    const loginTime = new Date().toISOString();
     const mockUser = {
       id: 1,
       email: email,
       name: name,
-      token: "mock-token-" + Date.now()
+      token: "mock-token-" + Date.now(),
+      loginTime: loginTime
     };
     
     localStorage.setItem("user", JSON.stringify(mockUser));
+    localStorage.setItem("sessionLoginTime", loginTime);
     setUser(mockUser);
     
     return { success: true, user: mockUser };

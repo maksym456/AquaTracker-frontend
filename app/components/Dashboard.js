@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect, useRef } from "react";
 import { useTranslation } from "react-i18next";
 import LanguageSwitcher from "./LanguageSwitcher";
 import { useAuth } from "../contexts/AuthContext";
@@ -21,10 +21,57 @@ export default function Dashboard() {
   const [confirmPassword, setConfirmPassword] = useState("");
   const [profileError, setProfileError] = useState("");
   const [profileSuccess, setProfileSuccess] = useState("");
+  const [sessionInfoOpen, setSessionInfoOpen] = useState(false);
+  const [sessionDuration, setSessionDuration] = useState("");
+  const sessionIntervalRef = useRef(null);
   
   const handleOpenSettings = () => setSettingsOpen(true);
   const handleCloseSettings = () => setSettingsOpen(false);
   const toggleDataSource = () => setDataSourceExpanded(!dataSourceExpanded);
+  
+  const calculateSessionDuration = () => {
+    const loginTime = localStorage.getItem("sessionLoginTime") || user?.loginTime;
+    if (!loginTime) return "";
+    
+    const loginDate = new Date(loginTime);
+    const now = new Date();
+    const diffMs = now - loginDate;
+    const diffMins = Math.floor(diffMs / 60000);
+    const diffHours = Math.floor(diffMins / 60);
+    const diffDays = Math.floor(diffHours / 24);
+    
+    if (diffDays > 0) {
+      return `${diffDays} ${diffDays === 1 ? t("day", { defaultValue: "dzień" }) : t("days", { defaultValue: "dni" })}`;
+    } else if (diffHours > 0) {
+      return `${diffHours} ${diffHours === 1 ? t("hour", { defaultValue: "godzina" }) : t("hours", { defaultValue: "godzin" })}`;
+    } else {
+      return `${diffMins} ${diffMins === 1 ? t("minute", { defaultValue: "minuta" }) : t("minutes", { defaultValue: "minut" })}`;
+    }
+  };
+  
+  const handleOpenSessionInfo = () => {
+    setSessionInfoOpen(true);
+    setSessionDuration(calculateSessionDuration());
+    sessionIntervalRef.current = setInterval(() => {
+      setSessionDuration(calculateSessionDuration());
+    }, 1000);
+  };
+  
+  const handleCloseSessionInfo = () => {
+    setSessionInfoOpen(false);
+    if (sessionIntervalRef.current) {
+      clearInterval(sessionIntervalRef.current);
+      sessionIntervalRef.current = null;
+    }
+  };
+  
+  useEffect(() => {
+    return () => {
+      if (sessionIntervalRef.current) {
+        clearInterval(sessionIntervalRef.current);
+      }
+    };
+  }, []);
   
   const handleOpenProfileEdit = () => {
     setProfileEditOpen(true);
@@ -454,7 +501,7 @@ export default function Dashboard() {
 
             {/* Długość sesji */}
             <Box 
-              onClick={() => alert('Długość sesji')}
+              onClick={handleOpenSessionInfo}
               sx={{ 
                 display: 'flex', 
                 alignItems: 'center', 
@@ -468,7 +515,7 @@ export default function Dashboard() {
             >
               <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
                 <Typography sx={{ fontSize: 24 }}>⏱️</Typography>
-                <Typography variant="body1" sx={{ fontWeight: 500 }}>Długość sesji</Typography>
+                <Typography variant="body1" sx={{ fontWeight: 500 }}>{t("sessionDuration", { defaultValue: "Długość sesji" })}</Typography>
               </Box>
               <Typography sx={{ fontSize: 20 }}>→</Typography>
             </Box>
@@ -701,6 +748,77 @@ export default function Dashboard() {
             </Button>
             <Button variant="contained" onClick={handleSaveProfile}>
               {t("save", { defaultValue: "Zapisz" })}
+            </Button>
+          </Box>
+        </Box>
+      </Modal>
+
+      <Modal
+        open={sessionInfoOpen}
+        onClose={handleCloseSessionInfo}
+        sx={{
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'center',
+          p: 2
+        }}
+      >
+        <Box sx={{
+          width: { xs: '90%', sm: 450 },
+          bgcolor: 'background.paper',
+          borderRadius: 2,
+          p: 3,
+          boxShadow: 24
+        }}>
+          <Typography variant="h6" sx={{ mb: 3, fontWeight: 600 }}>
+            {t("sessionInfo", { defaultValue: "Informacje o sesji" })}
+          </Typography>
+          
+          {(() => {
+            const loginTime = localStorage.getItem("sessionLoginTime") || user?.loginTime;
+            if (!loginTime) {
+              return (
+                <Typography color="text.secondary">
+                  {t("noSessionData", { defaultValue: "Brak danych o sesji" })}
+                </Typography>
+              );
+            }
+            
+            const loginDate = new Date(loginTime);
+            const formattedDate = loginDate.toLocaleString('pl-PL', {
+              year: 'numeric',
+              month: 'long',
+              day: 'numeric',
+              hour: '2-digit',
+              minute: '2-digit'
+            });
+            
+            return (
+              <>
+                <Box sx={{ mb: 3, p: 2, bgcolor: 'rgba(0, 0, 0, 0.03)', borderRadius: 1.5 }}>
+                  <Typography variant="body2" sx={{ fontWeight: 600, mb: 1, color: 'text.secondary' }}>
+                    {t("loginTime", { defaultValue: "Data i godzina logowania" })}
+                  </Typography>
+                  <Typography variant="body1" sx={{ fontWeight: 500 }}>
+                    {formattedDate}
+                  </Typography>
+                </Box>
+                
+                <Box sx={{ mb: 3, p: 2, bgcolor: 'rgba(0, 0, 0, 0.03)', borderRadius: 1.5 }}>
+                  <Typography variant="body2" sx={{ fontWeight: 600, mb: 1, color: 'text.secondary' }}>
+                    {t("sessionDurationLabel", { defaultValue: "Czas trwania sesji" })}
+                  </Typography>
+                  <Typography variant="h6" sx={{ fontWeight: 600, color: 'primary.main' }}>
+                    {sessionDuration || calculateSessionDuration()}
+                  </Typography>
+                </Box>
+              </>
+            );
+          })()}
+          
+          <Box sx={{ display: 'flex', justifyContent: 'flex-end', mt: 3 }}>
+            <Button variant="contained" onClick={handleCloseSessionInfo}>
+              {t("close", { defaultValue: "Zamknij" })}
             </Button>
           </Box>
         </Box>
