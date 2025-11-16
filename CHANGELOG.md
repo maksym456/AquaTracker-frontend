@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [0.11.1](https://github.com/maksym456/AquaTracker-frontend/compare/v0.11.0...v0.11.1) (2025-11-16)
+
+
+### Bug Fixes
+
+* **i18n:** expand fish database translations ([18b241c](https://github.com/maksym456/AquaTracker-frontend/commit/18b241c96ec1f10a5b59f2ea2f08cb8f394542a7))
+
 ## [0.11.0](https://github.com/maksym456/AquaTracker-frontend/compare/v0.10.0...v0.11.0) (2025-11-16)
 
 
