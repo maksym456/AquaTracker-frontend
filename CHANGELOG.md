@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+## [0.10.0](https://github.com/maksym456/AquaTracker-frontend/compare/v0.9.0...v0.10.0) (2025-11-16)
+
+
+### Features
+
+* **ui:** implement dark mode support across the application ([1834956](https://github.com/maksym456/AquaTracker-frontend/commit/183495635f8e4957bfc291eb43f5ff76db768e79))
+
 ## [0.9.0](https://github.com/maksym456/AquaTracker-frontend/compare/v0.8.0...v0.9.0) (2025-11-16)
 
 
