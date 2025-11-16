@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+## [0.9.0](https://github.com/maksym456/AquaTracker-frontend/compare/v0.8.0...v0.9.0) (2025-11-16)
+
+
+### Features
+
+* **activity:** implement activity history feature in Dashboard ([3df8f48](https://github.com/maksym456/AquaTracker-frontend/commit/3df8f48ccc5aebb0e6c5c9f7c73ff4d0c1356666))
+
 ## [0.8.0](https://github.com/maksym456/AquaTracker-frontend/compare/v0.7.0...v0.8.0) (2025-11-14)
 
 
