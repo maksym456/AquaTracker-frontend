@@ -50,24 +50,25 @@ export default function FishDatabasePage() {
 
   // Funkcja pomocnicza do tłumaczenia typu wody
   const getWaterTypeLabel = (waterType) => {
-    const map = {
-      "freshwater": "Słodkowodna",
-      "brackish": "Słonawa",
-      "saltwater": "Słona"
-    };
-    return map[waterType] || waterType;
+    return t(`fish.values.${waterType}`, { defaultValue: waterType });
   };
 
   // Funkcja pomocnicza do tłumaczenia usposobienia
   const getTemperamentLabel = (temperament) => {
     const map = {
-      "spokojne": "Spokojne",
-      "pół-agresywne": "Pół-agresywne",
-      "umiarkowane": "Umiarkowane",
-      "agresywne": "Agresywne",
-      "bardzo agresywne": "Bardzo agresywne"
+      "spokojne": "calm",
+      "pół-agresywne": "semiAggressive",
+      "umiarkowane": "calm",
+      "agresywne": "aggressive",
+      "bardzo agresywne": "veryAggressive"
     };
-    return map[temperament] || temperament;
+    const key = map[temperament] || temperament;
+    return t(`fish.values.${key}`, { defaultValue: temperament });
+  };
+
+  // Funkcja pomocnicza do tłumaczenia biotopu
+  const getBiotopeLabel = (biotope) => {
+    return t(`fish.biotopes.${biotope}`, { defaultValue: biotope });
   };
 
   // Dane kafelków z pełnymi parametrami
@@ -595,8 +596,8 @@ export default function FishDatabasePage() {
                 }}
               >
                 <ListItemText
-                  primary={fish.name}
-                  secondary={`${fish.waterTypeLabel} • ${getTemperamentLabel(fish.temperament)}`}
+                  primary={t(`fish.species.${fish.name}.name`, { defaultValue: fish.name })}
+                  secondary={`${getWaterTypeLabel(fish.waterType)} • ${getTemperamentLabel(fish.temperament)}`}
                   primaryTypographyProps={{ sx: { color: 'white', fontWeight: 600 } }}
                   secondaryTypographyProps={{ sx: { color: 'rgba(255,255,255,0.7)', fontSize: '0.8rem' } }}
                 />
@@ -790,7 +791,7 @@ export default function FishDatabasePage() {
                       fontWeight: 600 
                     }}
                   >
-                    {fish.name}
+                    {t(`fish.species.${fish.name}.name`, { defaultValue: fish.name })}
                   </Typography>
                   
                   {/* Opis */}
@@ -803,7 +804,7 @@ export default function FishDatabasePage() {
                       fontSize: '0.85rem'
                     }}
                   >
-                    {fish.description}
+                    {t(`fish.species.${fish.name}.description`, { defaultValue: fish.description })}
                   </Typography>
 
                   {/* Parametry */}
@@ -813,17 +814,17 @@ export default function FishDatabasePage() {
                     {/* Typ wody */}
                     <Box sx={{ display: 'flex', justifyContent: 'space-between', mb: 1 }}>
                       <Typography variant="body2" sx={{ color: 'rgba(255, 255, 255, 0.7)', fontSize: '0.8rem' }}>
-                        Typ wody:
+                        {t('fish.parameters.waterType')}:
                       </Typography>
                       <Typography variant="body2" sx={{ color: 'white', fontSize: '0.8rem', fontWeight: 500 }}>
-                        {fish.waterTypeLabel}
+                        {getWaterTypeLabel(fish.waterType)}
                       </Typography>
                     </Box>
 
                     {/* Temperatura */}
                     <Box sx={{ display: 'flex', justifyContent: 'space-between', mb: 1 }}>
                       <Typography variant="body2" sx={{ color: 'rgba(255, 255, 255, 0.7)', fontSize: '0.8rem' }}>
-                        Temperatura:
+                        {t('fish.parameters.temperature')}:
                       </Typography>
                       <Typography variant="body2" sx={{ color: 'white', fontSize: '0.8rem', fontWeight: 500 }}>
                         {fish.tempRange[0]}-{fish.tempRange[1]} °C
@@ -833,17 +834,17 @@ export default function FishDatabasePage() {
                     {/* Biotyp */}
                     <Box sx={{ display: 'flex', justifyContent: 'space-between', mb: 1 }}>
                       <Typography variant="body2" sx={{ color: 'rgba(255, 255, 255, 0.7)', fontSize: '0.8rem' }}>
-                        Biotyp:
+                        {t('fish.parameters.biotope')}:
                       </Typography>
                       <Typography variant="body2" sx={{ color: 'white', fontSize: '0.8rem', fontWeight: 500 }}>
-                        {fish.biotope}
+                        {getBiotopeLabel(fish.biotope)}
                       </Typography>
                     </Box>
 
                     {/* pH */}
                     <Box sx={{ display: 'flex', justifyContent: 'space-between', mb: 1 }}>
                       <Typography variant="body2" sx={{ color: 'rgba(255, 255, 255, 0.7)', fontSize: '0.8rem' }}>
-                        pH wody:
+                        {t('fish.parameters.ph')}:
                       </Typography>
                       <Typography variant="body2" sx={{ color: 'white', fontSize: '0.8rem', fontWeight: 500 }}>
                         {fish.phRange[0]}-{fish.phRange[1]}
@@ -853,7 +854,7 @@ export default function FishDatabasePage() {
                     {/* Twardość */}
                     <Box sx={{ display: 'flex', justifyContent: 'space-between', mb: 1 }}>
                       <Typography variant="body2" sx={{ color: 'rgba(255, 255, 255, 0.7)', fontSize: '0.8rem' }}>
-                        Twardość:
+                        {t('fish.parameters.hardness')}:
                       </Typography>
                       <Typography variant="body2" sx={{ color: 'white', fontSize: '0.8rem', fontWeight: 500 }}>
                         {fish.hardness[0]}-{fish.hardness[1]} °dGH
@@ -863,7 +864,7 @@ export default function FishDatabasePage() {
                     {/* Usposobienie */}
                     <Box sx={{ display: 'flex', justifyContent: 'space-between', mb: 1 }}>
                       <Typography variant="body2" sx={{ color: 'rgba(255, 255, 255, 0.7)', fontSize: '0.8rem' }}>
-                        Usposobienie:
+                        {t('fish.parameters.temperament')}:
                       </Typography>
                       <Typography variant="body2" sx={{ color: 'white', fontSize: '0.8rem', fontWeight: 500 }}>
                         {getTemperamentLabel(fish.temperament)}
@@ -873,17 +874,17 @@ export default function FishDatabasePage() {
                     {/* Ilość w stadzie */}
                     <Box sx={{ display: 'flex', justifyContent: 'space-between', mb: 1 }}>
                       <Typography variant="body2" sx={{ color: 'rgba(255, 255, 255, 0.7)', fontSize: '0.8rem' }}>
-                        Stado (min):
+                        {t('fish.parameters.minSchoolSize')}:
                       </Typography>
                       <Typography variant="body2" sx={{ color: 'white', fontSize: '0.8rem', fontWeight: 500 }}>
-                        {fish.minSchoolSize} {fish.minSchoolSize === 1 ? 'sztuka' : 'sztuk'}
+                        {fish.minSchoolSize} {t(`fish.values.${fish.minSchoolSize === 1 ? 'piece' : 'pieces'}`)}
                       </Typography>
                     </Box>
 
                     {/* Długość życia */}
                     <Box sx={{ display: 'flex', justifyContent: 'space-between', mb: 1 }}>
                       <Typography variant="body2" sx={{ color: 'rgba(255, 255, 255, 0.7)', fontSize: '0.8rem' }}>
-                        Długość życia:
+                        {t('fish.parameters.lifespan')}:
                       </Typography>
                       <Typography variant="body2" sx={{ color: 'white', fontSize: '0.8rem', fontWeight: 500 }}>
                         {fish.lifespan}
