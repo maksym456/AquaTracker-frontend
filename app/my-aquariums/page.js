@@ -9,10 +9,12 @@ import LanguageSwitcher from "../components/LanguageSwitcher";
 import KeyboardReturnOutlinedIcon from '@mui/icons-material/KeyboardReturnOutlined';
 import PersonAddIcon from '@mui/icons-material/PersonAdd';
 import { mockAquariums, addAquarium } from "../lib/mockData";
+import { useTheme } from "../contexts/ThemeContext";
 
 export default function MyAquariumsPage() {
   const { t } = useTranslation();
   const router = useRouter();
+  const { darkMode } = useTheme();
   const [aquariums, setAquariums] = useState([]);
   const [createModalOpen, setCreateModalOpen] = useState(false);
   const [newAquariumName, setNewAquariumName] = useState("");
@@ -60,12 +62,43 @@ export default function MyAquariumsPage() {
 
   return (
     <Box sx={{ minHeight: "100vh", position: "relative" }}>
+      {/* Górny pasek z gradientem */}
       <Box sx={{
         position: 'absolute', top: 0, left: 0, right: 0,
         height: 96,
         background: 'linear-gradient(to bottom right, #cfeef6 0%, #87cde1 50%, #2e7fa9 100%)',
         zIndex: 5
       }} />
+      
+      {/* Ciemny overlay dla dark mode */}
+      <Box
+        sx={{
+          position: 'absolute',
+          top: 0,
+          left: 0,
+          right: 0,
+          bottom: 0,
+          bgcolor: darkMode ? 'rgba(0, 0, 0, 0.25)' : 'transparent',
+          zIndex: 4,
+          transition: 'background-color 0.3s ease',
+          pointerEvents: 'none'
+        }}
+      />
+      
+      {/* Ciemny overlay na górny pasek dla dark mode */}
+      <Box
+        sx={{
+          position: 'absolute',
+          top: 0,
+          left: 0,
+          right: 0,
+          height: 96,
+          bgcolor: darkMode ? 'rgba(0, 0, 0, 0.3)' : 'transparent',
+          zIndex: 6,
+          transition: 'background-color 0.3s ease',
+          pointerEvents: 'none'
+        }}
+      />
 
       <Box sx={{ 
         position: 'absolute', top: 0, left: 0, right: 0,
@@ -74,10 +107,24 @@ export default function MyAquariumsPage() {
       }}>
         <Box sx={{ display: "flex", gap: { xs: 0.5, sm: 1 } }}>
           <Box sx={{
-            bgcolor: 'rgba(255, 255, 255, 0.4)', p: { xs: 0.5, sm: 0.8 }, borderRadius: 1.5, boxShadow: 2,
-            transition: "all 0.3s", backdropFilter: 'blur(8px)',
-            "&:hover": { boxShadow: 4, transform: "translateY(-2px)", bgcolor: 'rgba(255, 255, 255, 0.6)' },
-            cursor: 'pointer', minHeight: { xs: '50px', sm: '60px' }, minWidth: { xs: '60px', sm: '80px' }, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center'
+            bgcolor: darkMode ? 'rgba(30, 30, 30, 0.85)' : 'rgba(255, 255, 255, 0.4)', 
+            p: { xs: 0.5, sm: 0.8 }, 
+            borderRadius: 1.5, 
+            boxShadow: 2,
+            transition: "all 0.3s", 
+            backdropFilter: 'blur(8px)',
+            "&:hover": { 
+              boxShadow: 4, 
+              transform: "translateY(-2px)", 
+              bgcolor: darkMode ? 'rgba(40, 40, 40, 0.9)' : 'rgba(255, 255, 255, 0.6)' 
+            },
+            cursor: 'pointer', 
+            minHeight: { xs: '50px', sm: '60px' }, 
+            minWidth: { xs: '60px', sm: '80px' }, 
+            display: 'flex', 
+            flexDirection: 'column', 
+            alignItems: 'center', 
+            justifyContent: 'center'
           }}>
             <Typography sx={{ fontSize: { xs: 14, sm: 16 }, mb: 0.3, textAlign: 'center' }}>📊</Typography>
             <Typography variant="body2" sx={{ fontWeight: 600, color: "text.primary", textAlign: 'center', fontSize: { xs: '0.55rem', sm: '0.65rem' } }}>
@@ -85,10 +132,24 @@ export default function MyAquariumsPage() {
             </Typography>
           </Box>
           <Box sx={{
-            bgcolor: 'rgba(255, 255, 255, 0.4)', p: { xs: 0.5, sm: 0.8 }, borderRadius: 1.5, boxShadow: 2,
-            transition: "all 0.3s", backdropFilter: 'blur(8px)',
-            "&:hover": { boxShadow: 4, transform: "translateY(-2px)", bgcolor: 'rgba(255, 255, 255, 0.6)' },
-            cursor: 'pointer', minHeight: { xs: '50px', sm: '60px' }, minWidth: { xs: '60px', sm: '80px' }, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center'
+            bgcolor: darkMode ? 'rgba(30, 30, 30, 0.85)' : 'rgba(255, 255, 255, 0.4)', 
+            p: { xs: 0.5, sm: 0.8 }, 
+            borderRadius: 1.5, 
+            boxShadow: 2,
+            transition: "all 0.3s", 
+            backdropFilter: 'blur(8px)',
+            "&:hover": { 
+              boxShadow: 4, 
+              transform: "translateY(-2px)", 
+              bgcolor: darkMode ? 'rgba(40, 40, 40, 0.9)' : 'rgba(255, 255, 255, 0.6)' 
+            },
+            cursor: 'pointer', 
+            minHeight: { xs: '50px', sm: '60px' }, 
+            minWidth: { xs: '60px', sm: '80px' }, 
+            display: 'flex', 
+            flexDirection: 'column', 
+            alignItems: 'center', 
+            justifyContent: 'center'
           }}>
             <Typography sx={{ fontSize: { xs: 14, sm: 16 }, mb: 0.3, textAlign: 'center' }}>📋</Typography>
             <Typography variant="body2" sx={{ fontWeight: 600, color: "text.primary", textAlign: 'center', fontSize: { xs: '0.55rem', sm: '0.65rem' } }}>
@@ -97,10 +158,24 @@ export default function MyAquariumsPage() {
           </Box>
           <Link href="/" style={{ textDecoration: 'none' }}>
             <Box sx={{
-              bgcolor: 'rgba(255, 255, 255, 0.4)', p: { xs: 0.5, sm: 0.8 }, borderRadius: 1.5, boxShadow: 2,
-              transition: "all 0.3s", backdropFilter: 'blur(8px)',
-              "&:hover": { boxShadow: 4, transform: "translateY(-2px)", bgcolor: 'rgba(255, 255, 255, 0.6)' },
-              cursor: 'pointer', minHeight: { xs: '50px', sm: '60px' }, minWidth: { xs: '60px', sm: '80px' }, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center'
+              bgcolor: darkMode ? 'rgba(30, 30, 30, 0.85)' : 'rgba(255, 255, 255, 0.4)', 
+              p: { xs: 0.5, sm: 0.8 }, 
+              borderRadius: 1.5, 
+              boxShadow: 2,
+              transition: "all 0.3s", 
+              backdropFilter: 'blur(8px)',
+              "&:hover": { 
+                boxShadow: 4, 
+                transform: "translateY(-2px)", 
+                bgcolor: darkMode ? 'rgba(40, 40, 40, 0.9)' : 'rgba(255, 255, 255, 0.6)' 
+              },
+              cursor: 'pointer', 
+              minHeight: { xs: '50px', sm: '60px' }, 
+              minWidth: { xs: '60px', sm: '80px' }, 
+              display: 'flex', 
+              flexDirection: 'column', 
+              alignItems: 'center', 
+              justifyContent: 'center'
             }}>
               <KeyboardReturnOutlinedIcon sx={{ fontSize: { xs: 14, sm: 16 }, mb: 0.3 }} />
               <Typography variant="body2" sx={{ fontWeight: 600, color: "text.primary", textAlign: 'center', fontSize: { xs: '0.55rem', sm: '0.65rem' } }}>
@@ -221,12 +296,19 @@ export default function MyAquariumsPage() {
         )}
       </Box>
 
+      {/* Footer z przyciskami */}
       <Box sx={{
-        position: 'fixed', left: 0, right: 0, bottom: 0,
-        display: 'flex', justifyContent: 'center', gap: 2,
-        py: 1.5, px: 2,
+        position: 'fixed', 
+        left: 0, 
+        right: 0, 
+        bottom: 0,
+        display: 'flex', 
+        justifyContent: 'center', 
+        gap: 2,
+        py: 1.5, 
+        px: 2,
         backdropFilter: 'blur(8px)',
-        background: 'rgba(255,255,255,0.6)',
+        background: darkMode ? 'rgba(30, 30, 30, 0.9)' : 'rgba(255,255,255,0.6)',
         boxShadow: '0 -6px 16px rgba(0,0,0,0.2)',
         zIndex: 20
       }}>

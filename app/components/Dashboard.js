@@ -4,16 +4,16 @@ import { useState, useEffect, useRef } from "react";
 import { useTranslation } from "react-i18next";
 import LanguageSwitcher from "./LanguageSwitcher";
 import { useAuth } from "../contexts/AuthContext";
-import { Button, Box, Typography, Modal, TextField, Alert, Select, MenuItem, FormControl, InputLabel, List, ListItem, ListItemText, Chip, Divider } from "@mui/material";
-// Ten import pobiera komponenty z biblioteki Material UI (MUI).
-// MUI to gotowy zestaw komponentów React do tworzenia UI.
+import { Button, Box, Typography, Modal, TextField, Alert, Select, MenuItem, FormControl, InputLabel, List, ListItem, ListItemText, Chip, Divider, Switch } from "@mui/material";
 import { mockAquariums } from "../lib/mockData";
 import { APP_VERSION } from "../version";
+import { useTheme } from "../contexts/ThemeContext";
 import Link from "next/link";
 
 export default function Dashboard() {
   const { t } = useTranslation();
   const { user, logout } = useAuth();
+  const { darkMode, toggleDarkMode } = useTheme();
   const [settingsOpen, setSettingsOpen] = useState(false);
   const [dataSourceExpanded, setDataSourceExpanded] = useState(false);
   const [profileEditOpen, setProfileEditOpen] = useState(false);
@@ -219,6 +219,21 @@ export default function Dashboard() {
         <source src="/main-bg-video.mp4" type="video/mp4" />
       </video>
       
+      {/* Ciemny overlay dla dark mode */}
+      <Box
+        sx={{
+          position: 'absolute',
+          top: 0,
+          left: 0,
+          right: 0,
+          bottom: 0,
+          bgcolor: darkMode ? 'rgba(0, 0, 0, 0.75)' : 'transparent',
+          zIndex: 1,
+          transition: 'background-color 0.3s ease',
+          pointerEvents: 'none'
+        }}
+      />
+      
        {/* Navbar */}
        <Box sx={{ 
          display: "flex", 
@@ -249,30 +264,30 @@ export default function Dashboard() {
          }}>
            <LanguageSwitcher />
            {/* Settings button */}
-           <Box 
-             onClick={handleOpenSettings}
-             sx={{
-               bgcolor: 'rgba(255, 255, 255, 0.4)',
-               p: 1,
-               borderRadius: 1.5,
-               boxShadow: 2,
-               transition: "all 0.3s",
-               backdropFilter: 'blur(8px)',
-               "&:hover": { 
-                 boxShadow: 4,
-                 transform: "translateY(-2px)",
-                 bgcolor: 'rgba(255, 255, 255, 0.6)'
-               },
-               cursor: 'pointer',
-               minHeight: { xs: '40px', md: '48px' },
-               minWidth: { xs: '40px', md: '48px' },
-               display: 'flex',
-               flexDirection: 'column',
-               alignItems: 'center',
-               justifyContent: 'center',
-               position: 'relative'
-             }}
-           >
+            <Box 
+            onClick={handleOpenSettings}
+            sx={{
+              bgcolor: darkMode ? 'rgba(30, 30, 30, 0.85)' : 'rgba(255, 255, 255, 0.4)',
+              p: 1,
+              borderRadius: 1.5,
+              boxShadow: 2,
+              transition: "all 0.3s",
+              backdropFilter: 'blur(8px)',
+              "&:hover": { 
+                boxShadow: 4,
+                transform: "translateY(-2px)",
+                bgcolor: darkMode ? 'rgba(40, 40, 40, 0.9)' : 'rgba(255, 255, 255, 0.6)'
+              },
+              cursor: 'pointer',
+              minHeight: { xs: '40px', md: '48px' },
+              minWidth: { xs: '40px', md: '48px' },
+              display: 'flex',
+              flexDirection: 'column',
+              alignItems: 'center',
+              justifyContent: 'center',
+              position: 'relative'
+            }}
+          >
              <Typography sx={{ fontSize: { xs: 18, md: 20 }, mb: 0.2, textAlign: 'center' }}>⚙️</Typography>
              <Typography variant="body2" sx={{ fontWeight: 600, color: "text.primary", textAlign: 'center', fontSize: { xs: '0.5rem', md: '0.6rem' } }}>
                {t("settings")}
@@ -302,13 +317,13 @@ export default function Dashboard() {
            alignItems: 'center',
            justifyContent: 'flex-start'
          }}>
-           <Box sx={{
-             backgroundColor: 'rgba(0, 0, 0, 0.01)',
-             padding: { xs: '30px', md: '60px' },
-             borderRadius: '12px',
-             backdropFilter: 'blur(15px)',
-             maxWidth: '550px'
-           }}>
+          <Box sx={{
+            backgroundColor: darkMode ? 'rgba(0, 0, 0, 0.4)' : 'rgba(0, 0, 0, 0.01)',
+            padding: { xs: '30px', md: '60px' },
+            borderRadius: '12px',
+            backdropFilter: 'blur(15px)',
+            maxWidth: '550px'
+          }}>
              <Typography 
                variant="h2" 
                component="h2" 
@@ -353,7 +368,7 @@ export default function Dashboard() {
            {/* Top Row */}
            <Link href="/my-aquariums" style={{ textDecoration: 'none', display: 'block', height: '100%' }}>
            <Box sx={{
-             bgcolor: 'rgba(255, 255, 255, 0.4)',
+             bgcolor: darkMode ? 'rgba(30, 30, 30, 0.85)' : 'rgba(255, 255, 255, 0.4)',
              p: 2.5,
              borderRadius: 2,
              boxShadow: 3,
@@ -362,7 +377,7 @@ export default function Dashboard() {
              "&:hover": { 
                boxShadow: 5,
                transform: "translateY(-4px)",
-               bgcolor: 'rgba(255, 255, 255, 0.6)'
+               bgcolor: darkMode ? 'rgba(40, 40, 40, 0.9)' : 'rgba(255, 255, 255, 0.6)'
              },
              cursor: 'pointer',
              minHeight: '140px',
@@ -384,7 +399,8 @@ export default function Dashboard() {
            
           <Link href="/fish-database" style={{ textDecoration: 'none', display: 'block', height: '100%' }}>
             <Box sx={{
-              bgcolor: 'rgba(255, 255, 255, 0.4)',
+              // darkMode ? 'rgba(30, 30, 30, 0.85)' : 'rgba(255, 255, 255, 0.4)' - w dark mode ciemne tło, w light mode jasne
+              bgcolor: darkMode ? 'rgba(30, 30, 30, 0.85)' : 'rgba(255, 255, 255, 0.4)',
               p: 2.5,
               borderRadius: 2,
               boxShadow: 3,
@@ -393,7 +409,8 @@ export default function Dashboard() {
               "&:hover": { 
                 boxShadow: 5,
                 transform: "translateY(-4px)",
-                bgcolor: 'rgba(255, 255, 255, 0.6)'
+                // darkMode ? 'rgba(40, 40, 40, 0.9)' : 'rgba(255, 255, 255, 0.6)' - ciemniejsze przy hover w dark mode
+                bgcolor: darkMode ? 'rgba(40, 40, 40, 0.9)' : 'rgba(255, 255, 255, 0.6)'
               },
               cursor: 'pointer',
               minHeight: '140px',
@@ -416,7 +433,8 @@ export default function Dashboard() {
            {/* Bottom Row - Contacts */}
            <Link href="/contacts" style={{ textDecoration: 'none', display: 'block', height: '100%' }}>
              <Box sx={{
-               bgcolor: 'rgba(255, 255, 255, 0.4)',
+               // darkMode ? 'rgba(30, 30, 30, 0.85)' : 'rgba(255, 255, 255, 0.4)' - w dark mode ciemne tło, w light mode jasne
+               bgcolor: darkMode ? 'rgba(30, 30, 30, 0.85)' : 'rgba(255, 255, 255, 0.4)',
                p: 2.5,
                borderRadius: 2,
                boxShadow: 3,
@@ -425,7 +443,8 @@ export default function Dashboard() {
                "&:hover": { 
                  boxShadow: 5,
                  transform: "translateY(-4px)",
-                 bgcolor: 'rgba(255, 255, 255, 0.6)'
+                 // darkMode ? 'rgba(40, 40, 40, 0.9)' : 'rgba(255, 255, 255, 0.6)' - ciemniejsze przy hover w dark mode
+                 bgcolor: darkMode ? 'rgba(40, 40, 40, 0.9)' : 'rgba(255, 255, 255, 0.6)'
                },
                cursor: 'pointer',
                minHeight: '140px',
@@ -447,7 +466,8 @@ export default function Dashboard() {
            
           <Link href="/plant-database" style={{ textDecoration: 'none', display: 'block', height: '100%' }}>
             <Box sx={{
-              bgcolor: 'rgba(255, 255, 255, 0.4)',
+              // darkMode ? 'rgba(30, 30, 30, 0.85)' : 'rgba(255, 255, 255, 0.4)' - w dark mode ciemne tło, w light mode jasne
+              bgcolor: darkMode ? 'rgba(30, 30, 30, 0.85)' : 'rgba(255, 255, 255, 0.4)',
               p: 2.5,
               borderRadius: 2,
               boxShadow: 3,
@@ -456,7 +476,8 @@ export default function Dashboard() {
               "&:hover": { 
                 boxShadow: 5,
                 transform: "translateY(-4px)",
-                bgcolor: 'rgba(255, 255, 255, 0.6)'
+                // darkMode ? 'rgba(40, 40, 40, 0.9)' : 'rgba(255, 255, 255, 0.6)' - ciemniejsze przy hover w dark mode
+                bgcolor: darkMode ? 'rgba(40, 40, 40, 0.9)' : 'rgba(255, 255, 255, 0.6)'
               },
               cursor: 'pointer',
               minHeight: '140px',
@@ -489,7 +510,7 @@ export default function Dashboard() {
             right: { xs: 16, md: 32 },
             width: { xs: 'calc(100% - 32px)', md: '400px' },
             maxHeight: 'calc(100vh - 100px)',
-            bgcolor: 'rgba(227, 242, 253, 0.95)',
+            bgcolor: darkMode ? 'rgba(30, 30, 30, 0.95)' : 'rgba(227, 242, 253, 0.95)',
             backdropFilter: 'blur(20px)',
             boxShadow: '0 8px 32px rgba(0, 0, 0, 0.3)',
             display: 'flex',
@@ -528,15 +549,20 @@ export default function Dashboard() {
                 p: 2,
                 mb: 1,
                 borderRadius: 2,
-                cursor: 'pointer',
                 '&:hover': { bgcolor: 'rgba(0, 0, 0, 0.05)' }
               }}
             >
               <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
                 <Typography sx={{ fontSize: 24 }}>🌙</Typography>
-                <Typography variant="body1" sx={{ fontWeight: 500 }}>Dark Mode</Typography>
+                <Typography variant="body1" sx={{ fontWeight: 500 }}>
+                  {t("darkMode", { defaultValue: "Dark Mode" })}
+                </Typography>
               </Box>
-              <Typography sx={{ fontSize: 20 }}>⚪</Typography>
+              <Switch 
+                checked={darkMode}
+                onChange={toggleDarkMode}
+                color="primary"
+              />
             </Box>
 
             {/* Edycja profilu */}

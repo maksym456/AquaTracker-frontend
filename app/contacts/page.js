@@ -7,9 +7,11 @@ import Link from "next/link";
 import LanguageSwitcher from "../components/LanguageSwitcher";
 import KeyboardReturnOutlinedIcon from '@mui/icons-material/KeyboardReturnOutlined';
 import DeleteIcon from '@mui/icons-material/Delete';
+import { useTheme } from "../contexts/ThemeContext";
 
 export default function ContactsPage() {
   const { t } = useTranslation();
+  const { darkMode } = useTheme();
   const [inviteEmail, setInviteEmail] = useState("");
   const [contacts, setContacts] = useState([
     { id: '1', name: 'Jan Kowalski', email: 'jan.kowalski@example.com', status: 'accepted' },
@@ -38,12 +40,43 @@ export default function ContactsPage() {
 
   return (
     <Box sx={{ minHeight: "100vh", position: "relative" }}>
+      {/* Górny pasek z gradientem */}
       <Box sx={{
         position: 'absolute', top: 0, left: 0, right: 0,
         height: 96,
         background: 'linear-gradient(to bottom right, #cfeef6 0%, #87cde1 50%, #2e7fa9 100%)',
         zIndex: 5
       }} />
+      
+      {/* Ciemny overlay dla dark mode */}
+      <Box
+        sx={{
+          position: 'absolute',
+          top: 0,
+          left: 0,
+          right: 0,
+          bottom: 0,
+          bgcolor: darkMode ? 'rgba(0, 0, 0, 0.25)' : 'transparent',
+          zIndex: 4,
+          transition: 'background-color 0.3s ease',
+          pointerEvents: 'none'
+        }}
+      />
+      
+      {/* Ciemny overlay na górny pasek dla dark mode */}
+      <Box
+        sx={{
+          position: 'absolute',
+          top: 0,
+          left: 0,
+          right: 0,
+          height: 96,
+          bgcolor: darkMode ? 'rgba(0, 0, 0, 0.3)' : 'transparent',
+          zIndex: 6,
+          transition: 'background-color 0.3s ease',
+          pointerEvents: 'none'
+        }}
+      />
 
       {/* Top bar */}
       <Box sx={{ 
@@ -54,10 +87,24 @@ export default function ContactsPage() {
         <Box sx={{ display: "flex", gap: { xs: 0.5, sm: 1 } }}>
           <Link href="/" style={{ textDecoration: 'none' }}>
             <Box sx={{
-              bgcolor: 'rgba(255, 255, 255, 0.4)', p: { xs: 0.5, sm: 0.8 }, borderRadius: 1.5, boxShadow: 2,
-              transition: "all 0.3s", backdropFilter: 'blur(8px)',
-              "&:hover": { boxShadow: 4, transform: "translateY(-2px)", bgcolor: 'rgba(255, 255, 255, 0.6)' },
-              cursor: 'pointer', minHeight: { xs: '50px', sm: '60px' }, minWidth: { xs: '60px', sm: '80px' }, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center'
+              bgcolor: darkMode ? 'rgba(30, 30, 30, 0.85)' : 'rgba(255, 255, 255, 0.4)', 
+              p: { xs: 0.5, sm: 0.8 }, 
+              borderRadius: 1.5, 
+              boxShadow: 2,
+              transition: "all 0.3s", 
+              backdropFilter: 'blur(8px)',
+              "&:hover": { 
+                boxShadow: 4, 
+                transform: "translateY(-2px)", 
+                bgcolor: darkMode ? 'rgba(40, 40, 40, 0.9)' : 'rgba(255, 255, 255, 0.6)' 
+              },
+              cursor: 'pointer', 
+              minHeight: { xs: '50px', sm: '60px' }, 
+              minWidth: { xs: '60px', sm: '80px' }, 
+              display: 'flex', 
+              flexDirection: 'column', 
+              alignItems: 'center', 
+              justifyContent: 'center'
             }}>
               <KeyboardReturnOutlinedIcon sx={{ fontSize: { xs: 14, sm: 16 }, mb: 0.3 }} />
               <Typography variant="body2" sx={{ fontWeight: 600, color: "text.primary", textAlign: 'center', fontSize: { xs: '0.55rem', sm: '0.65rem' } }}>
@@ -85,7 +132,7 @@ export default function ContactsPage() {
           <Card sx={{
             width: '100%',
             maxWidth: '500px',
-            bgcolor: '#ffffff',
+            bgcolor: darkMode ? 'rgba(30, 30, 30, 0.95)' : '#ffffff',
             borderRadius: 3,
             boxShadow: '0 8px 24px rgba(0, 0, 0, 0.12), 0 2px 8px rgba(0, 0, 0, 0.08)',
             border: '1px solid rgba(0, 0, 0, 0.06)',
@@ -130,7 +177,7 @@ export default function ContactsPage() {
           <Card sx={{
             width: '100%',
             maxWidth: '700px',
-            bgcolor: '#ffffff',
+            bgcolor: darkMode ? 'rgba(30, 30, 30, 0.95)' : '#ffffff',
             borderRadius: 3,
             boxShadow: '0 8px 24px rgba(0, 0, 0, 0.12), 0 2px 8px rgba(0, 0, 0, 0.08)',
             border: '1px solid rgba(0, 0, 0, 0.06)',

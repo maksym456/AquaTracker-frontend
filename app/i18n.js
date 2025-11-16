@@ -107,6 +107,7 @@ const resources = {
        sortByDate: "Sort by Date",
        newestFirst: "Newest First",
        oldestFirst: "Oldest First",
+       darkMode: "Dark Mode",
       auth: {
         login: "Sign In",
         register: "Create Account",
@@ -234,6 +235,7 @@ const resources = {
        sortByDate: "Sortuj po dacie",
        newestFirst: "Najnowsze najpierw",
        oldestFirst: "Najstarsze najpierw",
+       darkMode: "Tryb ciemny",
       auth: {
         login: "Zaloguj się",
         register: "Utwórz konto",
