@@ -208,12 +208,16 @@ export default function Dashboard() {
         loop
         muted
         playsInline
+        preload="none"
         style={{
           position: 'absolute',
           width: '100%',
           height: '100%',
           objectFit: 'cover',
           zIndex: 0
+        }}
+        onLoadedData={(e) => {
+          e.target.play().catch(() => {});
         }}
       >
         <source src="/main-bg-video.mp4" type="video/mp4" />
@@ -305,11 +309,11 @@ export default function Dashboard() {
          px: { xs: 2, md: 4 },
          py: 4,
          mt: { xs: 0, md: 40 },
-         ml: { xs: 0, md: '' },
+         ml: { xs: 0, md: 15 },
+         mr: { xs: 0, md: 0 },
          zIndex: 10,
          maxWidth: '1400px',
-         width: '100%',
-         mx: 'auto'
+         width: '100%'
        }}>
          {/* Tekst */}
          <Box sx={{

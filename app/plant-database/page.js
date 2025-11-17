@@ -3,6 +3,7 @@
 import { useState } from "react";
 import { Box, Typography, IconButton, Button, useTheme, useMediaQuery, List, ListItemButton, ListItemText, Divider, TextField } from "@mui/material";
 import { useTranslation } from "react-i18next";
+import { useTheme as useCustomTheme } from "../contexts/ThemeContext";
 import Link from "next/link";
 import LanguageSwitcher from "../components/LanguageSwitcher";
 import KeyboardReturnOutlinedIcon from '@mui/icons-material/KeyboardReturnOutlined';
@@ -14,6 +15,7 @@ import ChevronLeftIcon from '@mui/icons-material/ChevronLeft';
 export default function PlantDatabasePage() {
   const { t } = useTranslation();
   const theme = useTheme();
+  const { darkMode } = useCustomTheme();
   const isMobile = useMediaQuery(theme.breakpoints.down('md'));
   
   // Przykładowe dane kafelków roślin
@@ -155,12 +157,16 @@ export default function PlantDatabasePage() {
         loop
         muted
         playsInline
+        preload="none"
         style={{
           position: 'absolute',
           width: '100%',
           height: '100%',
           objectFit: 'cover',
           zIndex: 0
+        }}
+        onLoadedData={(e) => {
+          e.target.play().catch(() => {});
         }}
       >
         <source src="/plantPage-bg.mp4" type="video/mp4" />
@@ -175,13 +181,27 @@ export default function PlantDatabasePage() {
           {/* Przycisk powrotu */}
           <Link href="/" style={{ textDecoration: 'none' }}>
             <Box sx={{
-              bgcolor: 'rgba(255, 255, 255, 0.4)', p: 0.8, borderRadius: 1.5, boxShadow: 2,
-              transition: "all 0.3s", backdropFilter: 'blur(8px)',
-              "&:hover": { boxShadow: 4, transform: "translateY(-2px)", bgcolor: 'rgba(255, 255, 255, 0.6)' },
-              cursor: 'pointer', minHeight: '60px', minWidth: '80px', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center'
+              bgcolor: darkMode ? 'rgba(30, 30, 30, 0.85)' : 'rgba(255, 255, 255, 0.4)', 
+              p: 0.8, 
+              borderRadius: 1.5, 
+              boxShadow: 2,
+              transition: "all 0.3s", 
+              backdropFilter: 'blur(8px)',
+              "&:hover": { 
+                boxShadow: 4, 
+                transform: "translateY(-2px)", 
+                bgcolor: darkMode ? 'rgba(40, 40, 40, 0.9)' : 'rgba(255, 255, 255, 0.6)' 
+              },
+              cursor: 'pointer', 
+              minHeight: '60px', 
+              minWidth: '80px', 
+              display: 'flex', 
+              flexDirection: 'column', 
+              alignItems: 'center', 
+              justifyContent: 'center'
             }}>
-              <KeyboardReturnOutlinedIcon sx={{ fontSize: 16, mb: 0.3 }} />
-              <Typography variant="body2" sx={{ fontWeight: 600, color: "text.primary", textAlign: 'center', fontSize: '0.65rem' }}>
+              <KeyboardReturnOutlinedIcon sx={{ fontSize: 16, mb: 0.3, color: darkMode ? 'white' : 'inherit' }} />
+              <Typography variant="body2" sx={{ fontWeight: 600, color: darkMode ? 'white' : "text.primary", textAlign: 'center', fontSize: '0.65rem' }}>
                 {t("return")}
               </Typography>
             </Box>

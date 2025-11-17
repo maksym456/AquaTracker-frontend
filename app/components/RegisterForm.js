@@ -13,6 +13,7 @@ import {
 } from "@mui/material";
 import { useAuth } from "../contexts/AuthContext";
 import { useTranslation } from "react-i18next";
+import { useTheme } from "../contexts/ThemeContext";
 import LanguageSwitcher from "./LanguageSwitcher";
 
 export default function RegisterForm({ onSwitchToLogin }) {
@@ -24,6 +25,7 @@ export default function RegisterForm({ onSwitchToLogin }) {
   const [loading, setLoading] = useState(false);
   const { register } = useAuth();
   const { t } = useTranslation();
+  const { darkMode } = useTheme();
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -88,6 +90,7 @@ export default function RegisterForm({ onSwitchToLogin }) {
         loop
         muted
         playsInline
+        preload="none"
         style={{
           position: 'absolute',
           width: '100%',
@@ -95,11 +98,14 @@ export default function RegisterForm({ onSwitchToLogin }) {
           objectFit: 'cover',
           zIndex: 0
         }}
+        onLoadedData={(e) => {
+          e.target.play().catch(() => {});
+        }}
       >
         <source src="/loginPage-bg.mp4" type="video/mp4" />
       </video>
       <Container maxWidth="sm" sx={{ position: 'relative', zIndex: 1 }}>
-        <Paper elevation={3} sx={{ width: "100%", padding: 4, position: "relative", zIndex: 1, bgcolor: '#E3F2FD' }}>
+        <Paper elevation={3} sx={{ width: "100%", padding: 4, position: "relative", zIndex: 1, bgcolor: darkMode ? 'rgba(30, 30, 30, 0.95)' : '#E3F2FD' }}>
           <Box sx={{ display: "flex", justifyContent: "flex-end", mb: 2 }}>
             <LanguageSwitcher />
           </Box>
@@ -108,7 +114,7 @@ export default function RegisterForm({ onSwitchToLogin }) {
               width: 40, 
               height: 40, 
               borderRadius: '50%', 
-              bgcolor: '#E3F2FD', 
+              bgcolor: darkMode ? 'rgba(50, 50, 50, 0.8)' : '#E3F2FD', 
               display: 'flex', 
               alignItems: 'center', 
               justifyContent: 'center',
@@ -116,11 +122,11 @@ export default function RegisterForm({ onSwitchToLogin }) {
             }}>
               🐠
             </Box>
-            <Typography variant="h4" component="h1">
+            <Typography variant="h4" component="h1" sx={{ color: darkMode ? 'white' : 'inherit' }}>
               AquaTracker
             </Typography>
           </Box>
-          <Typography variant="h5" component="h2" gutterBottom align="center" sx={{ mb: 3 }}>
+          <Typography variant="h5" component="h2" gutterBottom align="center" sx={{ mb: 3, color: darkMode ? 'white' : 'inherit' }}>
             {t("auth.register")}
           </Typography>
 
