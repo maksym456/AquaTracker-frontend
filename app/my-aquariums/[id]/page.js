@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { Box, Button, Typography } from "@mui/material";
 import { useTranslation } from "react-i18next";
 import { useRouter, useParams } from "next/navigation";
@@ -18,19 +18,42 @@ export default function AquariumDetailPage() {
   const aquariumId = params?.id;
   const [aquarium, setAquarium] = useState(null);
   const [imageLoaded, setImageLoaded] = useState(false);
+  const imageContainerRef = useRef(null);
 
   useEffect(() => {
     // Znajdź akwarium po ID
     const foundAquarium = mockAquariums.find(a => a.id === aquariumId);
     if (foundAquarium) {
       setAquarium(foundAquarium);
-      // Lazy loading - wczytaj obraz dopiero po wejściu na stronę
-      setImageLoaded(true);
     } else {
       // Jeśli nie znaleziono, przekieruj do listy
       router.push('/my-aquariums');
     }
   }, [aquariumId, router]);
+
+  // Lazy loading obrazu - użyj Intersection Observer aby załadować obraz tylko gdy jest widoczny
+  useEffect(() => {
+    if (!aquarium || !imageContainerRef.current) return;
+
+    const observer = new IntersectionObserver(
+      (entries) => {
+        entries.forEach((entry) => {
+          if (entry.isIntersecting) {
+            // Obraz jest widoczny - załaduj go
+            setImageLoaded(true);
+            observer.disconnect();
+          }
+        });
+      },
+      { threshold: 0.1 } // Załaduj gdy 10% kontenera jest widoczne
+    );
+
+    observer.observe(imageContainerRef.current);
+
+    return () => {
+      observer.disconnect();
+    };
+  }, [aquarium]);
 
   if (!aquarium) {
     return (
@@ -152,8 +175,12 @@ export default function AquariumDetailPage() {
       </Box>
 
       {/* Lazy loading obrazu akwarium - tylko gdy imageLoaded === true */}
-      {imageLoaded && (
-        <Box sx={{ position: 'absolute', left: 0, right: 0, top: 96, bottom: 0, zIndex: 1 }}>
+      <Box 
+        ref={imageContainerRef}
+        sx={{ position: 'absolute', left: 0, right: 0, top: 96, bottom: 0, zIndex: 1 }}
+      >
+        {imageLoaded && (
+          <>
           {/* Warstwa obrazu */}
           <Box
             sx={{
@@ -217,8 +244,9 @@ export default function AquariumDetailPage() {
               filter: 'blur(20px)'
             }} 
           />
-        </Box>
-      )}
+          </>
+        )}
+      </Box>
 
 
       {/* Footer z przyciskami */}

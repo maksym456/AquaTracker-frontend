@@ -279,7 +279,12 @@ export default function MyAquariumsPage() {
                       >
                         {aquarium.description || t("noDescription", { defaultValue: "Brak opisu" })}
                       </Typography>
-                      <Box sx={{ display: 'flex', gap: 2, mt: 'auto', pt: 1 }}>
+                      <Box sx={{ display: 'flex', gap: 2, mt: 'auto', pt: 1, flexWrap: 'wrap' }}>
+                        {aquarium.volume && (
+                          <Typography variant="caption" color="text.secondary">
+                            💧 {aquarium.volume}L
+                          </Typography>
+                        )}
                         <Typography variant="caption" color="text.secondary">
                           🐟 {aquarium.fishes?.length || 0}
                         </Typography>

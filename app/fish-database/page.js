@@ -442,6 +442,7 @@ export default function FishDatabasePage() {
   const [searchQuery, setSearchQuery] = useState("");
   const [waterFilter, setWaterFilter] = useState("all"); // all | freshwater | brackish | saltwater
   const [sortAggressiveness, setSortAggressiveness] = useState("none"); // none | asc | desc
+  const [failedImages, setFailedImages] = useState(new Set()); // Track failed image loads
 
   // Lista przefiltrowana i posortowana dla panelu
   const filteredFish = fishCards
@@ -500,8 +501,10 @@ export default function FishDatabasePage() {
 
   return (
     <Box sx={{ 
-      minHeight: "100vh", 
+      minHeight: "100vh",
+      height: "100vh",
       position: "relative",
+      overflow: 'hidden'
     }}>
       <video
       autoPlay
@@ -811,11 +814,18 @@ export default function FishDatabasePage() {
                   position: 'relative',
                   overflow: 'hidden'
                 }}>
-                  {fish.image ? (
+                  {fish.image && !failedImages.has(fish.id) ? (
                     <img 
                       src={fish.image}
                       alt={fish.name}
                       loading="lazy"
+                      onError={() => {
+                        console.error(`Failed to load image: ${fish.image} for fish: ${fish.name}`);
+                        setFailedImages(prev => new Set([...prev, fish.id]));
+                      }}
+                      onLoad={() => {
+                        console.log(`Successfully loaded image: ${fish.image} for fish: ${fish.name}`);
+                      }}
                       style={{
                         width: '100%',
                         height: '100%',
@@ -823,10 +833,23 @@ export default function FishDatabasePage() {
                       }}
                     />
                   ) : (
-                    /* Placeholder jeśli brak obrazu */
-                    <Typography sx={{ color: 'white', opacity: 0.5 }}>
-                      Image
-                    </Typography>
+                    <Box 
+                      sx={{ 
+                        display: 'flex',
+                        flexDirection: 'column',
+                        alignItems: 'center',
+                        justifyContent: 'center',
+                        width: '100%',
+                        height: '100%'
+                      }}
+                    >
+                      <Typography sx={{ color: 'white', opacity: 0.5, fontSize: '3rem', mb: 1 }}>
+                        🐠
+                      </Typography>
+                      <Typography sx={{ color: 'white', opacity: 0.5, fontSize: '0.875rem' }}>
+                        {t("imageNotAvailable", { defaultValue: "Obraz niedostępny" })}
+                      </Typography>
+                    </Box>
                   )}
                 </Box>
 

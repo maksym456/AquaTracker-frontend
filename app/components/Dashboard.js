@@ -198,9 +198,11 @@ export default function Dashboard() {
   return (
     <Box sx={{ 
       minHeight: "100vh",
+      height: "100vh",
       display: 'flex',
       flexDirection: 'column',
-      position: 'relative'
+      position: 'relative',
+      overflow: 'hidden'
     }}>
       {/* Tło wideo */}
       <video
