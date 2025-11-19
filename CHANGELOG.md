@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [0.11.4](https://github.com/maksym456/AquaTracker-frontend/compare/v0.11.3...v0.11.4) (2025-11-19)
+
+
+### Bug Fixes
+
+* **ui:** enhance authentication and aquarium details ([d54324b](https://github.com/maksym456/AquaTracker-frontend/commit/d54324b63b44a9f73b269f36de44facc07e07841))
+
 ### [0.11.3](https://github.com/maksym456/AquaTracker-frontend/compare/v0.11.2...v0.11.3) (2025-11-18)
 
 
