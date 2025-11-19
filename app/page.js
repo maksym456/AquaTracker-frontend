@@ -1,10 +1,8 @@
 "use client";
 
-import { useState } from "react";
 import dynamic from "next/dynamic";
 import { AuthProvider, useAuth } from "./contexts/AuthContext";
-import LoginForm from "./components/LoginForm";
-import RegisterForm from "./components/RegisterForm";
+import AuthForm from "./components/AuthForm";
 
 const Dashboard = dynamic(() => import("./components/Dashboard"), {
   loading: () => <div style={{ minHeight: "100vh", display: "flex", alignItems: "center", justifyContent: "center", color: "white" }}>Loading...</div>,
@@ -12,7 +10,6 @@ const Dashboard = dynamic(() => import("./components/Dashboard"), {
 });
 
 function AuthFlow() {
-  const [showRegister, setShowRegister] = useState(false);
   const { user, loading } = useAuth();
 
   if (loading) {
@@ -23,11 +20,7 @@ function AuthFlow() {
     return <Dashboard />;
   }
 
-  if (showRegister) {
-    return <RegisterForm onSwitchToLogin={() => setShowRegister(false)} />;
-  }
-
-  return <LoginForm onSwitchToRegister={() => setShowRegister(true)} />;
+  return <AuthForm />;
 }
 
 export default function Home() {

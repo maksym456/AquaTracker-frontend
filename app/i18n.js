@@ -255,7 +255,7 @@ const resources = {
         confirmPassword: "Confirm Password",
         name: "Name",
         loginButton: "Sign In",
-        registerButton: "Create Account",
+        registerButton: "Sign Up",
         alreadyHaveAccount: "Already have an account? Sign in",
         dontHaveAccount: "Don't have an account? Sign up",
         loading: "Loading...",
@@ -264,7 +264,14 @@ const resources = {
         passwordTooShort: "Password must be at least 6 characters",
         passwordsDontMatch: "Passwords don't match",
         loginError: "Invalid email or password",
-        registrationError: "Registration failed. Please try again."
+        registrationError: "Registration failed. Please try again.",
+        orUseEmail: "or use your email password",
+        orUseEmailRegister: "or use your email for registration",
+        forgotPassword: "Forget Your Password?",
+        welcomeBack: "Welcome Back!",
+        welcomeBackDesc: "Enter your personal details to use all of site features",
+        helloFriend: "Hello Friend!",
+        helloFriendDesc: "Register with your personal details to use all of site features"
       }
     }
   },
@@ -521,7 +528,7 @@ const resources = {
         confirmPassword: "Potwierdź hasło",
         name: "Imię",
         loginButton: "Zaloguj się",
-        registerButton: "Utwórz konto",
+        registerButton: "Zarejestruj się",
         alreadyHaveAccount: "Masz już konto? Zaloguj się",
         dontHaveAccount: "Nie masz konta? Zarejestruj się",
         loading: "Ładowanie...",
@@ -530,7 +537,14 @@ const resources = {
         passwordTooShort: "Hasło musi mieć co najmniej 6 znaków",
         passwordsDontMatch: "Hasła nie pasują do siebie",
         loginError: "Nieprawidłowy e-mail lub hasło",
-        registrationError: "Rejestracja nie powiodła się. Spróbuj ponownie."
+        registrationError: "Rejestracja nie powiodła się. Spróbuj ponownie.",
+        orUseEmail: "lub użyj swojego e-maila i hasła",
+        orUseEmailRegister: "lub użyj swojego e-maila do rejestracji",
+        forgotPassword: "Zapomniałeś hasła?",
+        welcomeBack: "Witaj ponownie!",
+        welcomeBackDesc: "Wprowadź swoje dane osobowe, aby korzystać ze wszystkich funkcji strony",
+        helloFriend: "Witaj przyjacielu!",
+        helloFriendDesc: "Zarejestruj się używając swoich danych osobowych, aby korzystać ze wszystkich funkcji strony"
       }
     }
   }

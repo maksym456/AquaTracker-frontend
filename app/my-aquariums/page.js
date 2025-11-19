@@ -280,11 +280,23 @@ export default function MyAquariumsPage() {
                         {aquarium.description || t("noDescription", { defaultValue: "Brak opisu" })}
                       </Typography>
                       <Box sx={{ display: 'flex', gap: 2, mt: 'auto', pt: 1, flexWrap: 'wrap' }}>
-                        {aquarium.volume && (
+                        {/* Parametry z formularza (temperature, ph, hardness) */}
+                        {aquarium.temperature && (
                           <Typography variant="caption" color="text.secondary">
-                            💧 {aquarium.volume}L
+                            🌡️ {aquarium.temperature}°C
                           </Typography>
                         )}
+                        {aquarium.ph && (
+                          <Typography variant="caption" color="text.secondary">
+                            pH {aquarium.ph}
+                          </Typography>
+                        )}
+                        {aquarium.hardness && (
+                          <Typography variant="caption" color="text.secondary">
+                            🔷 {aquarium.hardness} dGH
+                          </Typography>
+                        )}
+                        {/* Liczba ryb i roślin */}
                         <Typography variant="caption" color="text.secondary">
                           🐟 {aquarium.fishes?.length || 0}
                         </Typography>
