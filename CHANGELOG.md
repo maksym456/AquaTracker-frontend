@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [0.11.5](https://github.com/maksym456/AquaTracker-frontend/compare/v0.11.4...v0.11.5) (2025-11-20)
+
+
+### Bug Fixes
+
+* **UI:** optimizing image size ([ccb0e7d](https://github.com/maksym456/AquaTracker-frontend/commit/ccb0e7d86fe612a5d02e6e2ef09bc1db561db7b5))
+
 ### [0.11.4](https://github.com/maksym456/AquaTracker-frontend/compare/v0.11.3...v0.11.4) (2025-11-19)
 
 
