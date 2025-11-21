@@ -1,5 +1,5 @@
 export let mockAquariums = [
-    {id: '1', name: 'Moje pierwsze akwarium', volume: 150, fishes: ['1'], plants:['1', '2'], description: 'Pierwsze domowe akwarium'},
+    {id: '1', name: 'Moje pierwsze akwarium', volume: 200, fishes: ['1'], plants:['1', '2'], description: 'Pierwsze domowe akwarium'},
     {id: '2', name: 'Drugie akwarium', volume: 200, fishes: ['2'], plants:['3'], description: 'Drugie domowe akwarium'}
 ];
 export let mockFishes = [
@@ -17,7 +17,8 @@ export let mockHistory = [
 
 export function addAquarium(newAqua) {
   const newId = `${Date.now()}`;
-  mockAquariums.push({ ...newAqua, id: newId, fishes: [], plants: [] });
+  // Domyślnie ustawiamy volume na 200L jeśli nie podano
+  mockAquariums.push({ ...newAqua, volume: newAqua.volume || 200, id: newId, fishes: [], plants: [] });
 }
 
 export function addFishToAquarium(aquariumId, fish) {

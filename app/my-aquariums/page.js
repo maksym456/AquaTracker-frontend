@@ -1,14 +1,14 @@
 "use client";
 
-import { useState, useEffect } from "react";
-import { Box, Button, Typography, Modal, TextField, Grid, Card, CardContent, CardActionArea, Select, MenuItem, FormControl, InputLabel } from "@mui/material";
+import { useState, useEffect, useMemo } from "react";
+import { Box, Button, Typography, Modal, TextField, Grid, Card, CardContent, CardActionArea, Select, MenuItem, FormControl, InputLabel, Paper, Divider, CircularProgress } from "@mui/material";
 import { useTranslation } from "react-i18next";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import LanguageSwitcher from "../components/LanguageSwitcher";
 import KeyboardReturnOutlinedIcon from '@mui/icons-material/KeyboardReturnOutlined';
 import PersonAddIcon from '@mui/icons-material/PersonAdd';
-import { mockAquariums, addAquarium } from "../lib/mockData";
+import { mockAquariums, addAquarium, mockFishes, mockPlants } from "../lib/mockData";
 import { useTheme } from "../contexts/ThemeContext";
 
 export default function MyAquariumsPage() {
@@ -17,6 +17,7 @@ export default function MyAquariumsPage() {
   const { darkMode } = useTheme();
   const [aquariums, setAquariums] = useState([]);
   const [createModalOpen, setCreateModalOpen] = useState(false);
+  const [statisticsModalOpen, setStatisticsModalOpen] = useState(false);
   const [newAquariumName, setNewAquariumName] = useState("");
   const [newAquariumWaterType, setNewAquariumWaterType] = useState("freshwater");
   const [newAquariumTemperature, setNewAquariumTemperature] = useState("24");
@@ -25,7 +26,7 @@ export default function MyAquariumsPage() {
   const [newAquariumHardness, setNewAquariumHardness] = useState("8");
 
   useEffect(() => {
-    // Załaduj akwaria z mockData
+    
     setAquariums(mockAquariums);
   }, []);
 
@@ -60,9 +61,131 @@ export default function MyAquariumsPage() {
     router.push(`/my-aquariums/${aquariumId}`);
   }
 
+  const handleOpenStatistics = () => {
+    setStatisticsModalOpen(true);
+  };
+
+  const handleCloseStatistics = () => {
+    setStatisticsModalOpen(false);
+  };
+
+  const allStatistics = useMemo(() => {
+    if (aquariums.length === 0) return null;
+
+    const allFishes = aquariums.flatMap(aquarium => 
+      mockFishes.filter(fish => aquarium.fishes?.includes(fish.id))
+    );
+
+    const allPlants = aquariums.flatMap(aquarium =>
+      mockPlants.filter(plant => aquarium.plants?.includes(plant.id))
+    );
+
+    const uniqueFishSpecies = new Set(allFishes.map(fish => fish.species));
+    const fishSpeciesCount = uniqueFishSpecies.size;
+
+    const uniquePlantSpecies = new Set(allPlants.map(plant => plant.species || plant.name));
+    const plantSpeciesCount = uniquePlantSpecies.size;
+
+    const fishBySpecies = allFishes.reduce((acc, fish) => {
+      acc[fish.species] = (acc[fish.species] || 0) + 1;
+      return acc;
+    }, {});
+
+    const fishSpeciesData = Object.entries(fishBySpecies)
+      .map(([species, count]) => ({
+        species,
+        count,
+        percentage: allFishes.length > 0 ? (count / allFishes.length) * 100 : 0
+      }))
+      .sort((a, b) => b.count - a.count); 
+
+    const mostCommonFish = fishSpeciesData.length > 0 ? fishSpeciesData[0] : null;
+
+    const plantsBySpecies = allPlants.reduce((acc, plant) => {
+      const species = plant.species || plant.name;
+      acc[species] = (acc[species] || 0) + 1;
+      return acc;
+    }, {});
+
+    const plantSpeciesData = Object.entries(plantsBySpecies)
+      .map(([species, count]) => ({
+        species,
+        count,
+        percentage: allPlants.length > 0 ? (count / allPlants.length) * 100 : 0
+      }))
+      .sort((a, b) => b.count - a.count);
+
+    const mostCommonPlant = plantSpeciesData.length > 0 ? plantSpeciesData[0] : null;
+
+    const fishLengthMap = {
+      "Neon Innesa": 3.5, 
+      "Gupik": 4.5, 
+      "Mieczyk Hellera": 11, 
+      "Danio pręgowany": 4.5, 
+      "Kardynałek chiński": 3.5, 
+      "Bojownik syjamski": 6.5, 
+      "Gurami mozaikowy": 11, 
+      "Kirys pstry": 6.5, 
+      "Zbrojnik / Glonojad": 12.5, 
+      "Pyszczak Malawi": 12.5, 
+      "Pirania czerwona": 27.5, 
+      "Księżniczka z Burundi": 8.5, 
+      "Welonka (Złota rybka)": 20, 
+      "Razbora klinowa": 4.5, 
+      "Skalar": 15, 
+      "Tęczanka neonowa": 7, 
+      "Proporczykowiec": 5, 
+      "Molinezja": 7, 
+      "Kolcobrzuch karłowaty": 3, 
+      "Babka złota": 6, 
+      "Błazenek pomarańczowy": 9.5, 
+      "Pokolec królewski": 22.5, 
+      "Mandaryn wspaniały": 7.5, 
+      "Ustnik słoneczny": 27.5, 
+      "Poecilia reticulata": 4.5 
+    };
+
+    let totalOverstocking = 0;
+
+    aquariums.forEach(aquarium => {
+      
+      const volume = aquarium.volume || 200;
+
+      const aquariumFishes = mockFishes.filter(fish => aquarium.fishes?.includes(fish.id));
+
+      let totalFishLength = 0;
+      aquariumFishes.forEach(fish => {
+        
+        const length = fishLengthMap[fish.name] || fishLengthMap[fish.species] || 5; 
+        totalFishLength += length;
+      });
+
+      const occupancy = volume > 0 ? (totalFishLength / volume) * 100 : 0;
+      
+      totalOverstocking += occupancy;
+    });
+
+    const averageOccupancy = aquariums.length > 0 
+      ? (totalOverstocking / aquariums.length).toFixed(1)
+      : 0;
+
+    return {
+      totalAquariums: aquariums.length,
+      totalFishes: allFishes.length,
+      totalPlants: allPlants.length,
+      fishSpeciesCount,
+      plantSpeciesCount,
+      mostCommonFish,
+      mostCommonPlant,
+      averageOccupancy,
+      fishSpeciesData,
+      plantSpeciesData
+    };
+  }, [aquariums]);
+
   return (
     <Box sx={{ minHeight: "100vh", position: "relative" }}>
-      {/* Górny pasek z gradientem */}
+      {}
       <Box sx={{
         position: 'absolute', top: 0, left: 0, right: 0,
         height: 96,
@@ -70,7 +193,7 @@ export default function MyAquariumsPage() {
         zIndex: 5
       }} />
       
-      {/* Ciemny overlay dla dark mode */}
+      {}
       <Box
         sx={{
           position: 'absolute',
@@ -85,7 +208,7 @@ export default function MyAquariumsPage() {
         }}
       />
       
-      {/* Ciemny overlay na górny pasek dla dark mode */}
+      {}
       <Box
         sx={{
           position: 'absolute',
@@ -106,26 +229,29 @@ export default function MyAquariumsPage() {
         px: { xs: 2, sm: 4 }, py: 2, zIndex: 10
       }}>
         <Box sx={{ display: "flex", gap: { xs: 0.5, sm: 1 } }}>
-          <Box sx={{
-            bgcolor: darkMode ? 'rgba(30, 30, 30, 0.85)' : 'rgba(255, 255, 255, 0.4)', 
-            p: { xs: 0.5, sm: 0.8 }, 
-            borderRadius: 1.5, 
-            boxShadow: 2,
-            transition: "all 0.3s", 
-            backdropFilter: 'blur(8px)',
-            "&:hover": { 
-              boxShadow: 4, 
-              transform: "translateY(-2px)", 
-              bgcolor: darkMode ? 'rgba(40, 40, 40, 0.9)' : 'rgba(255, 255, 255, 0.6)' 
-            },
-            cursor: 'pointer', 
-            minHeight: { xs: '50px', sm: '60px' }, 
-            minWidth: { xs: '60px', sm: '80px' }, 
-            display: 'flex', 
-            flexDirection: 'column', 
-            alignItems: 'center', 
-            justifyContent: 'center'
-          }}>
+          <Box 
+            onClick={handleOpenStatistics}
+            sx={{
+              bgcolor: darkMode ? 'rgba(30, 30, 30, 0.85)' : 'rgba(255, 255, 255, 0.4)', 
+              p: { xs: 0.5, sm: 0.8 }, 
+              borderRadius: 1.5, 
+              boxShadow: 2,
+              transition: "all 0.3s", 
+              backdropFilter: 'blur(8px)',
+              "&:hover": { 
+                boxShadow: 4, 
+                transform: "translateY(-2px)", 
+                bgcolor: darkMode ? 'rgba(40, 40, 40, 0.9)' : 'rgba(255, 255, 255, 0.6)' 
+              },
+              cursor: 'pointer', 
+              minHeight: { xs: '50px', sm: '60px' }, 
+              minWidth: { xs: '60px', sm: '80px' }, 
+              display: 'flex', 
+              flexDirection: 'column', 
+              alignItems: 'center', 
+              justifyContent: 'center'
+            }}
+          >
             <Typography sx={{ fontSize: { xs: 14, sm: 16 }, mb: 0.3, textAlign: 'center' }}>📊</Typography>
             <Typography variant="body2" sx={{ fontWeight: 600, color: "text.primary", textAlign: 'center', fontSize: { xs: '0.55rem', sm: '0.65rem' } }}>
               {t("statistics")}
@@ -189,7 +315,7 @@ export default function MyAquariumsPage() {
         </Box>
       </Box>
 
-      {/* Główna sekcja z kafelkami akwariów */}
+      {}
       <Box sx={{ position: "relative", zIndex: 2, p: 4, pt: 14, pb: 14 }}>
         {aquariums.length === 0 ? (
           <Box sx={{ 
@@ -280,7 +406,7 @@ export default function MyAquariumsPage() {
                         {aquarium.description || t("noDescription", { defaultValue: "Brak opisu" })}
                       </Typography>
                       <Box sx={{ display: 'flex', gap: 2, mt: 'auto', pt: 1, flexWrap: 'wrap' }}>
-                        {/* Parametry z formularza (temperature, ph, hardness) */}
+                        {}
                         {aquarium.temperature && (
                           <Typography variant="caption" color="text.secondary">
                             🌡️ {aquarium.temperature}°C
@@ -296,7 +422,7 @@ export default function MyAquariumsPage() {
                             🔷 {aquarium.hardness} dGH
                           </Typography>
                         )}
-                        {/* Liczba ryb i roślin */}
+                        {}
                         <Typography variant="caption" color="text.secondary">
                           🐟 {aquarium.fishes?.length || 0}
                         </Typography>
@@ -313,7 +439,7 @@ export default function MyAquariumsPage() {
         )}
       </Box>
 
-      {/* Footer z przyciskami */}
+      {}
       <Box sx={{
         position: 'fixed', 
         left: 0, 
@@ -349,7 +475,7 @@ export default function MyAquariumsPage() {
         </Button>
       </Box>
 
-      {/* Modal do tworzenia akwarium */}
+      {}
       <Modal
         open={createModalOpen}
         onClose={() => setCreateModalOpen(false)}
@@ -441,6 +567,416 @@ export default function MyAquariumsPage() {
             </Button>
           </Box>
         </Box>
+      </Modal>
+
+      {}
+      <Modal
+        open={statisticsModalOpen}
+        onClose={handleCloseStatistics}
+        sx={{
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'center',
+          p: 2
+        }}
+      >
+        <Paper
+          sx={{
+            width: { xs: '95%', sm: '90%', md: '800px' },
+            maxHeight: '90vh',
+            overflow: 'auto',
+            p: 3,
+            bgcolor: darkMode ? 'rgba(30, 30, 30, 0.95)' : 'background.paper'
+          }}
+        >
+          {}
+          <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 3 }}>
+            <Typography variant="h5" sx={{ fontWeight: 600, color: darkMode ? 'white' : 'inherit' }}>
+              {t("statistics")} - {t("allAquariums", { defaultValue: "Wszystkie akwaria" })}
+            </Typography>
+            <Button onClick={handleCloseStatistics} variant="outlined" size="small">
+              {t("close", { defaultValue: "Zamknij" })}
+            </Button>
+          </Box>
+
+          <Divider sx={{ mb: 3 }} />
+
+          {}
+          {allStatistics ? (
+            <Grid container spacing={3}>
+              {}
+              <Grid item xs={12}>
+                <Typography variant="h6" sx={{ mb: 2, color: darkMode ? 'white' : 'inherit' }}>
+                  {t("statsDesc", { defaultValue: "Podsumowanie" })}
+                </Typography>
+                
+                <Grid container spacing={2}>
+                  {}
+                  <Grid item xs={12} sm={6} md={3}>
+                    <Paper
+                      elevation={2}
+                      sx={{
+                        p: 2,
+                        textAlign: 'center',
+                        bgcolor: darkMode ? 'rgba(50, 50, 50, 0.5)' : 'rgba(33, 150, 243, 0.1)'
+                      }}
+                    >
+                      <Typography variant="h4" sx={{ color: darkMode ? 'white' : '#2196f3', fontWeight: 600 }}>
+                        {allStatistics.totalAquariums}
+                      </Typography>
+                      <Typography variant="body2" sx={{ color: darkMode ? 'rgba(255,255,255,0.7)' : 'text.secondary' }}>
+                        🏠 {t("myAquariums", { defaultValue: "Akwariów" })}
+                      </Typography>
+                    </Paper>
+                  </Grid>
+
+                  {}
+                  <Grid item xs={12} sm={6} md={3}>
+                    <Paper
+                      elevation={2}
+                      sx={{
+                        p: 2,
+                        textAlign: 'center',
+                        bgcolor: darkMode ? 'rgba(50, 50, 50, 0.5)' : 'rgba(46, 127, 169, 0.1)'
+                      }}
+                    >
+                      <Typography variant="h4" sx={{ color: darkMode ? 'white' : '#2e7fa9', fontWeight: 600 }}>
+                        {allStatistics.totalFishes}
+                      </Typography>
+                      <Typography variant="body2" sx={{ color: darkMode ? 'rgba(255,255,255,0.7)' : 'text.secondary' }}>
+                        🐟 {t("fishes", { defaultValue: "Ryb" })}
+                      </Typography>
+                    </Paper>
+                  </Grid>
+
+                  {}
+                  <Grid item xs={12} sm={6} md={3}>
+                    <Paper
+                      elevation={2}
+                      sx={{
+                        p: 2,
+                        textAlign: 'center',
+                        bgcolor: darkMode ? 'rgba(50, 50, 50, 0.5)' : 'rgba(76, 175, 80, 0.1)'
+                      }}
+                    >
+                      <Typography variant="h4" sx={{ color: darkMode ? 'white' : '#4caf50', fontWeight: 600 }}>
+                        {allStatistics.totalPlants}
+                      </Typography>
+                      <Typography variant="body2" sx={{ color: darkMode ? 'rgba(255,255,255,0.7)' : 'text.secondary' }}>
+                        🌿 {t("plants", { defaultValue: "Roślin" })}
+                      </Typography>
+                    </Paper>
+                  </Grid>
+
+                  {}
+                  <Grid item xs={12} sm={6} md={3}>
+                    <Paper
+                      elevation={2}
+                      sx={{
+                        p: 2,
+                        textAlign: 'center',
+                        bgcolor: darkMode ? 'rgba(50, 50, 50, 0.5)' : 'rgba(156, 39, 176, 0.1)'
+                      }}
+                    >
+                      <Typography variant="h4" sx={{ color: darkMode ? 'white' : '#9c27b0', fontWeight: 600 }}>
+                        {allStatistics.fishSpeciesCount}
+                      </Typography>
+                      <Typography variant="body2" sx={{ color: darkMode ? 'rgba(255,255,255,0.7)' : 'text.secondary' }}>
+                        {t("fishSpecies", { defaultValue: "Gatunków ryb" })}
+                      </Typography>
+                    </Paper>
+                  </Grid>
+
+                  {}
+                  <Grid item xs={12} sm={6} md={3}>
+                    <Paper
+                      elevation={2}
+                      sx={{
+                        p: 2,
+                        textAlign: 'center',
+                        bgcolor: darkMode ? 'rgba(50, 50, 50, 0.5)' : 'rgba(76, 175, 80, 0.2)'
+                      }}
+                    >
+                      <Typography variant="h4" sx={{ color: darkMode ? 'white' : '#4caf50', fontWeight: 600 }}>
+                        {allStatistics.plantSpeciesCount}
+                      </Typography>
+                      <Typography variant="body2" sx={{ color: darkMode ? 'rgba(255,255,255,0.7)' : 'text.secondary' }}>
+                        {t("plantSpecies", { defaultValue: "Gatunków roślin" })}
+                      </Typography>
+                    </Paper>
+                  </Grid>
+                </Grid>
+              </Grid>
+
+              {}
+              <Grid item xs={12} md={6}>
+                <Typography variant="h6" sx={{ mb: 2, color: darkMode ? 'white' : 'inherit' }}>
+                  {t("overstocking", { defaultValue: "Przerybienie akwariów" })}
+                </Typography>
+                
+                <Paper
+                  elevation={2}
+                  sx={{
+                    p: 3,
+                    bgcolor: darkMode ? 'rgba(50, 50, 50, 0.5)' : 'rgba(0, 0, 0, 0.02)'
+                  }}
+                >
+                  <Box sx={{ mb: 2 }}>
+                    <Box sx={{ display: 'flex', justifyContent: 'space-between', mb: 1 }}>
+                      <Typography variant="body2" sx={{ color: darkMode ? 'rgba(255,255,255,0.7)' : 'text.secondary' }}>
+                        {t("averageOccupancy", { defaultValue: "Średnia zajętość" })}:
+                      </Typography>
+                      <Typography variant="body2" sx={{ fontWeight: 600, color: darkMode ? 'white' : 'inherit' }}>
+                        {allStatistics.averageOccupancy}%
+                      </Typography>
+                    </Box>
+                    
+                    {}
+                    <Box
+                      sx={{
+                        width: '100%',
+                        height: 30,
+                        bgcolor: darkMode ? 'rgba(255,255,255,0.1)' : 'rgba(0,0,0,0.1)',
+                        borderRadius: 2,
+                        overflow: 'hidden',
+                        position: 'relative'
+                      }}
+                    >
+                      <Box
+                        sx={{
+                          width: `${Math.min(parseFloat(allStatistics.averageOccupancy), 100)}%`,
+                          height: '100%',
+                          
+                          bgcolor: parseFloat(allStatistics.averageOccupancy) < 80
+                            ? '#4caf50' 
+                            : parseFloat(allStatistics.averageOccupancy) <= 100
+                            ? '#ff9800' 
+                            : '#f44336', 
+                          transition: 'width 0.5s ease-in-out',
+                          display: 'flex',
+                          alignItems: 'center',
+                          justifyContent: 'center'
+                        }}
+                      >
+                        {parseFloat(allStatistics.averageOccupancy) > 15 && (
+                          <Typography
+                            variant="caption"
+                            sx={{
+                              color: 'white',
+                              fontWeight: 600,
+                              fontSize: '0.75rem'
+                            }}
+                          >
+                            {allStatistics.averageOccupancy}%
+                          </Typography>
+                        )}
+                      </Box>
+                    </Box>
+                    <Typography variant="caption" sx={{ color: darkMode ? 'rgba(255,255,255,0.5)' : 'text.secondary', mt: 1, display: 'block' }}>
+                      {t("overstockingInfo", { defaultValue: "Zasada: 1cm ryby = 1 litr wody" })}
+                    </Typography>
+                    <Typography variant="caption" sx={{ color: darkMode ? 'rgba(255,255,255,0.5)' : 'text.secondary', mt: 0.5, display: 'block' }}>
+                      {t("aquariumVolume", { defaultValue: "Objętość akwarium" })}: 200L
+                    </Typography>
+                  </Box>
+                </Paper>
+              </Grid>
+
+              {}
+              <Grid item xs={12} md={6}>
+                <Typography variant="h6" sx={{ mb: 2, color: darkMode ? 'white' : 'inherit' }}>
+                  {t("fishDistribution", { defaultValue: "Rozkład gatunków ryb" })}
+                </Typography>
+                
+                <Paper
+                  elevation={2}
+                  sx={{
+                    p: 3,
+                    bgcolor: darkMode ? 'rgba(50, 50, 50, 0.5)' : 'rgba(0, 0, 0, 0.02)'
+                  }}
+                >
+                  {allStatistics.fishSpeciesData.length > 0 ? (
+                    <Box>
+                      {allStatistics.fishSpeciesData.map((item, index) => {
+                        const colors = ['#2e7fa9', '#4caf50', '#ff9800', '#9c27b0', '#f44336', '#00bcd4'];
+                        const color = colors[index % colors.length];
+                        
+                        return (
+                          <Box key={item.species} sx={{ mb: 2 }}>
+                            <Box sx={{ display: 'flex', justifyContent: 'space-between', mb: 1 }}>
+                              <Typography variant="body2" sx={{ color: darkMode ? 'white' : 'inherit' }}>
+                                {item.species}::
+                              </Typography>
+                              <Typography variant="body2" sx={{ fontWeight: 600, color: darkMode ? 'white' : 'inherit' }}>
+                                {item.count} ({item.percentage.toFixed(1)}%)
+                              </Typography>
+                            </Box>
+                            
+                            <Box
+                              sx={{
+                                width: '100%',
+                                height: 20,
+                                bgcolor: darkMode ? 'rgba(255,255,255,0.1)' : 'rgba(0,0,0,0.1)',
+                                borderRadius: 1,
+                                overflow: 'hidden'
+                              }}
+                            >
+                              <Box
+                                sx={{
+                                  width: `${item.percentage}%`,
+                                  height: '100%',
+                                  bgcolor: color,
+                                  transition: 'width 0.5s ease-in-out'
+                                }}
+                              />
+                            </Box>
+                          </Box>
+                        );
+                      })}
+                    </Box>
+                  ) : (
+                    <Typography variant="body2" sx={{ color: darkMode ? 'rgba(255,255,255,0.7)' : 'text.secondary', textAlign: 'center' }}>
+                      {t("noFishInAquarium", { defaultValue: "Brak ryb w akwariach" })}
+                    </Typography>
+                  )}
+                </Paper>
+              </Grid>
+
+              {}
+              <Grid item xs={12} md={6}>
+                <Typography variant="h6" sx={{ mb: 2, color: darkMode ? 'white' : 'inherit' }}>
+                  {t("plantDistribution", { defaultValue: "Rozkład gatunków roślin" })}
+                </Typography>
+                
+                <Paper
+                  elevation={2}
+                  sx={{
+                    p: 3,
+                    bgcolor: darkMode ? 'rgba(50, 50, 50, 0.5)' : 'rgba(0, 0, 0, 0.02)'
+                  }}
+                >
+                  {allStatistics.plantSpeciesData.length > 0 ? (
+                    <Box>
+                      {allStatistics.plantSpeciesData.map((item, index) => {
+                        const colors = ['#4caf50', '#2e7fa9', '#ff9800', '#9c27b0', '#f44336', '#00bcd4'];
+                        const color = colors[index % colors.length];
+                        
+                        return (
+                          <Box key={item.species} sx={{ mb: 2 }}>
+                            <Box sx={{ display: 'flex', justifyContent: 'space-between', mb: 1 }}>
+                              <Typography variant="body2" sx={{ color: darkMode ? 'white' : 'inherit' }}>
+                                {item.species}:
+                              </Typography>
+                              <Typography variant="body2" sx={{ fontWeight: 600, color: darkMode ? 'white' : 'inherit' }}>
+                                {item.count} ({item.percentage.toFixed(1)}%)
+                              </Typography>
+                            </Box>
+                            
+                            <Box
+                              sx={{
+                                width: '100%',
+                                height: 20,
+                                bgcolor: darkMode ? 'rgba(255,255,255,0.1)' : 'rgba(0,0,0,0.1)',
+                                borderRadius: 1,
+                                overflow: 'hidden'
+                              }}
+                            >
+                              <Box
+                                sx={{
+                                  width: `${item.percentage}%`,
+                                  height: '100%',
+                                  bgcolor: color,
+                                  transition: 'width 0.5s ease-in-out'
+                                }}
+                              />
+                            </Box>
+                          </Box>
+                        );
+                      })}
+                    </Box>
+                  ) : (
+                    <Typography variant="body2" sx={{ color: darkMode ? 'rgba(255,255,255,0.7)' : 'text.secondary', textAlign: 'center' }}>
+                      {t("noPlantsInAquarium", { defaultValue: "Brak roślin w akwariach" })}
+                    </Typography>
+                  )}
+                </Paper>
+              </Grid>
+
+              {}
+              <Grid item xs={12}>
+                <Typography variant="h6" sx={{ mb: 2, color: darkMode ? 'white' : 'inherit' }}>
+                  {t("mostCommonSpecies", { defaultValue: "Najliczniejszy gatunek" })}
+                </Typography>
+                
+                <Grid container spacing={2}>
+                  {}
+                  <Grid item xs={12} md={6}>
+                    <Paper
+                      elevation={2}
+                      sx={{
+                        p: 3,
+                        bgcolor: darkMode ? 'rgba(50, 50, 50, 0.5)' : 'rgba(46, 127, 169, 0.1)',
+                        textAlign: 'center'
+                      }}
+                    >
+                      <Typography variant="body1" sx={{ mb: 2, color: darkMode ? 'rgba(255,255,255,0.7)' : 'text.secondary' }}>
+                        🐟 {t("fishes", { defaultValue: "Ryb" })}
+                      </Typography>
+                      {allStatistics.mostCommonFish ? (
+                        <>
+                          <Typography variant="h5" sx={{ color: darkMode ? 'white' : '#2e7fa9', fontWeight: 600, mb: 1 }}>
+                            {allStatistics.mostCommonFish.species}: {allStatistics.mostCommonFish.count}
+                          </Typography>
+                          <Typography variant="h6" sx={{ color: darkMode ? 'rgba(255,255,255,0.8)' : 'text.secondary' }}>
+                            {t("pieces", { defaultValue: "sztuk" })} ({allStatistics.mostCommonFish.percentage.toFixed(1)}%)
+                          </Typography>
+                        </>
+                      ) : (
+                        <Typography variant="body2" sx={{ color: darkMode ? 'rgba(255,255,255,0.7)' : 'text.secondary' }}>
+                          {t("noFishInAquarium", { defaultValue: "Brak ryb" })}
+                        </Typography>
+                      )}
+                    </Paper>
+                  </Grid>
+
+                  {}
+                  <Grid item xs={12} md={6}>
+                    <Paper
+                      elevation={2}
+                      sx={{
+                        p: 3,
+                        bgcolor: darkMode ? 'rgba(50, 50, 50, 0.5)' : 'rgba(76, 175, 80, 0.1)',
+                        textAlign: 'center'
+                      }}
+                    >
+                      <Typography variant="body1" sx={{ mb: 2, color: darkMode ? 'rgba(255,255,255,0.7)' : 'text.secondary' }}>
+                        🌿 {t("plants", { defaultValue: "Roślin" })}
+                      </Typography>
+                      {allStatistics.mostCommonPlant ? (
+                        <>
+                          <Typography variant="h5" sx={{ color: darkMode ? 'white' : '#4caf50', fontWeight: 600, mb: 1 }}>
+                            {allStatistics.mostCommonPlant.species}: {allStatistics.mostCommonPlant.count}
+                          </Typography>
+                          <Typography variant="h6" sx={{ color: darkMode ? 'rgba(255,255,255,0.8)' : 'text.secondary' }}>
+                            {t("pieces", { defaultValue: "sztuk" })} ({allStatistics.mostCommonPlant.percentage.toFixed(1)}%)
+                          </Typography>
+                        </>
+                      ) : (
+                        <Typography variant="body2" sx={{ color: darkMode ? 'rgba(255,255,255,0.7)' : 'text.secondary' }}>
+                          {t("noPlantsInAquarium", { defaultValue: "Brak roślin" })}
+                        </Typography>
+                      )}
+                    </Paper>
+                  </Grid>
+                </Grid>
+              </Grid>
+            </Grid>
+          ) : (
+            <Box sx={{ display: 'flex', justifyContent: 'center', alignItems: 'center', minHeight: 200 }}>
+              <CircularProgress />
+            </Box>
+          )}
+        </Paper>
       </Modal>
     </Box>
   );
