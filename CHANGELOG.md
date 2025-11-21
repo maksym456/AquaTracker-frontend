@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+## [0.12.0](https://github.com/maksym456/AquaTracker-frontend/compare/v0.11.5...v0.12.0) (2025-11-21)
+
+
+### Features
+
+* **statistics:** add aquarium statistics modal and enhance data display ([6829d02](https://github.com/maksym456/AquaTracker-frontend/commit/6829d02e3afa38150bbae1f0bc64533ddb7146f8))
+
 ### [0.11.5](https://github.com/maksym456/AquaTracker-frontend/compare/v0.11.4...v0.11.5) (2025-11-20)
 
 
