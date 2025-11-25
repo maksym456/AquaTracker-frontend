@@ -198,11 +198,10 @@ export default function Dashboard() {
   return (
     <Box sx={{ 
       minHeight: "100vh",
-      height: "100vh",
       display: 'flex',
       flexDirection: 'column',
       position: 'relative',
-      overflow: 'hidden'
+      width: '100%'
     }}>
       {/* Tło wideo */}
       <video
@@ -212,7 +211,9 @@ export default function Dashboard() {
         playsInline
         preload="none"
         style={{
-          position: 'absolute',
+          position: 'fixed',
+          top: 0,
+          left: 0,
           width: '100%',
           height: '100%',
           objectFit: 'cover',
@@ -228,7 +229,7 @@ export default function Dashboard() {
       {/* Ciemny overlay dla dark mode */}
       <Box
         sx={{
-          position: 'absolute',
+          position: 'fixed',
           top: 0,
           left: 0,
           right: 0,
@@ -246,19 +247,25 @@ export default function Dashboard() {
          flexDirection: 'row',
          justifyContent: "space-between", 
          alignItems: "center",
-         px: { xs: 2, md: 4 },
-         py: 2,
+         px: { xs: 1.5, sm: 1.5, md: 2, lg: 4 },
+         py: { xs: 0.75, sm: 1, md: 1, lg: 2 },
          zIndex: 10,
-         gap: { xs: 1, md: 0 }
+         gap: { xs: 1, md: 0 },
+         '@media (max-height: 700px)': {
+           py: { xs: 0.5, sm: 0.75 }
+         }
        }}>
          <Typography variant="h4" component="h1" sx={{ 
            fontWeight: 700, 
            color: "white",
-           fontSize: { xs: '1.8rem', md: '2.2rem' },
+           fontSize: { xs: '1.2rem', sm: '1.4rem', md: '1.5rem', lg: '2.2rem' },
            letterSpacing: '1px',
            fontFamily: 'var(--font-caveat)',
            textShadow: '2px 2px 4px rgba(0,0,0,0.5)',
-           lineHeight: 1
+           lineHeight: 1,
+           '@media (max-height: 700px)': {
+             fontSize: { xs: '1.1rem', sm: '1.3rem', md: '1.4rem' }
+           }
          }}>
            AquaTracker
          </Typography>
@@ -307,28 +314,63 @@ export default function Dashboard() {
          flex: 1,
          display: 'flex',
          flexDirection: 'column',
-         gap: 4,
-         px: { xs: 2, md: 4 },
-         py: 4,
-         mt: { xs: 0, md: 40 },
-         ml: { xs: 0, md: 15 },
-         mr: { xs: 0, md: 0 },
+         gap: { xs: 0.75, sm: 1, md: 1, lg: 4 },
+         px: { xs: 1, sm: 1.25, md: 1.5, lg: 4 },
+         py: { xs: 0.25, sm: 0.5, md: 0.75, lg: 4 },
+         mt: { xs: 0, sm: 0, md: 0, lg: 40 },
+         ml: { xs: 0, md: 0, lg: 15 },
+         mr: { xs: 0, md: 0, lg: 0 },
          zIndex: 10,
          maxWidth: '1400px',
-         width: '100%'
+         width: '100%',
+         position: 'relative',
+         boxSizing: 'border-box',
+         overflow: 'hidden',
+         justifyContent: { xs: 'flex-start', sm: 'flex-start', md: 'center', lg: 'flex-start' },
+         alignItems: { xs: 'stretch', sm: 'center', md: 'center', lg: 'flex-start' },
+         '@media (max-height: 700px)': {
+           gap: { xs: 0.5, sm: 0.75 },
+           py: { xs: 0.1, sm: 0.25 },
+           mt: 0
+         }
        }}>
          {/* Tekst */}
          <Box sx={{
            display: 'flex',
-           alignItems: 'center',
-           justifyContent: 'flex-start'
+           alignItems: 'flex-start',
+           justifyContent: { xs: 'center', sm: 'center', md: 'center', lg: 'flex-start' },
+           width: '100%',
+           mt: { xs: '110px', sm: '130px', md: '150px', lg: '170px' },
+           '@media (max-height: 700px)': {
+             mt: { xs: '80px', sm: '90px', md: '100px' }
+           }
          }}>
           <Box sx={{
+            width: { 
+              xs: '100%', 
+              sm: '476px',  // 2 kafelki łącznie z wewnętrznymi marginesami
+              md: '476px',
+              lg: '476px'
+            },
+            maxWidth: { 
+              xs: '100%', 
+              sm: '476px', 
+              md: '476px', 
+              lg: '476px' 
+            },
+            display: 'flex',
+            justifyContent: 'flex-start'
+          }}>
+          <Box sx={{
             backgroundColor: darkMode ? 'rgba(0, 0, 0, 0.4)' : 'rgba(0, 0, 0, 0.01)',
-            padding: { xs: '30px', md: '60px' },
+            padding: { xs: '16px 20px', sm: '24px 28px', md: '32px 36px', lg: '60px' },
             borderRadius: '12px',
             backdropFilter: 'blur(15px)',
-            maxWidth: '550px'
+            width: '100%',
+            boxSizing: 'border-box',
+            '@media (max-height: 700px)': {
+              padding: { xs: '12px 16px', sm: '18px 22px', md: '24px 28px' }
+            }
           }}>
              <Typography 
                variant="h2" 
@@ -336,10 +378,14 @@ export default function Dashboard() {
                sx={{ 
                  fontWeight: "bold", 
                  color: "white", 
-                 mb: 3,
-                 fontSize: { xs: '1.8rem', md: '2.5rem' },
-                 lineHeight: 1.2,
-                 textAlign: { xs: 'center', md: 'left' }
+                 mb: { xs: 0.75, sm: 1, md: 1.25, lg: 2.5 },
+                 fontSize: { xs: '1.3rem', sm: '1.6rem', md: '1.9rem', lg: '2.8rem' },
+                 lineHeight: { xs: 1.15, sm: 1.2, md: 1.25, lg: 1.2 },
+                 textAlign: { xs: 'center', sm: 'center', md: 'center', lg: 'left' },
+                 '@media (max-height: 700px)': {
+                   fontSize: { xs: '1.2rem', sm: '1.4rem', md: '1.6rem' },
+                   mb: { xs: 0.6, sm: 0.75, md: 1 }
+                 }
                }}
              >
                {t("mainHeader")}
@@ -348,34 +394,44 @@ export default function Dashboard() {
                variant="h6" 
                sx={{ 
                  color: "white", 
-                 lineHeight: 1.6,
-                 fontSize: { xs: '1rem', md: '1.1rem' },
-                 textAlign: { xs: 'center', md: 'left' }
+                 lineHeight: { xs: 1.2, sm: 1.25, md: 1.3, lg: 1.5 },
+                 fontSize: { xs: '0.7rem', sm: '0.75rem', md: '0.8rem', lg: '0.95rem' },
+                 textAlign: { xs: 'center', sm: 'center', md: 'center', lg: 'left' },
+                 '@media (max-height: 700px)': {
+                   fontSize: { xs: '0.65rem', sm: '0.7rem', md: '0.75rem' },
+                   lineHeight: { xs: 1.15, sm: 1.2, md: 1.25 }
+                 }
                }}
              >
                {t("mainSubHeader")}
              </Typography>
            </Box>
+          </Box>
          </Box>
 
          {/* Karty */}
          <Box sx={{ 
            display: 'flex',
            alignItems: 'flex-start',
-           justifyContent: 'flex-start'
+           justifyContent: { xs: 'center', sm: 'center', md: 'center', lg: 'flex-start' },
+           width: '100%'
          }}>
          <Box sx={{ 
            display: "grid", 
-           gridTemplateColumns: { xs: "1fr", md: "repeat(2, 1fr)" },
-           gap: 2,
-           width: { xs: 'calc(100% - 80px)', md: 'auto' },
-           maxWidth: { xs: 'none', md: '600px' }
+           gridTemplateColumns: { xs: "1fr", sm: "repeat(2, 1fr)", md: "repeat(2, 1fr)", lg: "repeat(2, 1fr)" },
+           gap: { xs: 0.5, sm: 0.75, md: 1, lg: 2 },
+           width: { xs: '100%', sm: '95%', md: '95%', lg: 'auto' },
+           maxWidth: { xs: '100%', sm: '650px', md: '700px', lg: '600px' },
+           boxSizing: 'border-box',
+           '@media (max-height: 700px)': {
+             gap: { xs: 0.4, sm: 0.5, md: 0.75 }
+           }
          }}>
            {/* Top Row */}
            <Link href="/my-aquariums" style={{ textDecoration: 'none', display: 'block', height: '100%' }}>
            <Box sx={{
              bgcolor: darkMode ? 'rgba(30, 30, 30, 0.85)' : 'rgba(255, 255, 255, 0.4)',
-             p: 2.5,
+             p: { xs: 1, sm: 1.25, md: 1.25, lg: 2.5 },
              borderRadius: 2,
              boxShadow: 3,
              transition: "all 0.3s",
@@ -386,18 +442,48 @@ export default function Dashboard() {
                bgcolor: darkMode ? 'rgba(40, 40, 40, 0.9)' : 'rgba(255, 255, 255, 0.6)'
              },
              cursor: 'pointer',
-             minHeight: '140px',
+             minHeight: { xs: '90px', sm: '100px', md: '100px', lg: '140px' },
              display: 'flex',
              flexDirection: 'column',
              alignItems: 'center',
              justifyContent: 'center',
-             height: '100%'
+             height: '100%',
+             '@media (max-height: 700px)': {
+               p: { xs: 0.75, sm: 1, md: 1 },
+               minHeight: { xs: '75px', sm: '85px', md: '90px' }
+             }
            }}>
-             <Typography sx={{ fontSize: 36, mb: 1.5, textAlign: 'center' }}>🏠</Typography>
-             <Typography variant="h6" sx={{ fontWeight: 600, color: "text.primary", mb: 1, textAlign: 'center', fontSize: '1rem' }}>
+             <Typography sx={{ 
+               fontSize: { xs: 24, sm: 26, md: 28, lg: 36 }, 
+               mb: { xs: 0.25, sm: 0.5, md: 0.5, lg: 1.5 }, 
+               textAlign: 'center',
+               '@media (max-height: 700px)': {
+                 fontSize: { xs: 20, sm: 22, md: 24 },
+                 mb: { xs: 0.25, sm: 0.25, md: 0.5 }
+               }
+             }}>🏠</Typography>
+             <Typography variant="h6" sx={{ 
+               fontWeight: 600, 
+               color: "text.primary", 
+               mb: { xs: 0.25, sm: 0.5, md: 0.5, lg: 1 }, 
+               textAlign: 'center', 
+               fontSize: { xs: '0.75rem', sm: '0.8rem', md: '0.85rem', lg: '1rem' },
+               '@media (max-height: 700px)': {
+                 fontSize: { xs: '0.7rem', sm: '0.75rem', md: '0.8rem' },
+                 mb: { xs: 0.25, sm: 0.25, md: 0.5 }
+               }
+             }}>
                {t("myAquariums")}
              </Typography>
-             <Typography variant="body2" color="text.secondary" sx={{ textAlign: 'center', fontSize: '0.8rem', lineHeight: 1.3 }}>
+             <Typography variant="body2" color="text.secondary" sx={{ 
+               textAlign: 'center', 
+               fontSize: { xs: '0.65rem', sm: '0.7rem', md: '0.7rem', lg: '0.8rem' }, 
+               lineHeight: 1.3,
+               '@media (max-height: 700px)': {
+                 fontSize: { xs: '0.6rem', sm: '0.65rem', md: '0.7rem' },
+                 lineHeight: 1.2
+               }
+             }}>
                {t("aquariumsDesc")}
              </Typography>
            </Box>
@@ -407,7 +493,7 @@ export default function Dashboard() {
             <Box sx={{
               // darkMode ? 'rgba(30, 30, 30, 0.85)' : 'rgba(255, 255, 255, 0.4)' - w dark mode ciemne tło, w light mode jasne
               bgcolor: darkMode ? 'rgba(30, 30, 30, 0.85)' : 'rgba(255, 255, 255, 0.4)',
-              p: 2.5,
+              p: { xs: 1, sm: 1.25, md: 1.25, lg: 2.5 },
               borderRadius: 2,
               boxShadow: 3,
               transition: "all 0.3s",
@@ -419,18 +505,48 @@ export default function Dashboard() {
                 bgcolor: darkMode ? 'rgba(40, 40, 40, 0.9)' : 'rgba(255, 255, 255, 0.6)'
               },
               cursor: 'pointer',
-              minHeight: '140px',
+              minHeight: { xs: '90px', sm: '100px', md: '100px', lg: '140px' },
               display: 'flex',
               flexDirection: 'column',
               alignItems: 'center',
               justifyContent: 'center',
-              height: '100%'
+              height: '100%',
+              '@media (max-height: 700px)': {
+                p: { xs: 0.75, sm: 1, md: 1 },
+                minHeight: { xs: '75px', sm: '85px', md: '90px' }
+              }
             }}>
-              <Typography sx={{ fontSize: 36, mb: 1.5, textAlign: 'center' }}>🐠</Typography>
-              <Typography variant="h6" sx={{ fontWeight: 600, color: "text.primary", mb: 1, textAlign: 'center', fontSize: '1rem' }}>
+              <Typography sx={{ 
+                fontSize: { xs: 24, sm: 26, md: 28, lg: 36 }, 
+                mb: { xs: 0.25, sm: 0.5, md: 0.5, lg: 1.5 }, 
+                textAlign: 'center',
+                '@media (max-height: 700px)': {
+                  fontSize: { xs: 20, sm: 22, md: 24 },
+                  mb: { xs: 0.25, sm: 0.25, md: 0.5 }
+                }
+              }}>🐠</Typography>
+              <Typography variant="h6" sx={{ 
+                fontWeight: 600, 
+                color: "text.primary", 
+                mb: { xs: 0.25, sm: 0.5, md: 0.5, lg: 1 }, 
+                textAlign: 'center', 
+                fontSize: { xs: '0.75rem', sm: '0.8rem', md: '0.85rem', lg: '1rem' },
+                '@media (max-height: 700px)': {
+                  fontSize: { xs: '0.7rem', sm: '0.75rem', md: '0.8rem' },
+                  mb: { xs: 0.25, sm: 0.25, md: 0.5 }
+                }
+              }}>
                 {t("fishDatabase")}
               </Typography>
-              <Typography variant="body2" color="text.secondary" sx={{ textAlign: 'center', fontSize: '0.8rem', lineHeight: 1.3 }}>
+              <Typography variant="body2" color="text.secondary" sx={{ 
+                textAlign: 'center', 
+                fontSize: { xs: '0.65rem', sm: '0.7rem', md: '0.7rem', lg: '0.8rem' }, 
+                lineHeight: 1.3,
+                '@media (max-height: 700px)': {
+                  fontSize: { xs: '0.6rem', sm: '0.65rem', md: '0.7rem' },
+                  lineHeight: 1.2
+                }
+              }}>
                 {t("fishDesc")}
               </Typography>
             </Box>
@@ -441,7 +557,7 @@ export default function Dashboard() {
              <Box sx={{
                // darkMode ? 'rgba(30, 30, 30, 0.85)' : 'rgba(255, 255, 255, 0.4)' - w dark mode ciemne tło, w light mode jasne
                bgcolor: darkMode ? 'rgba(30, 30, 30, 0.85)' : 'rgba(255, 255, 255, 0.4)',
-               p: 2.5,
+               p: { xs: 1, sm: 1.25, md: 1.25, lg: 2.5 },
                borderRadius: 2,
                boxShadow: 3,
                transition: "all 0.3s",
@@ -453,18 +569,48 @@ export default function Dashboard() {
                  bgcolor: darkMode ? 'rgba(40, 40, 40, 0.9)' : 'rgba(255, 255, 255, 0.6)'
                },
                cursor: 'pointer',
-               minHeight: '140px',
+               minHeight: { xs: '90px', sm: '100px', md: '100px', lg: '140px' },
                display: 'flex',
                flexDirection: 'column',
                alignItems: 'center',
                justifyContent: 'center',
-               height: '100%'
+               height: '100%',
+               '@media (max-height: 700px)': {
+                 p: { xs: 0.75, sm: 1, md: 1 },
+                 minHeight: { xs: '75px', sm: '85px', md: '90px' }
+               }
              }}>
-               <Typography sx={{ fontSize: 36, mb: 1.5, textAlign: 'center' }}>👥</Typography>
-               <Typography variant="h6" sx={{ fontWeight: 600, color: "text.primary", mb: 1, textAlign: 'center', fontSize: '1rem' }}>
+               <Typography sx={{ 
+                 fontSize: { xs: 24, sm: 26, md: 28, lg: 36 }, 
+                 mb: { xs: 0.25, sm: 0.5, md: 0.5, lg: 1.5 }, 
+                 textAlign: 'center',
+                 '@media (max-height: 700px)': {
+                   fontSize: { xs: 20, sm: 22, md: 24 },
+                   mb: { xs: 0.25, sm: 0.25, md: 0.5 }
+                 }
+               }}>👥</Typography>
+               <Typography variant="h6" sx={{ 
+                 fontWeight: 600, 
+                 color: "text.primary", 
+                 mb: { xs: 0.25, sm: 0.5, md: 0.5, lg: 1 }, 
+                 textAlign: 'center', 
+                 fontSize: { xs: '0.75rem', sm: '0.8rem', md: '0.85rem', lg: '1rem' },
+                 '@media (max-height: 700px)': {
+                   fontSize: { xs: '0.7rem', sm: '0.75rem', md: '0.8rem' },
+                   mb: { xs: 0.25, sm: 0.25, md: 0.5 }
+                 }
+               }}>
                  {t("contacts")}
                </Typography>
-               <Typography variant="body2" color="text.secondary" sx={{ textAlign: 'center', fontSize: '0.8rem', lineHeight: 1.3 }}>
+               <Typography variant="body2" color="text.secondary" sx={{ 
+                 textAlign: 'center', 
+                 fontSize: { xs: '0.65rem', sm: '0.7rem', md: '0.7rem', lg: '0.8rem' }, 
+                 lineHeight: 1.3,
+                 '@media (max-height: 700px)': {
+                   fontSize: { xs: '0.6rem', sm: '0.65rem', md: '0.7rem' },
+                   lineHeight: 1.2
+                 }
+               }}>
                  {t("contactsDesc")}
                </Typography>
              </Box>
@@ -474,7 +620,7 @@ export default function Dashboard() {
             <Box sx={{
               // darkMode ? 'rgba(30, 30, 30, 0.85)' : 'rgba(255, 255, 255, 0.4)' - w dark mode ciemne tło, w light mode jasne
               bgcolor: darkMode ? 'rgba(30, 30, 30, 0.85)' : 'rgba(255, 255, 255, 0.4)',
-              p: 2.5,
+              p: { xs: 1, sm: 1.25, md: 1.25, lg: 2.5 },
               borderRadius: 2,
               boxShadow: 3,
               transition: "all 0.3s",
@@ -486,18 +632,48 @@ export default function Dashboard() {
                 bgcolor: darkMode ? 'rgba(40, 40, 40, 0.9)' : 'rgba(255, 255, 255, 0.6)'
               },
               cursor: 'pointer',
-              minHeight: '140px',
+              minHeight: { xs: '90px', sm: '100px', md: '100px', lg: '140px' },
               display: 'flex',
               flexDirection: 'column',
               alignItems: 'center',
               justifyContent: 'center',
-              height: '100%'
+              height: '100%',
+              '@media (max-height: 700px)': {
+                p: { xs: 0.75, sm: 1, md: 1 },
+                minHeight: { xs: '75px', sm: '85px', md: '90px' }
+              }
             }}>
-              <Typography sx={{ fontSize: 36, mb: 1.5, textAlign: 'center' }}>🌿</Typography>
-              <Typography variant="h6" sx={{ fontWeight: 600, color: "text.primary", mb: 1, textAlign: 'center', fontSize: '1rem' }}>
+              <Typography sx={{ 
+                fontSize: { xs: 24, sm: 26, md: 28, lg: 36 }, 
+                mb: { xs: 0.25, sm: 0.5, md: 0.5, lg: 1.5 }, 
+                textAlign: 'center',
+                '@media (max-height: 700px)': {
+                  fontSize: { xs: 20, sm: 22, md: 24 },
+                  mb: { xs: 0.25, sm: 0.25, md: 0.5 }
+                }
+              }}>🌿</Typography>
+              <Typography variant="h6" sx={{ 
+                fontWeight: 600, 
+                color: "text.primary", 
+                mb: { xs: 0.25, sm: 0.5, md: 0.5, lg: 1 }, 
+                textAlign: 'center', 
+                fontSize: { xs: '0.75rem', sm: '0.8rem', md: '0.85rem', lg: '1rem' },
+                '@media (max-height: 700px)': {
+                  fontSize: { xs: '0.7rem', sm: '0.75rem', md: '0.8rem' },
+                  mb: { xs: 0.25, sm: 0.25, md: 0.5 }
+                }
+              }}>
                 {t("plantsDatabase")}
               </Typography>
-              <Typography variant="body2" color="text.secondary" sx={{ textAlign: 'center', fontSize: '0.8rem', lineHeight: 1.3 }}>
+              <Typography variant="body2" color="text.secondary" sx={{ 
+                textAlign: 'center', 
+                fontSize: { xs: '0.65rem', sm: '0.7rem', md: '0.7rem', lg: '0.8rem' }, 
+                lineHeight: 1.3,
+                '@media (max-height: 700px)': {
+                  fontSize: { xs: '0.6rem', sm: '0.65rem', md: '0.7rem' },
+                  lineHeight: 1.2
+                }
+              }}>
                 {t("plantsDesc")}
               </Typography>
              </Box>

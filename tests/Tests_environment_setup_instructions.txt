@@ -1,0 +1,37 @@
+To set up testing envierment choose either A or B options.
+
+A. From file explorer 
+
+1. Open the tests folder in Windows Explorer.
+2. Find Tests_setup.bat
+3. Double-click it.
+4. A black command window will open and you will see the whole process live.
+
+
+B. From cmd
+
+1. Go to the exact folder dorectory on your pc ( Example! cd C:\path\to\AquaTracker-frontend\tests Example! )
+2. Run the file by typing in  .\Tests_setup.bat
+3. A black command window will open and you will see the whole process live.
+
+
+Once the setup passsed without fail you can run the tests via console. 
+
+IMPORTANT!
+
+Make sure you are in the root directory of the project ( Example! E:\Frontend\AquaTracker-frontend Example! ), and make sure the frontend is actually set up and running. 
+If either of these are done incorrecly the tests will always fail.  
+
+
+
+
+//  Test command cheatsheet. Not related to setup itself.
+
+npx playwright test                                                 Runs ALL tests headlessly (browser window opens)
+npx playwright test --headed                                        Runs ALL tests but you see the browser opening and doing everything
+npx playwright test --ui                                            Opens a interactive UI where you can watch tests live, pause, retry one test, see screenshots, etc. 
+npx playwright test tests/name-of-your-file.test.ts                 Runs only one specific test file
+npx playwright test --grep "login"                                  Runs only tests that have the word "login" (or any word) in the test title
+npx playwright test --project=chromium (or firefox / webkit)        Runs tests only in one specific browser
+npx playwright test --debug                                         Runs the tests in debug mode, browser opens with Playwright Inspector 
+npx playwright show-report                                          Opens a HTML report with videos, screenshots, traces of the last test run
