@@ -2,6 +2,18 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+## [0.13.0](https://github.com/maksym456/AquaTracker-frontend/compare/v0.12.0...v0.13.0) (2025-11-26)
+
+
+### Features
+
+* **responsive:** enhance responsiveness across multiple pages ([38a38e2](https://github.com/maksym456/AquaTracker-frontend/commit/38a38e2996e8c0968304866ba1496d4fb9bda2eb))
+
+
+### Bug Fixes
+
+* **UI:** fix part of responsivness ([e79c5c6](https://github.com/maksym456/AquaTracker-frontend/commit/e79c5c62030aa42ada1b067fcc267ee6252b0237))
+
 ## [0.12.0](https://github.com/maksym456/AquaTracker-frontend/compare/v0.11.5...v0.12.0) (2025-11-21)
 
 
