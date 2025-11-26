@@ -4,7 +4,7 @@ import { useState, useEffect, useRef } from "react";
 import { useTranslation } from "react-i18next";
 import LanguageSwitcher from "./LanguageSwitcher";
 import { useAuth } from "../contexts/AuthContext";
-import { Button, Box, Typography, Modal, TextField, Alert, Select, MenuItem, FormControl, InputLabel, List, ListItem, ListItemText, Chip, Divider, Switch } from "@mui/material";
+import { Button, Box, Typography, Modal, TextField, Alert, Select, MenuItem, FormControl, InputLabel, Divider, Switch } from "@mui/material";
 import { mockAquariums } from "../lib/mockData";
 import { APP_VERSION } from "../version";
 import { useTheme } from "../contexts/ThemeContext";
@@ -26,74 +26,9 @@ export default function Dashboard() {
   const [sessionInfoOpen, setSessionInfoOpen] = useState(false);
   const [sessionDuration, setSessionDuration] = useState("");
   const sessionIntervalRef = useRef(null);
-  const [activityHistoryOpen, setActivityHistoryOpen] = useState(false);
-  const [selectedActionFilter, setSelectedActionFilter] = useState("all");
-  const [selectedAquariumFilter, setSelectedAquariumFilter] = useState("all");
-  const [sortOrder, setSortOrder] = useState("newest");
-  
   const handleOpenSettings = () => setSettingsOpen(true);
   const handleCloseSettings = () => setSettingsOpen(false);
   const toggleDataSource = () => setDataSourceExpanded(!dataSourceExpanded);
-  const handleOpenActivityHistory = () => setActivityHistoryOpen(true);
-  const handleCloseActivityHistory = () => setActivityHistoryOpen(false);
-  
-  const mockActivityHistory = [
-    { id: '1', type: 'created', aquarium: 'Moje pierwsze akwarium', date: new Date('2024-01-15T10:30:00'), details: 'Akwarium zostało utworzone' },
-    { id: '2', type: 'fishAdded', aquarium: 'Moje pierwsze akwarium', date: new Date('2024-01-16T14:20:00'), details: 'Dodano rybę: Gupik' },
-    { id: '3', type: 'plantAdded', aquarium: 'Moje pierwsze akwarium', date: new Date('2024-01-17T09:15:00'), details: 'Dodano roślinę: Anubias' },
-    { id: '4', type: 'parameterChanged', aquarium: 'Moje pierwsze akwarium', date: new Date('2024-01-18T16:45:00'), details: 'Zmieniono temperaturę: 22°C → 24°C' },
-    { id: '5', type: 'created', aquarium: 'Drugie akwarium', date: new Date('2024-01-20T11:00:00'), details: 'Akwarium zostało utworzone' },
-    { id: '6', type: 'edited', aquarium: 'Moje pierwsze akwarium', date: new Date('2024-01-21T13:30:00'), details: 'Zaktualizowano parametry akwarium' },
-    { id: '7', type: 'fishRemoved', aquarium: 'Moje pierwsze akwarium', date: new Date('2024-01-22T15:20:00'), details: 'Usunięto rybę: Gupik' },
-    { id: '8', type: 'parameterChanged', aquarium: 'Drugie akwarium', date: new Date('2024-01-23T10:10:00'), details: 'Zmieniono pH: 7.0 → 7.2' },
-    { id: '9', type: 'plantAdded', aquarium: 'Drugie akwarium', date: new Date('2024-01-24T12:00:00'), details: 'Dodano roślinę: Moczarka' },
-    { id: '10', type: 'parameterChanged', aquarium: 'Moje pierwsze akwarium', date: new Date('2024-01-25T14:30:00'), details: 'Zmieniono twardość wody: 10 dGH → 12 dGH' },
-  ];
-
-  const getActionLabel = (type) => {
-    const labels = {
-      created: t('actionCreated'),
-      edited: t('actionEdited'),
-      deleted: t('actionDeleted'),
-      fishAdded: t('actionFishAdded'),
-      fishRemoved: t('actionFishRemoved'),
-      plantAdded: t('actionPlantAdded'),
-      plantRemoved: t('actionPlantRemoved'),
-      parameterChanged: t('actionParameterChanged'),
-    };
-    return labels[type] || type;
-  };
-
-  const getActionColor = (type) => {
-    const colors = {
-      created: '#4CAF50',
-      edited: '#2196F3',
-      deleted: '#F44336',
-      fishAdded: '#FF9800',
-      fishRemoved: '#E91E63',
-      plantAdded: '#9C27B0',
-      plantRemoved: '#F44336',
-      parameterChanged: '#00BCD4',
-    };
-    return colors[type] || '#757575';
-  };
-
-  const filteredAndSortedActivities = mockActivityHistory
-    .filter(activity => {
-      const actionMatch = selectedActionFilter === 'all' || activity.type === selectedActionFilter;
-      const aquariumMatch = selectedAquariumFilter === 'all' || activity.aquarium === selectedAquariumFilter;
-      return actionMatch && aquariumMatch;
-    })
-    .sort((a, b) => {
-      if (sortOrder === 'newest') {
-        return b.date - a.date;
-      } else {
-        return a.date - b.date;
-      }
-    });
-
-  const uniqueAquariums = [...new Set(mockActivityHistory.map(a => a.aquarium))];
-  const actionTypes = ['created', 'edited', 'deleted', 'fishAdded', 'fishRemoved', 'plantAdded', 'plantRemoved', 'parameterChanged'];
   
   const calculateSessionDuration = () => {
     const loginTime = localStorage.getItem("sessionLoginTime") || user?.loginTime;
@@ -969,27 +904,6 @@ export default function Dashboard() {
               )}
             </Box>
 
-            {/* Historia zmian */}
-            <Box 
-              onClick={handleOpenActivityHistory}
-              sx={{ 
-                display: 'flex', 
-                alignItems: 'center', 
-                justifyContent: 'space-between',
-                p: 2,
-                mb: 1,
-                borderRadius: 2,
-                cursor: 'pointer',
-                '&:hover': { bgcolor: 'rgba(0, 0, 0, 0.05)' }
-              }}
-            >
-              <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
-                <Typography sx={{ fontSize: 24 }}>📋</Typography>
-                <Typography variant="body1" sx={{ fontWeight: 500 }}>{t("activityHistory")}</Typography>
-              </Box>
-              <Typography sx={{ fontSize: 20 }}>→</Typography>
-            </Box>
-
             {/* Wersja aplikacji */}
             <Box sx={{ 
               display: 'flex', 
@@ -1225,145 +1139,6 @@ export default function Dashboard() {
         </Box>
       </Modal>
 
-      {/* Modal z historią aktywności */}
-      <Modal
-        open={activityHistoryOpen}
-        onClose={handleCloseActivityHistory}
-        sx={{
-          display: 'flex',
-          alignItems: 'center',
-          justifyContent: 'center',
-          p: 2
-        }}
-      >
-        <Box sx={{
-          width: { xs: '95%', sm: '90%', md: 800 },
-          maxHeight: '90vh',
-          bgcolor: 'background.paper',
-          borderRadius: 2,
-          p: 3,
-          display: 'flex',
-          flexDirection: 'column',
-          overflow: 'hidden'
-        }}>
-          <Typography variant="h5" sx={{ mb: 3, fontWeight: 600 }}>
-            {t("activityHistory", { defaultValue: "Historia aktywności" })}
-          </Typography>
-          
-          {/* Filtry i sortowanie */}
-          <Box sx={{ mb: 3, display: 'flex', flexDirection: { xs: 'column', sm: 'row' }, gap: 2 }}>
-            <FormControl sx={{ minWidth: { xs: '100%', sm: 200 } }}>
-              <InputLabel>{t("filterByAction", { defaultValue: "Filtruj po akcji" })}</InputLabel>
-              <Select
-                value={selectedActionFilter}
-                onChange={(e) => setSelectedActionFilter(e.target.value)}
-                label={t("filterByAction", { defaultValue: "Filtruj po akcji" })}
-              >
-                <MenuItem value="all">{t("allActions", { defaultValue: "Wszystkie akcje" })}</MenuItem>
-                {actionTypes.map(type => (
-                  <MenuItem key={type} value={type}>{getActionLabel(type)}</MenuItem>
-                ))}
-              </Select>
-            </FormControl>
-            
-            <FormControl sx={{ minWidth: { xs: '100%', sm: 200 } }}>
-              <InputLabel>{t("filterByAquarium", { defaultValue: "Filtruj po akwarium" })}</InputLabel>
-              <Select
-                value={selectedAquariumFilter}
-                onChange={(e) => setSelectedAquariumFilter(e.target.value)}
-                label={t("filterByAquarium", { defaultValue: "Filtruj po akwarium" })}
-              >
-                <MenuItem value="all">{t("allAquariums", { defaultValue: "Wszystkie akwaria" })}</MenuItem>
-                {uniqueAquariums.map(aquarium => (
-                  <MenuItem key={aquarium} value={aquarium}>{aquarium}</MenuItem>
-                ))}
-              </Select>
-            </FormControl>
-            
-            <FormControl sx={{ minWidth: { xs: '100%', sm: 180 } }}>
-              <InputLabel>{t("sortByDate", { defaultValue: "Sortuj po dacie" })}</InputLabel>
-              <Select
-                value={sortOrder}
-                onChange={(e) => setSortOrder(e.target.value)}
-                label={t("sortByDate", { defaultValue: "Sortuj po dacie" })}
-              >
-                <MenuItem value="newest">{t("newestFirst", { defaultValue: "Najnowsze najpierw" })}</MenuItem>
-                <MenuItem value="oldest">{t("oldestFirst", { defaultValue: "Najstarsze najpierw" })}</MenuItem>
-              </Select>
-            </FormControl>
-          </Box>
-          
-          <Divider sx={{ mb: 2 }} />
-          
-          {/* Lista aktywności */}
-          <Box sx={{ flex: 1, overflowY: 'auto', pr: 1 }}>
-            {filteredAndSortedActivities.length === 0 ? (
-              <Box sx={{ textAlign: 'center', py: 4 }}>
-                <Typography variant="body1" color="text.secondary">
-                  {t("noActivity", { defaultValue: "Brak aktywności" })}
-                </Typography>
-              </Box>
-            ) : (
-              <List>
-                {filteredAndSortedActivities.map((activity) => (
-                  <ListItem
-                    key={activity.id}
-                    sx={{
-                      mb: 1,
-                      bgcolor: 'rgba(0, 0, 0, 0.02)',
-                      borderRadius: 1.5,
-                      borderLeft: `4px solid ${getActionColor(activity.type)}`,
-                      '&:hover': { bgcolor: 'rgba(0, 0, 0, 0.05)' }
-                    }}
-                  >
-                    <ListItemText
-                      primary={
-                        <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, mb: 0.5 }}>
-                          <Chip
-                            label={getActionLabel(activity.type)}
-                            size="small"
-                            sx={{
-                              bgcolor: getActionColor(activity.type),
-                              color: 'white',
-                              fontWeight: 600,
-                              fontSize: '0.75rem'
-                            }}
-                          />
-                          <Typography variant="body2" color="text.secondary">
-                            {activity.aquarium}
-                          </Typography>
-                        </Box>
-                      }
-                      secondary={
-                        <>
-                          <Typography variant="body2" component="span" sx={{ display: 'block', mb: 0.5 }}>
-                            {activity.details}
-                          </Typography>
-                          <Typography variant="caption" color="text.disabled">
-                            {activity.date.toLocaleString('pl-PL', {
-                              year: 'numeric',
-                              month: 'long',
-                              day: 'numeric',
-                              hour: '2-digit',
-                              minute: '2-digit'
-                            })}
-                          </Typography>
-                        </>
-                      }
-                    />
-                  </ListItem>
-                ))}
-              </List>
-            )}
-          </Box>
-          
-          <Box sx={{ display: 'flex', justifyContent: 'flex-end', mt: 3, pt: 2, borderTop: '1px solid rgba(0, 0, 0, 0.1)' }}>
-            <Button variant="contained" onClick={handleCloseActivityHistory}>
-              {t("close", { defaultValue: "Zamknij" })}
-            </Button>
-          </Box>
-        </Box>
-      </Modal>
 
     </Box>
   );

@@ -115,47 +115,6 @@ export default function AquariumDetailPage() {
       .sort((a, b) => b.count - a.count);
 
     const mostCommonPlant = plantSpeciesData.length > 0 ? plantSpeciesData[0] : null;
-
-    const fishLengthMap = {
-      "Neon Innesa": 3.5, 
-      "Gupik": 4.5, 
-      "Mieczyk Hellera": 11, 
-      "Danio pręgowany": 4.5, 
-      "Kardynałek chiński": 3.5, 
-      "Bojownik syjamski": 6.5, 
-      "Gurami mozaikowy": 11, 
-      "Kirys pstry": 6.5, 
-      "Zbrojnik / Glonojad": 12.5, 
-      "Pyszczak Malawi": 12.5, 
-      "Pirania czerwona": 27.5, 
-      "Księżniczka z Burundi": 8.5, 
-      "Welonka (Złota rybka)": 20, 
-      "Razbora klinowa": 4.5, 
-      "Skalar": 15, 
-      "Tęczanka neonowa": 7, 
-      "Proporczykowiec": 5, 
-      "Molinezja": 7, 
-      "Kolcobrzuch karłowaty": 3, 
-      "Babka złota": 6, 
-      "Błazenek pomarańczowy": 9.5, 
-      "Pokolec królewski": 22.5, 
-      "Mandaryn wspaniały": 7.5, 
-      "Ustnik słoneczny": 27.5, 
-      "Poecilia reticulata": 4.5 
-    };
-
-    const volume = aquarium.volume || 200;
-
-    let totalFishLength = 0;
-    aquariumFishes.forEach(fish => {
-      
-      const length = fishLengthMap[fish.name] || fishLengthMap[fish.species] || 5; 
-      totalFishLength += length;
-    });
-
-    const occupancy = volume > 0 ? ((totalFishLength / volume) * 100).toFixed(1) : 0;
-
-    const maxFishLength = volume;
     
     return {
       totalFishes: aquariumFishes.length,
@@ -164,9 +123,6 @@ export default function AquariumDetailPage() {
       plantSpeciesCount,
       mostCommonFish,
       mostCommonPlant,
-      occupancy,
-      maxFishLength, 
-      totalFishLength, 
       fishSpeciesData,
       plantSpeciesData
     };
@@ -651,80 +607,6 @@ export default function AquariumDetailPage() {
                     </Paper>
                   </Grid>
                 </Grid>
-              </Grid>
-
-              {}
-              <Grid item xs={12} md={6}>
-                <Typography variant="h6" sx={{ mb: 2, color: darkMode ? 'white' : 'inherit' }}>
-                  {t("overstocking", { defaultValue: "Przerybienie akwarium" })}
-                </Typography>
-                
-                <Paper
-                  elevation={2}
-                  sx={{
-                    p: 3,
-                    bgcolor: darkMode ? 'rgba(50, 50, 50, 0.5)' : 'rgba(0, 0, 0, 0.02)'
-                  }}
-                >
-                  <Box sx={{ mb: 2 }}>
-                    <Box sx={{ display: 'flex', justifyContent: 'space-between', mb: 1 }}>
-                      <Typography variant="body2" sx={{ color: darkMode ? 'rgba(255,255,255,0.7)' : 'text.secondary' }}>
-                        {t("occupancy", { defaultValue: "Zajętość" })}:
-                      </Typography>
-                      <Typography variant="body2" sx={{ fontWeight: 600, color: darkMode ? 'white' : 'inherit' }}>
-                        {statistics.occupancy}%
-                      </Typography>
-                    </Box>
-                    
-                    {}
-                    <Box
-                      sx={{
-                        width: '100%',
-                        height: 30,
-                        bgcolor: darkMode ? 'rgba(255,255,255,0.1)' : 'rgba(0,0,0,0.1)',
-                        borderRadius: 2,
-                        overflow: 'hidden',
-                        position: 'relative'
-                      }}
-                    >
-                      <Box
-                        sx={{
-                          width: `${Math.min(parseFloat(statistics.occupancy), 100)}%`,
-                          height: '100%',
-                          
-                          bgcolor: parseFloat(statistics.occupancy) < 80
-                            ? '#4caf50' 
-                            : parseFloat(statistics.occupancy) <= 100
-                            ? '#ff9800' 
-                            : '#f44336', 
-                          transition: 'width 0.5s ease-in-out',
-                          display: 'flex',
-                          alignItems: 'center',
-                          justifyContent: 'center'
-                        }}
-                      >
-                        {parseFloat(statistics.occupancy) > 15 && (
-                          <Typography
-                            variant="caption"
-                            sx={{
-                              color: 'white',
-                              fontWeight: 600,
-                              fontSize: '0.75rem'
-                            }}
-                          >
-                            {statistics.occupancy}%
-                          </Typography>
-                        )}
-                      </Box>
-                    </Box>
-                    <Typography variant="caption" sx={{ color: darkMode ? 'rgba(255,255,255,0.5)' : 'text.secondary', mt: 1, display: 'block' }}>
-                      {statistics.totalFishLength?.toFixed(1) || 0} / {statistics.maxFishLength} cm ({t("overstockingInfo", { defaultValue: "1cm = 1L" })})
-                    </Typography>
-                    <Typography variant="caption" sx={{ color: darkMode ? 'rgba(255,255,255,0.5)' : 'text.secondary', mt: 0.5, display: 'block' }}>
-                      {t("aquariumVolume", { defaultValue: "Objętość akwarium" })}: {aquarium.volume || 200}L
-                    </Typography>
-                  </Box>
-                </Paper>
               </Grid>
 
               {}

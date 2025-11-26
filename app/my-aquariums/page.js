@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useEffect, useMemo } from "react";
-import { Box, Button, Typography, Modal, TextField, Grid, Card, CardContent, CardActionArea, Select, MenuItem, FormControl, InputLabel, Paper, Divider, CircularProgress } from "@mui/material";
+import { Box, Button, Typography, Modal, TextField, Grid, Card, CardContent, CardActionArea, Select, MenuItem, FormControl, InputLabel, Paper, Divider, CircularProgress, List, ListItem, ListItemText, Chip } from "@mui/material";
 import { useTranslation } from "react-i18next";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
@@ -18,6 +18,10 @@ export default function MyAquariumsPage() {
   const [aquariums, setAquariums] = useState([]);
   const [createModalOpen, setCreateModalOpen] = useState(false);
   const [statisticsModalOpen, setStatisticsModalOpen] = useState(false);
+  const [historyModalOpen, setHistoryModalOpen] = useState(false);
+  const [selectedActionFilter, setSelectedActionFilter] = useState("all");
+  const [selectedAquariumFilter, setSelectedAquariumFilter] = useState("all");
+  const [sortOrder, setSortOrder] = useState("newest");
   const [newAquariumName, setNewAquariumName] = useState("");
   const [newAquariumWaterType, setNewAquariumWaterType] = useState("freshwater");
   const [newAquariumTemperature, setNewAquariumTemperature] = useState("24");
@@ -69,6 +73,72 @@ export default function MyAquariumsPage() {
     setStatisticsModalOpen(false);
   };
 
+  const handleOpenHistory = () => {
+    setHistoryModalOpen(true);
+  };
+
+  const handleCloseHistory = () => {
+    setHistoryModalOpen(false);
+  };
+
+  const mockActivityHistory = [
+    { id: '1', type: 'created', aquarium: 'Moje pierwsze akwarium', date: new Date('2024-01-15T10:30:00'), details: 'Akwarium zostało utworzone' },
+    { id: '2', type: 'fishAdded', aquarium: 'Moje pierwsze akwarium', date: new Date('2024-01-16T14:20:00'), details: 'Dodano rybę: Gupik' },
+    { id: '3', type: 'plantAdded', aquarium: 'Moje pierwsze akwarium', date: new Date('2024-01-17T09:15:00'), details: 'Dodano roślinę: Anubias' },
+    { id: '4', type: 'parameterChanged', aquarium: 'Moje pierwsze akwarium', date: new Date('2024-01-18T16:45:00'), details: 'Zmieniono temperaturę: 22°C → 24°C' },
+    { id: '5', type: 'created', aquarium: 'Drugie akwarium', date: new Date('2024-01-20T11:00:00'), details: 'Akwarium zostało utworzone' },
+    { id: '6', type: 'edited', aquarium: 'Moje pierwsze akwarium', date: new Date('2024-01-21T13:30:00'), details: 'Zaktualizowano parametry akwarium' },
+    { id: '7', type: 'fishRemoved', aquarium: 'Moje pierwsze akwarium', date: new Date('2024-01-22T15:20:00'), details: 'Usunięto rybę: Gupik' },
+    { id: '8', type: 'parameterChanged', aquarium: 'Drugie akwarium', date: new Date('2024-01-23T10:10:00'), details: 'Zmieniono pH: 7.0 → 7.2' },
+    { id: '9', type: 'plantAdded', aquarium: 'Drugie akwarium', date: new Date('2024-01-24T12:00:00'), details: 'Dodano roślinę: Moczarka' },
+    { id: '10', type: 'parameterChanged', aquarium: 'Moje pierwsze akwarium', date: new Date('2024-01-25T14:30:00'), details: 'Zmieniono twardość wody: 10 dGH → 12 dGH' },
+  ];
+
+  const getActionLabel = (type) => {
+    const labels = {
+      created: t('actionCreated'),
+      edited: t('actionEdited'),
+      deleted: t('actionDeleted'),
+      fishAdded: t('actionFishAdded'),
+      fishRemoved: t('actionFishRemoved'),
+      plantAdded: t('actionPlantAdded'),
+      plantRemoved: t('actionPlantRemoved'),
+      parameterChanged: t('actionParameterChanged'),
+    };
+    return labels[type] || type;
+  };
+
+  const getActionColor = (type) => {
+    const colors = {
+      created: '#4CAF50',
+      edited: '#2196F3',
+      deleted: '#F44336',
+      fishAdded: '#FF9800',
+      fishRemoved: '#E91E63',
+      plantAdded: '#9C27B0',
+      plantRemoved: '#F44336',
+      parameterChanged: '#00BCD4',
+    };
+    return colors[type] || '#757575';
+  };
+
+  const filteredAndSortedActivities = mockActivityHistory
+    .filter(activity => {
+      const actionMatch = selectedActionFilter === 'all' || activity.type === selectedActionFilter;
+      const aquariumMatch = selectedAquariumFilter === 'all' || activity.aquarium === selectedAquariumFilter;
+      return actionMatch && aquariumMatch;
+    })
+    .sort((a, b) => {
+      if (sortOrder === 'newest') {
+        return b.date - a.date;
+      } else {
+        return a.date - b.date;
+      }
+    });
+
+  const uniqueAquariums = [...new Set(mockActivityHistory.map(a => a.aquarium))];
+  const actionTypes = ['created', 'edited', 'deleted', 'fishAdded', 'fishRemoved', 'plantAdded', 'plantRemoved', 'parameterChanged'];
+
   const allStatistics = useMemo(() => {
     if (aquariums.length === 0) return null;
 
@@ -117,58 +187,6 @@ export default function MyAquariumsPage() {
 
     const mostCommonPlant = plantSpeciesData.length > 0 ? plantSpeciesData[0] : null;
 
-    const fishLengthMap = {
-      "Neon Innesa": 3.5, 
-      "Gupik": 4.5, 
-      "Mieczyk Hellera": 11, 
-      "Danio pręgowany": 4.5, 
-      "Kardynałek chiński": 3.5, 
-      "Bojownik syjamski": 6.5, 
-      "Gurami mozaikowy": 11, 
-      "Kirys pstry": 6.5, 
-      "Zbrojnik / Glonojad": 12.5, 
-      "Pyszczak Malawi": 12.5, 
-      "Pirania czerwona": 27.5, 
-      "Księżniczka z Burundi": 8.5, 
-      "Welonka (Złota rybka)": 20, 
-      "Razbora klinowa": 4.5, 
-      "Skalar": 15, 
-      "Tęczanka neonowa": 7, 
-      "Proporczykowiec": 5, 
-      "Molinezja": 7, 
-      "Kolcobrzuch karłowaty": 3, 
-      "Babka złota": 6, 
-      "Błazenek pomarańczowy": 9.5, 
-      "Pokolec królewski": 22.5, 
-      "Mandaryn wspaniały": 7.5, 
-      "Ustnik słoneczny": 27.5, 
-      "Poecilia reticulata": 4.5 
-    };
-
-    let totalOverstocking = 0;
-
-    aquariums.forEach(aquarium => {
-      
-      const volume = aquarium.volume || 200;
-
-      const aquariumFishes = mockFishes.filter(fish => aquarium.fishes?.includes(fish.id));
-
-      let totalFishLength = 0;
-      aquariumFishes.forEach(fish => {
-        
-        const length = fishLengthMap[fish.name] || fishLengthMap[fish.species] || 5; 
-        totalFishLength += length;
-      });
-
-      const occupancy = volume > 0 ? (totalFishLength / volume) * 100 : 0;
-      
-      totalOverstocking += occupancy;
-    });
-
-    const averageOccupancy = aquariums.length > 0 
-      ? (totalOverstocking / aquariums.length).toFixed(1)
-      : 0;
-
     return {
       totalAquariums: aquariums.length,
       totalFishes: allFishes.length,
@@ -177,7 +195,6 @@ export default function MyAquariumsPage() {
       plantSpeciesCount,
       mostCommonFish,
       mostCommonPlant,
-      averageOccupancy,
       fishSpeciesData,
       plantSpeciesData
     };
@@ -272,28 +289,31 @@ export default function MyAquariumsPage() {
               {t("statistics")}
             </Typography>
           </Box>
-          <Box sx={{
-            bgcolor: darkMode ? 'rgba(30, 30, 30, 0.85)' : 'rgba(255, 255, 255, 0.4)', 
-            p: { xs: 0.4, sm: 0.6, md: 0.8 }, 
-            borderRadius: 1.5, 
-            boxShadow: 2,
-            transition: "all 0.3s", 
-            backdropFilter: 'blur(8px)',
-            "&:hover": { 
-              boxShadow: 4, 
-              transform: "translateY(-2px)", 
-              bgcolor: darkMode ? 'rgba(40, 40, 40, 0.9)' : 'rgba(255, 255, 255, 0.6)' 
-            },
-            cursor: 'pointer', 
-            minHeight: { xs: '52px', sm: '50px', md: '60px' }, 
-            minWidth: { xs: '52px', sm: '60px', md: '80px' },
-            maxWidth: { xs: '52px', sm: '60px', md: '80px' },
-            display: 'flex', 
-            flexDirection: 'column', 
-            alignItems: 'center', 
-            justifyContent: 'center',
-            flexShrink: 0
-          }}>
+          <Box 
+            onClick={handleOpenHistory}
+            sx={{
+              bgcolor: darkMode ? 'rgba(30, 30, 30, 0.85)' : 'rgba(255, 255, 255, 0.4)', 
+              p: { xs: 0.4, sm: 0.6, md: 0.8 }, 
+              borderRadius: 1.5, 
+              boxShadow: 2,
+              transition: "all 0.3s", 
+              backdropFilter: 'blur(8px)',
+              "&:hover": { 
+                boxShadow: 4, 
+                transform: "translateY(-2px)", 
+                bgcolor: darkMode ? 'rgba(40, 40, 40, 0.9)' : 'rgba(255, 255, 255, 0.6)' 
+              },
+              cursor: 'pointer', 
+              minHeight: { xs: '52px', sm: '50px', md: '60px' }, 
+              minWidth: { xs: '52px', sm: '60px', md: '80px' },
+              maxWidth: { xs: '52px', sm: '60px', md: '80px' },
+              display: 'flex', 
+              flexDirection: 'column', 
+              alignItems: 'center', 
+              justifyContent: 'center',
+              flexShrink: 0
+            }}
+          >
             <Typography sx={{ fontSize: { xs: 16, sm: 14, md: 16 }, mb: 0.2, textAlign: 'center', lineHeight: 1 }}>📋</Typography>
             <Typography variant="body2" sx={{ fontWeight: 600, color: "text.primary", textAlign: 'center', fontSize: { xs: '0.6rem', sm: '0.55rem', md: '0.65rem' }, lineHeight: 1.1 }}>
               {t("history")}
@@ -773,80 +793,6 @@ export default function MyAquariumsPage() {
               {}
               <Grid item xs={12} md={6}>
                 <Typography variant="h6" sx={{ mb: 2, color: darkMode ? 'white' : 'inherit' }}>
-                  {t("overstocking", { defaultValue: "Przerybienie akwariów" })}
-                </Typography>
-                
-                <Paper
-                  elevation={2}
-                  sx={{
-                    p: 3,
-                    bgcolor: darkMode ? 'rgba(50, 50, 50, 0.5)' : 'rgba(0, 0, 0, 0.02)'
-                  }}
-                >
-                  <Box sx={{ mb: 2 }}>
-                    <Box sx={{ display: 'flex', justifyContent: 'space-between', mb: 1 }}>
-                      <Typography variant="body2" sx={{ color: darkMode ? 'rgba(255,255,255,0.7)' : 'text.secondary' }}>
-                        {t("averageOccupancy", { defaultValue: "Średnia zajętość" })}:
-                      </Typography>
-                      <Typography variant="body2" sx={{ fontWeight: 600, color: darkMode ? 'white' : 'inherit' }}>
-                        {allStatistics.averageOccupancy}%
-                      </Typography>
-                    </Box>
-                    
-                    {}
-                    <Box
-                      sx={{
-                        width: '100%',
-                        height: 30,
-                        bgcolor: darkMode ? 'rgba(255,255,255,0.1)' : 'rgba(0,0,0,0.1)',
-                        borderRadius: 2,
-                        overflow: 'hidden',
-                        position: 'relative'
-                      }}
-                    >
-                      <Box
-                        sx={{
-                          width: `${Math.min(parseFloat(allStatistics.averageOccupancy), 100)}%`,
-                          height: '100%',
-                          
-                          bgcolor: parseFloat(allStatistics.averageOccupancy) < 80
-                            ? '#4caf50' 
-                            : parseFloat(allStatistics.averageOccupancy) <= 100
-                            ? '#ff9800' 
-                            : '#f44336', 
-                          transition: 'width 0.5s ease-in-out',
-                          display: 'flex',
-                          alignItems: 'center',
-                          justifyContent: 'center'
-                        }}
-                      >
-                        {parseFloat(allStatistics.averageOccupancy) > 15 && (
-                          <Typography
-                            variant="caption"
-                            sx={{
-                              color: 'white',
-                              fontWeight: 600,
-                              fontSize: '0.75rem'
-                            }}
-                          >
-                            {allStatistics.averageOccupancy}%
-                          </Typography>
-                        )}
-                      </Box>
-                    </Box>
-                    <Typography variant="caption" sx={{ color: darkMode ? 'rgba(255,255,255,0.5)' : 'text.secondary', mt: 1, display: 'block' }}>
-                      {t("overstockingInfo", { defaultValue: "Zasada: 1cm ryby = 1 litr wody" })}
-                    </Typography>
-                    <Typography variant="caption" sx={{ color: darkMode ? 'rgba(255,255,255,0.5)' : 'text.secondary', mt: 0.5, display: 'block' }}>
-                      {t("aquariumVolume", { defaultValue: "Objętość akwarium" })}: 200L
-                    </Typography>
-                  </Box>
-                </Paper>
-              </Grid>
-
-              {}
-              <Grid item xs={12} md={6}>
-                <Typography variant="h6" sx={{ mb: 2, color: darkMode ? 'white' : 'inherit' }}>
                   {t("fishDistribution", { defaultValue: "Rozkład gatunków ryb" })}
                 </Typography>
                 
@@ -1038,6 +984,146 @@ export default function MyAquariumsPage() {
               <CircularProgress />
             </Box>
           )}
+        </Paper>
+      </Modal>
+
+      {/* Modal z historią zmian */}
+      <Modal
+        open={historyModalOpen}
+        onClose={handleCloseHistory}
+        sx={{
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'center',
+          p: 2
+        }}
+      >
+        <Paper sx={{
+          width: { xs: '95%', sm: '90%', md: 800 },
+          maxHeight: '90vh',
+          bgcolor: darkMode ? 'rgba(30, 30, 30, 0.95)' : 'background.paper',
+          borderRadius: 2,
+          p: 3,
+          display: 'flex',
+          flexDirection: 'column',
+          overflow: 'hidden'
+        }}>
+          <Typography variant="h5" sx={{ mb: 3, fontWeight: 600, color: darkMode ? 'white' : 'inherit' }}>
+            {t("activityHistory", { defaultValue: "Historia aktywności" })}
+          </Typography>
+          
+          {/* Filtry i sortowanie */}
+          <Box sx={{ mb: 3, display: 'flex', flexDirection: { xs: 'column', sm: 'row' }, gap: 2 }}>
+            <FormControl sx={{ minWidth: { xs: '100%', sm: 200 } }}>
+              <InputLabel>{t("filterByAction", { defaultValue: "Filtruj po akcji" })}</InputLabel>
+              <Select
+                value={selectedActionFilter}
+                onChange={(e) => setSelectedActionFilter(e.target.value)}
+                label={t("filterByAction", { defaultValue: "Filtruj po akcji" })}
+              >
+                <MenuItem value="all">{t("allActions", { defaultValue: "Wszystkie akcje" })}</MenuItem>
+                {actionTypes.map(type => (
+                  <MenuItem key={type} value={type}>{getActionLabel(type)}</MenuItem>
+                ))}
+              </Select>
+            </FormControl>
+            
+            <FormControl sx={{ minWidth: { xs: '100%', sm: 200 } }}>
+              <InputLabel>{t("filterByAquarium", { defaultValue: "Filtruj po akwarium" })}</InputLabel>
+              <Select
+                value={selectedAquariumFilter}
+                onChange={(e) => setSelectedAquariumFilter(e.target.value)}
+                label={t("filterByAquarium", { defaultValue: "Filtruj po akwarium" })}
+              >
+                <MenuItem value="all">{t("allAquariums", { defaultValue: "Wszystkie akwaria" })}</MenuItem>
+                {uniqueAquariums.map(aquarium => (
+                  <MenuItem key={aquarium} value={aquarium}>{aquarium}</MenuItem>
+                ))}
+              </Select>
+            </FormControl>
+            
+            <FormControl sx={{ minWidth: { xs: '100%', sm: 180 } }}>
+              <InputLabel>{t("sortByDate", { defaultValue: "Sortuj po dacie" })}</InputLabel>
+              <Select
+                value={sortOrder}
+                onChange={(e) => setSortOrder(e.target.value)}
+                label={t("sortByDate", { defaultValue: "Sortuj po dacie" })}
+              >
+                <MenuItem value="newest">{t("newestFirst", { defaultValue: "Najnowsze najpierw" })}</MenuItem>
+                <MenuItem value="oldest">{t("oldestFirst", { defaultValue: "Najstarsze najpierw" })}</MenuItem>
+              </Select>
+            </FormControl>
+          </Box>
+          
+          <Divider sx={{ mb: 2 }} />
+          
+          {/* Lista aktywności */}
+          <Box sx={{ flex: 1, overflowY: 'auto', pr: 1 }}>
+            {filteredAndSortedActivities.length === 0 ? (
+              <Box sx={{ textAlign: 'center', py: 4 }}>
+                <Typography variant="body1" sx={{ color: darkMode ? 'rgba(255,255,255,0.7)' : 'text.secondary' }}>
+                  {t("noActivity", { defaultValue: "Brak aktywności" })}
+                </Typography>
+              </Box>
+            ) : (
+              <List>
+                {filteredAndSortedActivities.map((activity) => (
+                  <ListItem
+                    key={activity.id}
+                    sx={{
+                      mb: 1,
+                      bgcolor: darkMode ? 'rgba(255, 255, 255, 0.05)' : 'rgba(0, 0, 0, 0.02)',
+                      borderRadius: 1.5,
+                      borderLeft: `4px solid ${getActionColor(activity.type)}`,
+                      '&:hover': { bgcolor: darkMode ? 'rgba(255, 255, 255, 0.1)' : 'rgba(0, 0, 0, 0.05)' }
+                    }}
+                  >
+                    <ListItemText
+                      primary={
+                        <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, mb: 0.5 }}>
+                          <Chip
+                            label={getActionLabel(activity.type)}
+                            size="small"
+                            sx={{
+                              bgcolor: getActionColor(activity.type),
+                              color: 'white',
+                              fontWeight: 600,
+                              fontSize: '0.75rem'
+                            }}
+                          />
+                          <Typography variant="body2" sx={{ color: darkMode ? 'rgba(255,255,255,0.7)' : 'text.secondary' }}>
+                            {activity.aquarium}
+                          </Typography>
+                        </Box>
+                      }
+                      secondary={
+                        <>
+                          <Typography variant="body2" component="span" sx={{ display: 'block', mb: 0.5, color: darkMode ? 'rgba(255,255,255,0.9)' : 'inherit' }}>
+                            {activity.details}
+                          </Typography>
+                          <Typography variant="caption" sx={{ color: darkMode ? 'rgba(255,255,255,0.5)' : 'text.disabled' }}>
+                            {activity.date.toLocaleString('pl-PL', {
+                              year: 'numeric',
+                              month: 'long',
+                              day: 'numeric',
+                              hour: '2-digit',
+                              minute: '2-digit'
+                            })}
+                          </Typography>
+                        </>
+                      }
+                    />
+                  </ListItem>
+                ))}
+              </List>
+            )}
+          </Box>
+          
+          <Box sx={{ display: 'flex', justifyContent: 'flex-end', mt: 3, pt: 2, borderTop: `1px solid ${darkMode ? 'rgba(255,255,255,0.1)' : 'rgba(0, 0, 0, 0.1)'}` }}>
+            <Button variant="contained" onClick={handleCloseHistory}>
+              {t("close", { defaultValue: "Zamknij" })}
+            </Button>
+          </Box>
         </Paper>
       </Modal>
     </Box>
