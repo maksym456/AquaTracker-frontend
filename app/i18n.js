@@ -109,6 +109,10 @@ const resources = {
        oldestFirst: "Oldest First",
        darkMode: "Dark Mode",
       searchFish: "Search fish...",
+      searchPlants: "Search plants...",
+      all: "All",
+      allPlants: "All Plants",
+      imageNotAvailable: "Image not available",
       compatibility: "Water Parameters Compatibility",
       compatibilityPercentage: "Compatibility",
       fishDistribution: "Fish Species Distribution",
@@ -286,10 +290,12 @@ const resources = {
         orUseEmail: "or use your email password",
         orUseEmailRegister: "or use your email for registration",
         forgotPassword: "Forget Your Password?",
-        welcomeBack: "Welcome Back!",
+        welcomeBack: "Do you have an account?",
         welcomeBackDesc: "Enter your personal details to use all of site features",
         helloFriend: "Hello Friend!",
-        helloFriendDesc: "Register with your personal details to use all of site features"
+        helloFriendDesc: "Register with your personal details to use all of site features",
+        doYouHaveAccount: "Do you have an account?",
+        logIn: "Log in"
       }
     }
   },
@@ -400,6 +406,10 @@ const resources = {
        oldestFirst: "Najstarsze najpierw",
        darkMode: "Tryb ciemny",
       searchFish: "Szukaj ryb...",
+      searchPlants: "Szukaj roślin...",
+      all: "Wszystkie",
+      allPlants: "Wszystkie rośliny",
+      imageNotAvailable: "Obraz niedostępny",
       compatibility: "Zgodność parametrów wody",
       compatibilityPercentage: "Zgodność",
       fishDistribution: "Rozkład gatunków ryb",
@@ -577,10 +587,12 @@ const resources = {
         orUseEmail: "lub użyj swojego e-maila i hasła",
         orUseEmailRegister: "lub użyj swojego e-maila do rejestracji",
         forgotPassword: "Zapomniałeś hasła?",
-        welcomeBack: "Witaj ponownie!",
+        welcomeBack: "Masz już konto?",
         welcomeBackDesc: "Wprowadź swoje dane osobowe, aby korzystać ze wszystkich funkcji strony",
         helloFriend: "Witaj przyjacielu!",
-        helloFriendDesc: "Zarejestruj się używając swoich danych osobowych, aby korzystać ze wszystkich funkcji strony"
+        helloFriendDesc: "Zarejestruj się używając swoich danych osobowych, aby korzystać ze wszystkich funkcji strony",
+        doYouHaveAccount: "Masz już konto?",
+        logIn: "Zaloguj się"
       }
     }
   }

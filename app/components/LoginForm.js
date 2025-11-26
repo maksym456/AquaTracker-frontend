@@ -118,8 +118,11 @@ export default function LoginForm({ onSwitchToRegister }) {
               AquaTracker
             </Typography>
           </Box>
+          <Typography variant="h6" component="h2" gutterBottom align="center" sx={{ mb: 1, color: darkMode ? 'white' : 'inherit' }}>
+            {t("auth.doYouHaveAccount")}
+          </Typography>
           <Typography variant="h5" component="h2" gutterBottom align="center" sx={{ mb: 3, color: darkMode ? 'white' : 'inherit' }}>
-            {t("auth.login")}
+            {t("auth.logIn")}
           </Typography>
 
           {error && (
