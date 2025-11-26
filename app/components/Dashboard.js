@@ -896,7 +896,7 @@ export default function Dashboard() {
             >
               <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
                 <Typography sx={{ fontSize: 24 }}>👤</Typography>
-                <Typography variant="body1" sx={{ fontWeight: 500 }}>Edycja profilu</Typography>
+                <Typography variant="body1" sx={{ fontWeight: 500 }}>{t("editProfile")}</Typography>
               </Box>
               <Typography sx={{ fontSize: 20 }}>→</Typography>
             </Box>
@@ -938,7 +938,7 @@ export default function Dashboard() {
               >
                 <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
                   <Typography sx={{ fontSize: 24 }}>💾</Typography>
-                  <Typography variant="body1" sx={{ fontWeight: 500 }}>Źródło danych</Typography>
+                  <Typography variant="body1" sx={{ fontWeight: 500 }}>{t("dataSource")}</Typography>
                 </Box>
                 <Typography sx={{ fontSize: 20 }}>{dataSourceExpanded ? '▼' : '→'}</Typography>
               </Box>
@@ -947,22 +947,22 @@ export default function Dashboard() {
               {dataSourceExpanded && (
                 <Box sx={{ pl: 4, pr: 2, pb: 2 }}>
                   <Box sx={{ mb: 2, p: 1.5, bgcolor: 'rgba(255, 255, 255, 0.5)', borderRadius: 1.5 }}>
-                    <Typography variant="body2" sx={{ fontWeight: 600, mb: 0.5 }}>Typ źródła:</Typography>
-                    <Typography variant="body2" color="text.secondary">Mock Data (lokalne)</Typography>
+                    <Typography variant="body2" sx={{ fontWeight: 600, mb: 0.5 }}>{t("dataSourceType")}:</Typography>
+                    <Typography variant="body2" color="text.secondary">{t("mockData")}</Typography>
                   </Box>
                   <Box sx={{ mb: 2, p: 1.5, bgcolor: 'rgba(255, 255, 255, 0.5)', borderRadius: 1.5 }}>
-                    <Typography variant="body2" sx={{ fontWeight: 600, mb: 0.5 }}>Środowisko:</Typography>
-                    <Typography variant="body2" color="text.secondary">Development</Typography>
+                    <Typography variant="body2" sx={{ fontWeight: 600, mb: 0.5 }}>{t("environment")}:</Typography>
+                    <Typography variant="body2" color="text.secondary">{t("development")}</Typography>
                   </Box>
                   <Box sx={{ mb: 2, p: 1.5, bgcolor: 'rgba(255, 255, 255, 0.5)', borderRadius: 1.5 }}>
-                    <Typography variant="body2" sx={{ fontWeight: 600, mb: 0.5 }}>Status:</Typography>
-                    <Typography variant="body2" sx={{ color: '#4CAF50', fontWeight: 600 }}>● Połączono</Typography>
+                    <Typography variant="body2" sx={{ fontWeight: 600, mb: 0.5 }}>{t("status")}:</Typography>
+                    <Typography variant="body2" sx={{ color: '#4CAF50', fontWeight: 600 }}>● {t("connected")}</Typography>
                   </Box>
                   <Box sx={{ p: 1.5, bgcolor: 'rgba(255, 255, 255, 0.5)', borderRadius: 1.5 }}>
-                    <Typography variant="body2" sx={{ fontWeight: 600, mb: 0.5 }}>Ostatnia synchronizacja:</Typography>
-                    <Typography variant="body2" color="text.secondary">W trybie offline</Typography>
+                    <Typography variant="body2" sx={{ fontWeight: 600, mb: 0.5 }}>{t("lastSync")}:</Typography>
+                    <Typography variant="body2" color="text.secondary">{t("offlineMode")}</Typography>
                     <Typography variant="caption" color="text.disabled" sx={{ display: 'block', mt: 0.5, fontSize: '0.7rem' }}>
-                      Dane przechowywane lokalnie (mock)
+                      {t("dataStoredLocally")}
                     </Typography>
                   </Box>
                 </Box>
@@ -985,7 +985,7 @@ export default function Dashboard() {
             >
               <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
                 <Typography sx={{ fontSize: 24 }}>📋</Typography>
-                <Typography variant="body1" sx={{ fontWeight: 500 }}>Historia zmian</Typography>
+                <Typography variant="body1" sx={{ fontWeight: 500 }}>{t("activityHistory")}</Typography>
               </Box>
               <Typography sx={{ fontSize: 20 }}>→</Typography>
             </Box>
@@ -1001,7 +1001,7 @@ export default function Dashboard() {
             }}>
               <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
                 <Typography sx={{ fontSize: 24 }}>ℹ️</Typography>
-                <Typography variant="body1" sx={{ fontWeight: 500 }}>Wersja</Typography>
+                <Typography variant="body1" sx={{ fontWeight: 500 }}>{t("version")}</Typography>
               </Box>
               <Typography variant="body2" color="text.secondary">{APP_VERSION}</Typography>
             </Box>
@@ -1023,7 +1023,7 @@ export default function Dashboard() {
             >
               <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
                 <Typography sx={{ fontSize: 24 }}>⚠️</Typography>
-                <Typography variant="body1" sx={{ fontWeight: 600, color: '#EF5350' }}>Dezaktywuj konto</Typography>
+                <Typography variant="body1" sx={{ fontWeight: 600, color: '#EF5350' }}>{t("deactivateAccount")}</Typography>
               </Box>
               <Typography sx={{ fontSize: 20, color: '#EF5350' }}>→</Typography>
             </Box>
