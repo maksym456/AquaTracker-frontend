@@ -220,8 +220,18 @@ export default function PlantDatabasePage() {
         alignItems: 'center',
         justifyContent: 'center',
         minHeight: '100vh',
+        height: '100vh',
         pt: 14,
-        pb: 4
+        pb: 4,
+        overflow: 'auto',
+        '@media (min-width: 1366px) and (max-width: 1919px)': {
+          pt: 12,
+          pb: 2
+        },
+        '@media (min-width: 1366px) and (max-width: 1367px) and (max-height: 768px)': {
+          pt: 10,
+          pb: 1
+        }
       }}>
         {/* Karuzela kafelków - kontener flexbox wyśrodkowujący wszystko */}
         <Box sx={{
@@ -230,18 +240,34 @@ export default function PlantDatabasePage() {
           alignItems: 'center',
           justifyContent: 'center',
           width: '100%',
-          minHeight: '650px',
-          gap: 2
+          minHeight: { xs: '550px', md: '600px' },
+          gap: 2,
+          py: 2,
+          '@media (min-width: 1366px) and (max-width: 1919px)': {
+            minHeight: '550px',
+            py: 1
+          },
+          '@media (min-width: 1366px) and (max-width: 1367px) and (max-height: 768px)': {
+            minHeight: '500px',
+            gap: 1
+          }
         }}>
           {/* Wewnętrzny kontener z większą szerokością dla kart */}
           <Box sx={{
             position: 'relative',
-            width: { xs: '90%', md: '45%' },
-            maxWidth: { xs: '100%', md: 350 },
-            height: '650px',
+            width: { xs: '90%', sm: '60%', md: '45%' },
+            maxWidth: { xs: '100%', sm: 400, md: 350 },
+            height: { xs: '550px', md: '600px' },
             display: 'flex',
             alignItems: 'center',
-            justifyContent: 'center'
+            justifyContent: 'center',
+            '@media (min-width: 1366px) and (max-width: 1919px)': {
+              height: '550px'
+            },
+            '@media (min-width: 1366px) and (max-width: 1367px) and (max-height: 768px)': {
+              height: '500px',
+              width: '42%'
+            }
           }}>
             {/* Renderuj wszystkie karty */}
             {plantCards.map((plant, index) => {
@@ -262,13 +288,22 @@ export default function PlantDatabasePage() {
                     borderRadius: 4,
                     overflow: 'hidden',
                     boxShadow: '0 8px 32px rgba(0, 0, 0, 0.4)',
-                    minHeight: '600px',
+                    minHeight: { xs: '500px', md: '550px' },
+                    maxHeight: { xs: '500px', md: '550px' },
                     display: 'flex',
                     flexDirection: 'column',
                     zIndex: position.zIndex,
                     opacity: position.opacity,
                     transition: 'all 0.5s cubic-bezier(0.4, 0, 0.2, 1)',
                     cursor: position.zIndex === 3 ? 'default' : 'pointer',
+                    '@media (min-width: 1366px) and (max-width: 1919px)': {
+                      minHeight: '500px',
+                      maxHeight: '500px'
+                    },
+                    '@media (min-width: 1366px) and (max-width: 1367px) and (max-height: 768px)': {
+                      minHeight: '450px',
+                      maxHeight: '450px'
+                    },
                     '&:hover': position.zIndex === 3 ? {} : {
                       opacity: 0.85,
                       transform: position.translateX === 0
@@ -317,14 +352,17 @@ export default function PlantDatabasePage() {
                 {/* Obraz rośliny */}
                 <Box sx={{
                   width: '100%',
-                  height: '250px',
+                  height: { xs: '200px', md: '250px' },
                   bgcolor: 'rgba(40, 100, 60, 0.8)',
                   backgroundImage: `url("${plant.image}")`,
                   backgroundSize: 'cover',
                   backgroundPosition: 'center',
                   display: 'flex',
                   alignItems: 'center',
-                  justifyContent: 'center'
+                  justifyContent: 'center',
+                  '@media (min-width: 1366px) and (max-width: 1367px) and (max-height: 768px)': {
+                    height: '180px'
+                  }
                 }}>
                   {/* Placeholder jeśli brak obrazu */}
                   <Typography sx={{ color: 'white', opacity: 0.5 }}>
@@ -333,13 +371,18 @@ export default function PlantDatabasePage() {
                 </Box>
 
                 {/* Treść kafelka */}
-                <Box sx={{ p: 3, flex: 1, display: 'flex', flexDirection: 'column' }}>
+                <Box sx={{ p: 3, flex: 1, display: 'flex', flexDirection: 'column', overflow: 'hidden' }}>
                   <Typography 
                     variant="h5" 
                     sx={{ 
                       color: 'white', 
-                      mb: 2, 
-                      fontWeight: 600 
+                      mb: 1.5, 
+                      fontWeight: 600,
+                      fontSize: { xs: '1.1rem', md: '1.25rem' },
+                      '@media (min-width: 1366px) and (max-width: 1367px) and (max-height: 768px)': {
+                        mb: 1,
+                        fontSize: '1rem'
+                      }
                     }}
                   >
                     {plant.name}
@@ -348,8 +391,13 @@ export default function PlantDatabasePage() {
                     variant="body1" 
                     sx={{ 
                       color: 'rgba(255, 255, 255, 0.8)',
-                      lineHeight: 1.6,
-                      mb: 'auto'
+                      lineHeight: 1.5,
+                      mb: 'auto',
+                      fontSize: { xs: '0.85rem', md: '0.95rem' },
+                      '@media (min-width: 1366px) and (max-width: 1367px) and (max-height: 768px)': {
+                        fontSize: '0.8rem',
+                        lineHeight: 1.4
+                      }
                     }}
                   >
                     {plant.description}
@@ -360,8 +408,8 @@ export default function PlantDatabasePage() {
                     <Box sx={{ 
                       display: 'flex', 
                       justifyContent: 'center', 
-                      mt: 3, 
-                      pt: 3 
+                      mt: 2,
+                      pt: 2
                     }}>
                       <Button
                         onClick={(e) => {
@@ -374,8 +422,8 @@ export default function PlantDatabasePage() {
                           color: '#000',
                           borderRadius: 3,
                           px: 4,
-                          py: 1.5,
-                          fontSize: '1rem',
+                          py: { xs: 1, md: 1.5 },
+                          fontSize: { xs: '0.85rem', md: '1rem' },
                           fontWeight: 600,
                           boxShadow: '0 4px 12px rgba(255, 215, 0, 0.3)',
                           transition: 'all 0.3s',

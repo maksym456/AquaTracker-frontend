@@ -309,124 +309,206 @@ export default function Dashboard() {
          </Box>
        </Box>
 
-       {/* Main Content */}
-       <Box sx={{ 
-         flex: 1,
-         display: 'flex',
-         flexDirection: 'column',
-         gap: { xs: 0.75, sm: 1, md: 1, lg: 4 },
-         px: { xs: 1, sm: 1.25, md: 1.5, lg: 4 },
-         py: { xs: 0.25, sm: 0.5, md: 0.75, lg: 4 },
-         mt: { xs: 0, sm: 0, md: 0, lg: 40 },
-         ml: { xs: 0, md: 0, lg: 15 },
-         mr: { xs: 0, md: 0, lg: 0 },
-         zIndex: 10,
-         maxWidth: '1400px',
-         width: '100%',
-         position: 'relative',
-         boxSizing: 'border-box',
-         overflow: 'hidden',
-         justifyContent: { xs: 'flex-start', sm: 'flex-start', md: 'center', lg: 'flex-start' },
-         alignItems: { xs: 'stretch', sm: 'center', md: 'center', lg: 'flex-start' },
-         '@media (max-height: 700px)': {
-           gap: { xs: 0.5, sm: 0.75 },
-           py: { xs: 0.1, sm: 0.25 },
-           mt: 0
-         }
-       }}>
-         {/* Tekst */}
-         <Box sx={{
-           display: 'flex',
-           alignItems: 'flex-start',
-           justifyContent: { xs: 'center', sm: 'center', md: 'center', lg: 'flex-start' },
-           width: '100%',
-           mt: { xs: '110px', sm: '130px', md: '150px', lg: '170px' },
-           '@media (max-height: 700px)': {
-             mt: { xs: '80px', sm: '90px', md: '100px' }
-           }
-         }}>
-          <Box sx={{
-            width: { 
-              xs: '100%', 
-              sm: '476px',  // 2 kafelki łącznie z wewnętrznymi marginesami
-              md: '476px',
-              lg: '476px'
-            },
-            maxWidth: { 
-              xs: '100%', 
-              sm: '476px', 
-              md: '476px', 
-              lg: '476px' 
-            },
-            display: 'flex',
-            justifyContent: 'flex-start'
-          }}>
-          <Box sx={{
-            backgroundColor: darkMode ? 'rgba(0, 0, 0, 0.4)' : 'rgba(0, 0, 0, 0.01)',
-            padding: { xs: '16px 20px', sm: '24px 28px', md: '32px 36px', lg: '60px' },
-            borderRadius: '12px',
-            backdropFilter: 'blur(15px)',
-            width: '100%',
-            boxSizing: 'border-box',
-            '@media (max-height: 700px)': {
-              padding: { xs: '12px 16px', sm: '18px 22px', md: '24px 28px' }
-            }
-          }}>
-             <Typography 
-               variant="h2" 
-               component="h2" 
-               sx={{ 
-                 fontWeight: "bold", 
-                 color: "white", 
-                 mb: { xs: 0.75, sm: 1, md: 1.25, lg: 2.5 },
-                 fontSize: { xs: '1.3rem', sm: '1.6rem', md: '1.9rem', lg: '2.8rem' },
-                 lineHeight: { xs: 1.15, sm: 1.2, md: 1.25, lg: 1.2 },
-                 textAlign: { xs: 'center', sm: 'center', md: 'center', lg: 'left' },
-                 '@media (max-height: 700px)': {
-                   fontSize: { xs: '1.2rem', sm: '1.4rem', md: '1.6rem' },
-                   mb: { xs: 0.6, sm: 0.75, md: 1 }
-                 }
-               }}
-             >
-               {t("mainHeader")}
-             </Typography>
-             <Typography 
-               variant="h6" 
-               sx={{ 
-                 color: "white", 
-                 lineHeight: { xs: 1.2, sm: 1.25, md: 1.3, lg: 1.5 },
-                 fontSize: { xs: '0.7rem', sm: '0.75rem', md: '0.8rem', lg: '0.95rem' },
-                 textAlign: { xs: 'center', sm: 'center', md: 'center', lg: 'left' },
-                 '@media (max-height: 700px)': {
-                   fontSize: { xs: '0.65rem', sm: '0.7rem', md: '0.75rem' },
-                   lineHeight: { xs: 1.15, sm: 1.2, md: 1.25 }
-                 }
-               }}
-             >
-               {t("mainSubHeader")}
-             </Typography>
-           </Box>
-          </Box>
-         </Box>
+      {/* Main Content - Uproszczona struktura z gridem */}
+      <Box sx={{ 
+        position: 'absolute',
+        top: { xs: '110px', sm: '130px', md: '150px', lg: '170px' },
+        left: { xs: '0', sm: '0', md: '0', lg: '15%' },
+        zIndex: 10,
+        display: 'grid',
+        gridTemplateColumns: '1fr',
+        gap: { xs: 1, sm: 1.5, md: 2, lg: 2 },
+        width: { 
+          xs: '100%', 
+          sm: '476px',
+          md: '476px',
+          lg: '476px'
+        },
+        maxWidth: { 
+          xs: '100%', 
+          sm: '476px', 
+          md: '476px', 
+          lg: '476px' 
+        },
+        boxSizing: 'border-box',
+        px: { xs: 1, sm: 1.25, md: 1.5, lg: 0 },
+        '@media (max-height: 700px)': {
+          top: { xs: '80px', sm: '90px', md: '100px' }
+        },
+        '@media (min-width: 1366px) and (max-width: 1367px) and (max-height: 700px)': {
+          top: '150px',
+          width: '400px',
+          maxWidth: '400px'
+        },
+        '@media (min-width: 1366px) and (max-width: 1367px) and (min-height: 701px) and (max-height: 768px)': {
+          top: '150px',
+          width: '400px',
+          maxWidth: '400px'
+        },
+        '@media (min-width: 1368px) and (max-width: 1919px)': {
+          top: '30px',
+          width: '420px',
+          maxWidth: '420px'
+        },
+        '@media (min-width: 1920px)': {
+          top: '170px',
+          left: 'calc(15% + 50px)'
+        },
+        '@media (min-width: 1369px) and (max-width: 1919px)': {
+          top: '350px',
+          width: '480px',
+          maxWidth: '500px'
+        },
+        '@media (min-width: 1920px) and (min-height: 1312px)': {
+          top: '350px',
+          width: '480px',
+          maxWidth: '500px'
+        },
+        '@media (min-width: 600px) and (max-width: 1198px)': {
+          top: '350px',
+          width: '380px',
+          maxWidth: '400px',
+          left: '50px'
+        },
+        '@media (max-width: 599px)': {
+          top: '200px',
+          width: '360px',
+          maxWidth: '400px',
 
-         {/* Karty */}
-         <Box sx={{ 
-           display: 'flex',
-           alignItems: 'flex-start',
-           justifyContent: { xs: 'center', sm: 'center', md: 'center', lg: 'flex-start' },
-           width: '100%'
-         }}>
-         <Box sx={{ 
-           display: "grid", 
-           gridTemplateColumns: { xs: "1fr", sm: "repeat(2, 1fr)", md: "repeat(2, 1fr)", lg: "repeat(2, 1fr)" },
-           gap: { xs: 0.5, sm: 0.75, md: 1, lg: 2 },
-           width: { xs: '100%', sm: '95%', md: '95%', lg: 'auto' },
-           maxWidth: { xs: '100%', sm: '650px', md: '700px', lg: '600px' },
-           boxSizing: 'border-box',
-           '@media (max-height: 700px)': {
-             gap: { xs: 0.4, sm: 0.5, md: 0.75 }
-           }
-         }}>
+          position: 'absolute',
+          left: '50%',
+          transform: 'translateX(-50%)',
+
+          display: 'flex',
+          flexDirection: 'column',
+          alignItems: 'center',
+          justifyContent: 'center',
+        },
+        '@media (min-width: 950px) and (max-width: 1197px)': {
+          top: '350px',
+          width: '500px',
+          maxWidth: '500px',
+          left: '50px'
+        }
+      }}>
+        {/* Tekst */}
+        <Box sx={{
+          backgroundColor: darkMode ? 'rgba(0, 0, 0, 0.4)' : 'rgba(0, 0, 0, 0.01)',
+          padding: { xs: '16px 20px', sm: '24px 28px', md: '32px 36px', lg: '60px' },
+          borderRadius: '12px',
+          backdropFilter: 'blur(15px)',
+          width: '100%',
+          boxSizing: 'border-box',
+          '@media (max-height: 700px)': {
+            padding: { xs: '12px 16px', sm: '18px 22px', md: '24px 28px' }
+          },
+          '@media (min-width: 1366px) and (max-width: 1367px) and (min-height: 701px) and (max-height: 768px)': {
+            padding: '30px',
+
+          },
+          '@media (min-width: 1368px) and (max-width: 1919px)': {
+            padding: '28px'
+          },
+          '@media (min-width: 1372px) and (max-width: 1919px)': {
+            padding: '25px'
+          },
+          '@media (min-width: 1369px) and (max-width: 1919px)': {
+            padding: '50px'
+          }
+        }}>
+          <Typography 
+            variant="h2" 
+            component="h2" 
+            sx={{ 
+              fontWeight: "bold", 
+              color: "white", 
+              mb: { xs: 0.75, sm: 1, md: 1.25, lg: 2.5 },
+              fontSize: { xs: '1.3rem', sm: '1.6rem', md: '1.9rem', lg: '2.8rem' },
+              lineHeight: { xs: 1.15, sm: 1.2, md: 1.25, lg: 1.2 },
+              textAlign: { xs: 'center', sm: 'center', md: 'center', lg: 'left' },
+              '@media (max-height: 700px)': {
+                fontSize: { xs: '1.2rem', sm: '1.4rem', md: '1.6rem' },
+                mb: { xs: 0.6, sm: 0.75, md: 1 }
+              },
+              '@media (min-width: 1366px) and (max-width: 1367px) and (min-height: 701px) and (max-height: 768px)': {
+                fontSize: '1.5rem',
+                mb: 0.75
+              },
+              '@media (min-width: 1368px) and (max-width: 1919px)': {
+                fontSize: '1.9rem',
+                mb: 1
+              },
+              '@media (min-width: 1372px) and (max-width: 1919px)': {
+                fontSize: '2.6rem',
+                mb: 1.5
+              },
+              '@media (min-width: 1366px) and (max-width: 1367px) and (max-height: 700px)': {
+              fontSize: '2.1rem',
+              },
+              '@media (max-width: 599px)': {
+                fontSize: '1.5rem',
+              },
+            }}
+          >
+            {t("mainHeader")}
+          </Typography>
+          <Typography 
+            variant="h6" 
+            sx={{ 
+              color: "white", 
+              lineHeight: { xs: 1.2, sm: 1.25, md: 1.3, lg: 1.5 },
+              fontSize: { xs: '0.7rem', sm: '0.75rem', md: '0.8rem', lg: '0.95rem' },
+              textAlign: { xs: 'center', sm: 'center', md: 'center', lg: 'left' },
+              '@media (max-height: 700px)': {
+                fontSize: { xs: '0.65rem', sm: '0.7rem', md: '0.75rem' },
+                lineHeight: { xs: 1.15, sm: 1.2, md: 1.25 }
+              },
+              '@media (min-width: 1366px) and (max-width: 1367px) and (min-height: 701px) and (max-height: 768px)': {
+                fontSize: '0.65rem',
+                lineHeight: 1.2
+              },
+              '@media (min-width: 1368px) and (max-width: 1919px)': {
+                fontSize: '0.75rem',
+                lineHeight: 1.3
+              },
+              '@media (min-width: 1372px) and (max-width: 1919px)': {
+              fontSize: '1rem',
+              mb: 1.5
+              },
+              '@media (min-width: 1366px) and (max-width: 1367px) and (max-height: 700px)': {
+                fontSize: '0.7rem',
+              }
+            }}
+          >
+            {t("mainSubHeader")}
+          </Typography>
+        </Box>
+
+        {/* Karty */}
+        <Box sx={{ 
+          display: "grid", 
+          gridTemplateColumns: { xs: "1fr", sm: "repeat(2, 1fr)", md: "repeat(2, 1fr)", lg: "repeat(2, 1fr)" },
+          gap: { xs: 0.5, sm: 0.75, md: 1, lg: 2 },
+          width: '100%',
+          boxSizing: 'border-box',
+          '@media (max-height: 700px)': {
+            gap: { xs: 0.4, sm: 0.5, md: 0.75 }
+          },
+          '@media (min-width: 1366px) and (max-width: 1367px) and (min-height: 701px) and (max-height: 768px)': {
+            gap: 0.75
+          },
+          '@media (min-width: 1366px) and (max-width: 1367px) and (max-height: 700px)': {
+            gap: 0.75
+          },
+          '@media (max-width: 599px)': {
+          width: '250px',
+          maxWidth: '360px',
+          gap: 0.6,
+          alignItems: 'center',
+          justifyContent: 'center',
+          marginBottom: '40px',
+          }
+        }}>
            {/* Top Row */}
            <Link href="/my-aquariums" style={{ textDecoration: 'none', display: 'block', height: '100%' }}>
            <Box sx={{
@@ -451,6 +533,10 @@ export default function Dashboard() {
              '@media (max-height: 700px)': {
                p: { xs: 0.75, sm: 1, md: 1 },
                minHeight: { xs: '75px', sm: '85px', md: '90px' }
+             },
+             '@media (min-width: 1366px) and (max-width: 1367px) and (min-height: 701px) and (max-height: 768px)': {
+               p: 1,
+               minHeight: '90px'
              }
            }}>
              <Typography sx={{ 
@@ -460,17 +546,25 @@ export default function Dashboard() {
                '@media (max-height: 700px)': {
                  fontSize: { xs: 20, sm: 22, md: 24 },
                  mb: { xs: 0.25, sm: 0.25, md: 0.5 }
+               },
+               '@media (min-width: 1366px) and (max-width: 1367px) and (min-height: 701px) and (max-height: 768px)': {
+                 fontSize: 24,
+                 mb: 0.5
                }
              }}>🏠</Typography>
              <Typography variant="h6" sx={{ 
                fontWeight: 600, 
-               color: "text.primary", 
-               mb: { xs: 0.25, sm: 0.5, md: 0.5, lg: 1 }, 
-               textAlign: 'center', 
-               fontSize: { xs: '0.75rem', sm: '0.8rem', md: '0.85rem', lg: '1rem' },
-               '@media (max-height: 700px)': {
-                 fontSize: { xs: '0.7rem', sm: '0.75rem', md: '0.8rem' },
-                 mb: { xs: 0.25, sm: 0.25, md: 0.5 }
+                color: "text.primary", 
+                mb: { xs: 0.25, sm: 0.5, md: 0.5, lg: 1 }, 
+                textAlign: 'center', 
+                fontSize: { xs: '0.75rem', sm: '0.8rem', md: '0.85rem', lg: '1rem' },
+                '@media (max-height: 700px)': {
+                  fontSize: { xs: '0.7rem', sm: '0.75rem', md: '0.8rem' },
+                  mb: { xs: 0.25, sm: 0.25, md: 0.5}
+               },
+               '@media (min-width: 1366px) and (max-width: 1367px) and (min-height: 701px) and (max-height: 768px)': {
+                 fontSize: '0.75rem',
+                 mb: 0.5
                }
              }}>
                {t("myAquariums")}
@@ -482,6 +576,10 @@ export default function Dashboard() {
                '@media (max-height: 700px)': {
                  fontSize: { xs: '0.6rem', sm: '0.65rem', md: '0.7rem' },
                  lineHeight: 1.2
+               },
+               '@media (min-width: 1366px) and (max-width: 1367px) and (min-height: 701px) and (max-height: 768px)': {
+                 fontSize: '0.65rem',
+                 lineHeight: 1.25
                }
              }}>
                {t("aquariumsDesc")}
@@ -523,6 +621,10 @@ export default function Dashboard() {
                 '@media (max-height: 700px)': {
                   fontSize: { xs: 20, sm: 22, md: 24 },
                   mb: { xs: 0.25, sm: 0.25, md: 0.5 }
+                },
+                '@media (min-width: 1366px) and (max-width: 1367px) and (min-height: 701px) and (max-height: 768px)': {
+                  fontSize: 24,
+                  mb: 0.5
                 }
               }}>🐠</Typography>
               <Typography variant="h6" sx={{ 
@@ -534,6 +636,10 @@ export default function Dashboard() {
                 '@media (max-height: 700px)': {
                   fontSize: { xs: '0.7rem', sm: '0.75rem', md: '0.8rem' },
                   mb: { xs: 0.25, sm: 0.25, md: 0.5 }
+                },
+                '@media (min-width: 1366px) and (max-width: 1367px) and (min-height: 701px) and (max-height: 768px)': {
+                  fontSize: '0.75rem',
+                  mb: 0.5
                 }
               }}>
                 {t("fishDatabase")}
@@ -545,6 +651,10 @@ export default function Dashboard() {
                 '@media (max-height: 700px)': {
                   fontSize: { xs: '0.6rem', sm: '0.65rem', md: '0.7rem' },
                   lineHeight: 1.2
+                },
+                '@media (min-width: 1366px) and (max-width: 1367px) and (min-height: 701px) and (max-height: 768px)': {
+                  fontSize: '0.65rem',
+                  lineHeight: 1.25
                 }
               }}>
                 {t("fishDesc")}
@@ -587,6 +697,10 @@ export default function Dashboard() {
                  '@media (max-height: 700px)': {
                    fontSize: { xs: 20, sm: 22, md: 24 },
                    mb: { xs: 0.25, sm: 0.25, md: 0.5 }
+                 },
+                 '@media (min-width: 1366px) and (max-width: 1367px) and (min-height: 701px) and (max-height: 768px)': {
+                   fontSize: 24,
+                   mb: 0.5
                  }
                }}>👥</Typography>
                <Typography variant="h6" sx={{ 
@@ -598,6 +712,10 @@ export default function Dashboard() {
                  '@media (max-height: 700px)': {
                    fontSize: { xs: '0.7rem', sm: '0.75rem', md: '0.8rem' },
                    mb: { xs: 0.25, sm: 0.25, md: 0.5 }
+                 },
+                 '@media (min-width: 1366px) and (max-width: 1367px) and (min-height: 701px) and (max-height: 768px)': {
+                   fontSize: '0.75rem',
+                   mb: 0.5
                  }
                }}>
                  {t("contacts")}
@@ -609,6 +727,10 @@ export default function Dashboard() {
                  '@media (max-height: 700px)': {
                    fontSize: { xs: '0.6rem', sm: '0.65rem', md: '0.7rem' },
                    lineHeight: 1.2
+                 },
+                 '@media (min-width: 1366px) and (max-width: 1367px) and (min-height: 701px) and (max-height: 768px)': {
+                   fontSize: '0.65rem',
+                   lineHeight: 1.25
                  }
                }}>
                  {t("contactsDesc")}
@@ -650,6 +772,10 @@ export default function Dashboard() {
                 '@media (max-height: 700px)': {
                   fontSize: { xs: 20, sm: 22, md: 24 },
                   mb: { xs: 0.25, sm: 0.25, md: 0.5 }
+                },
+                '@media (min-width: 1366px) and (max-width: 1367px) and (min-height: 701px) and (max-height: 768px)': {
+                  fontSize: 24,
+                  mb: 0.5
                 }
               }}>🌿</Typography>
               <Typography variant="h6" sx={{ 
@@ -661,6 +787,10 @@ export default function Dashboard() {
                 '@media (max-height: 700px)': {
                   fontSize: { xs: '0.7rem', sm: '0.75rem', md: '0.8rem' },
                   mb: { xs: 0.25, sm: 0.25, md: 0.5 }
+                },
+                '@media (min-width: 1366px) and (max-width: 1367px) and (min-height: 701px) and (max-height: 768px)': {
+                  fontSize: '0.75rem',
+                  mb: 0.5
                 }
               }}>
                 {t("plantsDatabase")}
@@ -672,6 +802,10 @@ export default function Dashboard() {
                 '@media (max-height: 700px)': {
                   fontSize: { xs: '0.6rem', sm: '0.65rem', md: '0.7rem' },
                   lineHeight: 1.2
+                },
+                '@media (min-width: 1366px) and (max-width: 1367px) and (min-height: 701px) and (max-height: 768px)': {
+                  fontSize: '0.65rem',
+                  lineHeight: 1.25
                 }
               }}>
                 {t("plantsDesc")}
@@ -679,7 +813,6 @@ export default function Dashboard() {
              </Box>
            </Link>
          </Box>
-       </Box>
        </Box>
 
       {/* Settings Panel - Dropdown */}

@@ -161,3 +161,325 @@ body {
 .flip-card-back {
   transform: rotateY(180deg);
 }
+
+/* ============================================
+   RESPONSIVE MEDIA QUERIES
+   ============================================ */
+
+/* Telefon (max-width: 360px) */
+@media (max-width: 360px) {
+  body {
+    font-size: 12px;
+  }
+
+  /* Ogólne style dla małych telefonów */
+  .responsive-container {
+    padding: 8px;
+    gap: 8px;
+  }
+
+  .responsive-text {
+    font-size: 0.75rem;
+  }
+
+  .responsive-button {
+    padding: 6px 12px;
+    font-size: 0.7rem;
+  }
+
+  .responsive-card {
+    width: 100%;
+    min-width: 100%;
+    max-width: 100%;
+  }
+
+  .responsive-grid {
+    grid-template-columns: 1fr;
+    gap: 8px;
+  }
+
+  .responsive-header {
+    font-size: 1.2rem;
+    padding: 8px;
+  }
+
+  .responsive-modal {
+    width: 95% !important;
+    max-width: 95% !important;
+    padding: 12px !important;
+  }
+}
+
+/* Tablet (max-width: 768px) */
+@media (max-width: 768px) {
+  body {
+    font-size: 14px;
+  }
+
+  .responsive-container {
+    padding: 12px;
+    gap: 12px;
+  }
+
+  .responsive-text {
+    font-size: 0.875rem;
+  }
+
+  .responsive-button {
+    padding: 8px 16px;
+    font-size: 0.8rem;
+  }
+
+  .responsive-card {
+    width: 100%;
+    min-width: calc(50% - 8px);
+    max-width: 100%;
+  }
+
+  .responsive-grid {
+    grid-template-columns: repeat(2, 1fr);
+    gap: 12px;
+  }
+
+  .responsive-header {
+    font-size: 1.5rem;
+    padding: 12px;
+  }
+
+  .responsive-modal {
+    width: 90% !important;
+    max-width: 90% !important;
+    padding: 16px !important;
+  }
+
+  .responsive-sidebar {
+    display: none;
+  }
+
+  .responsive-main-content {
+    width: 100%;
+    margin-left: 0;
+  }
+}
+
+/* Laptop (max-width: 1366px) */
+@media (max-width: 1366px) {
+  body {
+    font-size: 15px;
+  }
+
+  .responsive-container {
+    padding: 16px;
+    gap: 16px;
+    max-width: 1200px;
+    margin: 0 auto;
+  }
+
+  .responsive-text {
+    font-size: 0.9375rem;
+  }
+
+  .responsive-button {
+    padding: 10px 20px;
+    font-size: 0.875rem;
+  }
+
+  .responsive-card {
+    width: calc(33.333% - 12px);
+    min-width: calc(33.333% - 12px);
+    max-width: calc(33.333% - 12px);
+  }
+
+  .responsive-grid {
+    grid-template-columns: repeat(3, 1fr);
+    gap: 16px;
+  }
+
+  .responsive-header {
+    font-size: 1.75rem;
+    padding: 16px;
+  }
+
+  .responsive-modal {
+    width: 85% !important;
+    max-width: 800px !important;
+    padding: 20px !important;
+  }
+
+  .responsive-sidebar {
+    width: 200px;
+  }
+
+  .responsive-main-content {
+    width: calc(100% - 200px);
+    margin-left: 200px;
+  }
+}
+
+/* Laptop HD (max-width: 1920px) */
+@media (max-width: 1920px) {
+  body {
+    font-size: 16px;
+  }
+
+  .responsive-container {
+    padding: 20px;
+    gap: 20px;
+    max-width: 1400px;
+    margin: 0 auto;
+  }
+
+  .responsive-text {
+    font-size: 1rem;
+  }
+
+  .responsive-button {
+    padding: 12px 24px;
+    font-size: 0.9375rem;
+  }
+
+  .responsive-card {
+    width: calc(25% - 15px);
+    min-width: calc(25% - 15px);
+    max-width: calc(25% - 15px);
+  }
+
+  .responsive-grid {
+    grid-template-columns: repeat(4, 1fr);
+    gap: 20px;
+  }
+
+  .responsive-header {
+    font-size: 2rem;
+    padding: 20px;
+  }
+
+  .responsive-modal {
+    width: 80% !important;
+    max-width: 1000px !important;
+    padding: 24px !important;
+  }
+
+  .responsive-sidebar {
+    width: 250px;
+  }
+
+  .responsive-main-content {
+    width: calc(100% - 250px);
+    margin-left: 250px;
+  }
+}
+
+/* Monitory większe niż 1920px - domyślne style */
+@media (min-width: 1921px) {
+  .responsive-container {
+    max-width: 1600px;
+    margin: 0 auto;
+  }
+
+  .responsive-card {
+    width: calc(25% - 20px);
+  }
+
+  .responsive-grid {
+    grid-template-columns: repeat(4, 1fr);
+    gap: 24px;
+  }
+}
+
+/* Pomocnicze klasy dla typowych problemów responsywnych */
+.responsive-hide-mobile {
+  display: block;
+}
+
+.responsive-hide-tablet {
+  display: block;
+}
+
+.responsive-hide-laptop {
+  display: block;
+}
+
+@media (max-width: 360px) {
+  .responsive-hide-mobile {
+    display: none !important;
+  }
+}
+
+@media (max-width: 768px) {
+  .responsive-hide-tablet {
+    display: none !important;
+  }
+}
+
+@media (max-width: 1366px) {
+  .responsive-hide-laptop {
+    display: none !important;
+  }
+}
+
+/* Responsywne obrazy */
+.responsive-image {
+  width: 100%;
+  height: auto;
+  object-fit: cover;
+}
+
+@media (max-width: 360px) {
+  .responsive-image {
+    max-height: 200px;
+  }
+}
+
+@media (max-width: 768px) {
+  .responsive-image {
+    max-height: 300px;
+  }
+}
+
+@media (max-width: 1366px) {
+  .responsive-image {
+    max-height: 400px;
+  }
+}
+
+/* Responsywne tabele */
+.responsive-table {
+  width: 100%;
+  overflow-x: auto;
+  display: block;
+}
+
+@media (max-width: 768px) {
+  .responsive-table {
+    font-size: 0.8rem;
+  }
+
+  .responsive-table th,
+  .responsive-table td {
+    padding: 6px 8px;
+  }
+}
+
+/* Responsywne formularze */
+.responsive-form {
+  width: 100%;
+}
+
+@media (max-width: 360px) {
+  .responsive-form input,
+  .responsive-form select,
+  .responsive-form textarea {
+    font-size: 14px;
+    padding: 8px;
+  }
+}
+
+@media (max-width: 768px) {
+  .responsive-form input,
+  .responsive-form select,
+  .responsive-form textarea {
+    font-size: 15px;
+    padding: 10px;
+  }
+}

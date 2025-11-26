@@ -119,14 +119,43 @@ export default function ContactsPage() {
       </Box>
 
       {/* Main Content */}
-      <Box sx={{ position: "relative", zIndex: 2, p: 4, pt: 14, pb: 14 }}>
+      <Box sx={{ 
+        position: "relative", 
+        zIndex: 2, 
+        minHeight: '100vh',
+        height: '100vh',
+        display: 'flex',
+        alignItems: 'center',
+        justifyContent: 'center',
+        p: { xs: 2, sm: 4 },
+        pt: { xs: 12, sm: 14 },
+        pb: { xs: 2, sm: 4 },
+        overflow: 'hidden',
+        '@media (min-width: 1366px) and (max-width: 1919px)': {
+          pt: 12,
+          pb: 3
+        },
+        '@media (min-width: 1366px) and (max-width: 1367px) and (max-height: 768px)': {
+          pt: 10,
+          pb: 2,
+        }
+      }}>
         <Box sx={{
           display: 'flex',
           flexDirection: 'column',
           alignItems: 'center',
-          gap: 4,
+          justifyContent: 'center',
+          gap: { xs: 1.5, sm: 2, md: 3 },
           maxWidth: '800px',
-          mx: 'auto'
+          width: '100%',
+          height: '100%',
+          overflow: 'hidden',
+          '@media (min-width: 1366px) and (max-width: 1367px) and (max-height: 768px)': {
+            gap: 1.5,
+          },
+          '@media (min-width: 1366px) and (max-width: 1367px) and (max-height: 700px)': {
+            gap: 1,
+          }
         }}>
           {/* Formularz zaproszenia - wyśrodkowany */}
           <Card sx={{
@@ -137,19 +166,21 @@ export default function ContactsPage() {
             boxShadow: '0 8px 24px rgba(0, 0, 0, 0.12), 0 2px 8px rgba(0, 0, 0, 0.08)',
             border: '1px solid rgba(0, 0, 0, 0.06)',
             transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
+            flexShrink: 0,
             '&:hover': {
               boxShadow: '0 12px 32px rgba(0, 0, 0, 0.16), 0 4px 12px rgba(0, 0, 0, 0.1)',
               transform: 'translateY(-2px)'
             }
           }}>
-            <CardContent sx={{ p: 3 }}>
-              <Typography variant="h5" sx={{ fontWeight: 600, mb: 3, textAlign: 'center' }}>
+            <CardContent sx={{ p: { xs: 1.5, sm: 2, md: 2.5 }, '@media (min-width: 1366px) and (max-width: 1367px) and (max-height: 700px)': { p: 1.5 } }}>
+              <Typography variant="h5" sx={{ fontWeight: 600, mb: { xs: 1.5, sm: 2 }, textAlign: 'center', fontSize: { xs: '1rem', sm: '1.15rem' }, '@media (min-width: 1366px) and (max-width: 1367px) and (max-height: 700px)': { fontSize: '0.95rem', mb: 1 } }}>
                 {t("inviteToCollaboration", { defaultValue: "Zaproś do współpracy" })}
               </Typography>
-              <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
+              <Box sx={{ display: 'flex', flexDirection: 'column', gap: { xs: 1.5, sm: 2 } }}>
                 <TextField
                   fullWidth
                   type="email"
+                  size="small"
                   label={t("collaborationEmail", { defaultValue: "Adres e-mail" })}
                   placeholder={t("collaborationEmail", { defaultValue: "Adres e-mail" })}
                   value={inviteEmail}
@@ -162,9 +193,13 @@ export default function ContactsPage() {
                   disabled={!inviteEmail.trim()}
                   fullWidth
                   sx={{
-                    py: 1.5,
-                    fontSize: '1rem',
-                    fontWeight: 600
+                    py: { xs: 0.75, sm: 1.25 },
+                    fontSize: { xs: '0.8rem', sm: '0.9rem' },
+                    fontWeight: 600,
+                    '@media (min-width: 1366px) and (max-width: 1367px) and (max-height: 700px)': {
+                      py: 0.75,
+                      fontSize: '0.75rem'
+                    }
                   }}
                 >
                   {t("sendInvite", { defaultValue: "Wyślij zaproszenie" })}
@@ -177,18 +212,29 @@ export default function ContactsPage() {
           <Card sx={{
             width: '100%',
             maxWidth: '700px',
+            maxHeight: '500px',
             bgcolor: darkMode ? 'rgba(30, 30, 30, 0.95)' : '#ffffff',
             borderRadius: 3,
             boxShadow: '0 8px 24px rgba(0, 0, 0, 0.12), 0 2px 8px rgba(0, 0, 0, 0.08)',
             border: '1px solid rgba(0, 0, 0, 0.06)',
             transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
+            flex: 1,
+            minHeight: 0,
+            display: 'flex',
+            flexDirection: 'column',
             '&:hover': {
               boxShadow: '0 12px 32px rgba(0, 0, 0, 0.16), 0 4px 12px rgba(0, 0, 0, 0.1)',
               transform: 'translateY(-2px)'
+            },
+            '@media (min-width: 1366px) and (max-width: 1367px) and (max-height: 700px)': {
+              maxHeight: '380px',
+            },
+            '@media (min-width: 1366px) and (max-width: 1367px) and (max-height: 768px)': {
+              maxHeight: '400px',
             }
           }}>
-            <CardContent sx={{ p: 3 }}>
-              <Typography variant="h5" sx={{ fontWeight: 600, mb: 3 }}>
+            <CardContent sx={{ p: { xs: 1.5, sm: 2, md: 2.5 }, display: 'flex', flexDirection: 'column', height: '100%', overflow: 'hidden', '@media (min-width: 1366px) and (max-width: 1367px) and (max-height: 700px)': { p: 1.5 } }}>
+              <Typography variant="h5" sx={{ fontWeight: 600, mb: { xs: 1.5, sm: 2 }, fontSize: { xs: '1rem', sm: '1.15rem' }, flexShrink: 0, '@media (min-width: 1366px) and (max-width: 1367px) and (max-height: 700px)': { fontSize: '0.95rem', mb: 1 } }}>
                 {t("contactsList", { defaultValue: "Lista znajomych" })}
               </Typography>
               {contacts.length === 0 ? (
@@ -196,17 +242,22 @@ export default function ContactsPage() {
                   {t("noContacts", { defaultValue: "Brak znajomych" })}
                 </Typography>
               ) : (
-                <List>
+                <List sx={{ flex: 1, overflow: 'auto', minHeight: 0, pr: 1 }}>
                   {contacts.map((contact) => (
                     <ListItem
                       key={contact.id}
                       sx={{
                         bgcolor: contact.status === 'pending' ? 'rgba(255, 193, 7, 0.08)' : 'rgba(0, 0, 0, 0.02)',
                         borderRadius: 2,
-                        mb: 1.5,
+                        mb: { xs: 0.75, sm: 1 },
                         border: '1px solid',
                         borderColor: contact.status === 'pending' ? 'rgba(255, 193, 7, 0.2)' : 'rgba(0, 0, 0, 0.08)',
                         transition: 'all 0.2s ease',
+                        py: { xs: 0.75, sm: 1 },
+                        '@media (min-width: 1366px) and (max-width: 1367px) and (max-height: 700px)': {
+                          mb: 0.5,
+                          py: 0.5
+                        },
                         '&:hover': {
                           bgcolor: contact.status === 'pending' ? 'rgba(255, 193, 7, 0.15)' : 'rgba(0, 0, 0, 0.04)',
                           borderColor: contact.status === 'pending' ? 'rgba(255, 193, 7, 0.3)' : 'rgba(0, 0, 0, 0.12)',
@@ -218,6 +269,7 @@ export default function ContactsPage() {
                         <IconButton
                           edge="end"
                           onClick={() => handleRemoveContact(contact.id)}
+                          size="small"
                           sx={{ 
                             color: 'error.main',
                             transition: 'all 0.2s ease',
@@ -227,22 +279,23 @@ export default function ContactsPage() {
                             }
                           }}
                         >
-                          <DeleteIcon />
+                          <DeleteIcon fontSize="small" />
                         </IconButton>
                       }
                     >
-                      <Avatar sx={{ bgcolor: contact.status === 'pending' ? '#FFC107' : '#1976d2', mr: 2 }}>
+                      <Avatar sx={{ bgcolor: contact.status === 'pending' ? '#FFC107' : '#1976d2', mr: 2, width: { xs: 32, sm: 40 }, height: { xs: 32, sm: 40 } }}>
                         {contact.name.charAt(0).toUpperCase()}
                       </Avatar>
                       <ListItemText
                         primary={contact.name}
+                        primaryTypographyProps={{ fontSize: { xs: '0.9rem', sm: '1rem' } }}
                         secondary={
                           <>
-                            <Box component="span" sx={{ display: 'block', mb: contact.status === 'pending' ? 0.5 : 0 }}>
+                            <Box component="span" sx={{ display: 'block', mb: contact.status === 'pending' ? 0.5 : 0, fontSize: { xs: '0.75rem', sm: '0.875rem' } }}>
                               {contact.email}
                             </Box>
                             {contact.status === 'pending' && (
-                              <Box component="span" sx={{ display: 'block', color: '#FF9800', fontWeight: 600, fontSize: '0.75rem' }}>
+                              <Box component="span" sx={{ display: 'block', color: '#FF9800', fontWeight: 600, fontSize: { xs: '0.7rem', sm: '0.75rem' } }}>
                                 {t("pending", { defaultValue: "Oczekuje na akceptację" })}
                               </Box>
                             )}

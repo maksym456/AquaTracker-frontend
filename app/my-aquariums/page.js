@@ -226,14 +226,27 @@ export default function MyAquariumsPage() {
       <Box sx={{ 
         position: 'absolute', top: 0, left: 0, right: 0,
         display: 'flex', justifyContent: 'space-between', alignItems: 'center',
-        px: { xs: 2, sm: 4 }, py: 2, zIndex: 10
+        px: { xs: 0.5, sm: 2, md: 4 }, 
+        py: { xs: 1, sm: 1.5, md: 2 }, 
+        zIndex: 10,
+        height: 96,
+        maxWidth: '100%',
+        overflow: 'hidden',
+        gap: { xs: 0.5, sm: 1 }
       }}>
-        <Box sx={{ display: "flex", gap: { xs: 0.5, sm: 1 } }}>
+        <Box sx={{ 
+          display: "flex", 
+          gap: { xs: 0.25, sm: 0.5, md: 1 },
+          alignItems: 'center',
+          flexShrink: 0,
+          overflow: 'hidden',
+          justifyContent: 'flex-start'
+        }}>
           <Box 
             onClick={handleOpenStatistics}
             sx={{
               bgcolor: darkMode ? 'rgba(30, 30, 30, 0.85)' : 'rgba(255, 255, 255, 0.4)', 
-              p: { xs: 0.5, sm: 0.8 }, 
+              p: { xs: 0.4, sm: 0.6, md: 0.8 }, 
               borderRadius: 1.5, 
               boxShadow: 2,
               transition: "all 0.3s", 
@@ -244,22 +257,24 @@ export default function MyAquariumsPage() {
                 bgcolor: darkMode ? 'rgba(40, 40, 40, 0.9)' : 'rgba(255, 255, 255, 0.6)' 
               },
               cursor: 'pointer', 
-              minHeight: { xs: '50px', sm: '60px' }, 
-              minWidth: { xs: '60px', sm: '80px' }, 
+              minHeight: { xs: '52px', sm: '50px', md: '60px' }, 
+              minWidth: { xs: '52px', sm: '60px', md: '80px' }, 
+              maxWidth: { xs: '52px', sm: '60px', md: '80px' },
               display: 'flex', 
               flexDirection: 'column', 
               alignItems: 'center', 
-              justifyContent: 'center'
+              justifyContent: 'center',
+              flexShrink: 0
             }}
           >
-            <Typography sx={{ fontSize: { xs: 14, sm: 16 }, mb: 0.3, textAlign: 'center' }}>📊</Typography>
-            <Typography variant="body2" sx={{ fontWeight: 600, color: "text.primary", textAlign: 'center', fontSize: { xs: '0.55rem', sm: '0.65rem' } }}>
+            <Typography sx={{ fontSize: { xs: 16, sm: 14, md: 16 }, mb: 0.2, textAlign: 'center', lineHeight: 1 }}>📊</Typography>
+            <Typography variant="body2" sx={{ fontWeight: 600, color: "text.primary", textAlign: 'center', fontSize: { xs: '0.6rem', sm: '0.55rem', md: '0.65rem' }, lineHeight: 1.1 }}>
               {t("statistics")}
             </Typography>
           </Box>
           <Box sx={{
             bgcolor: darkMode ? 'rgba(30, 30, 30, 0.85)' : 'rgba(255, 255, 255, 0.4)', 
-            p: { xs: 0.5, sm: 0.8 }, 
+            p: { xs: 0.4, sm: 0.6, md: 0.8 }, 
             borderRadius: 1.5, 
             boxShadow: 2,
             transition: "all 0.3s", 
@@ -270,22 +285,24 @@ export default function MyAquariumsPage() {
               bgcolor: darkMode ? 'rgba(40, 40, 40, 0.9)' : 'rgba(255, 255, 255, 0.6)' 
             },
             cursor: 'pointer', 
-            minHeight: { xs: '50px', sm: '60px' }, 
-            minWidth: { xs: '60px', sm: '80px' }, 
+            minHeight: { xs: '52px', sm: '50px', md: '60px' }, 
+            minWidth: { xs: '52px', sm: '60px', md: '80px' },
+            maxWidth: { xs: '52px', sm: '60px', md: '80px' },
             display: 'flex', 
             flexDirection: 'column', 
             alignItems: 'center', 
-            justifyContent: 'center'
+            justifyContent: 'center',
+            flexShrink: 0
           }}>
-            <Typography sx={{ fontSize: { xs: 14, sm: 16 }, mb: 0.3, textAlign: 'center' }}>📋</Typography>
-            <Typography variant="body2" sx={{ fontWeight: 600, color: "text.primary", textAlign: 'center', fontSize: { xs: '0.55rem', sm: '0.65rem' } }}>
+            <Typography sx={{ fontSize: { xs: 16, sm: 14, md: 16 }, mb: 0.2, textAlign: 'center', lineHeight: 1 }}>📋</Typography>
+            <Typography variant="body2" sx={{ fontWeight: 600, color: "text.primary", textAlign: 'center', fontSize: { xs: '0.6rem', sm: '0.55rem', md: '0.65rem' }, lineHeight: 1.1 }}>
               {t("history")}
             </Typography>
           </Box>
-          <Link href="/" style={{ textDecoration: 'none' }}>
+          <Link href="/" style={{ textDecoration: 'none', flexShrink: 0 }}>
             <Box sx={{
               bgcolor: darkMode ? 'rgba(30, 30, 30, 0.85)' : 'rgba(255, 255, 255, 0.4)', 
-              p: { xs: 0.5, sm: 0.8 }, 
+              p: { xs: 0.4, sm: 0.6, md: 0.8 }, 
               borderRadius: 1.5, 
               boxShadow: 2,
               transition: "all 0.3s", 
@@ -296,21 +313,28 @@ export default function MyAquariumsPage() {
                 bgcolor: darkMode ? 'rgba(40, 40, 40, 0.9)' : 'rgba(255, 255, 255, 0.6)' 
               },
               cursor: 'pointer', 
-              minHeight: { xs: '50px', sm: '60px' }, 
-              minWidth: { xs: '60px', sm: '80px' }, 
+              minHeight: { xs: '52px', sm: '50px', md: '60px' }, 
+              minWidth: { xs: '52px', sm: '60px', md: '80px' },
+              maxWidth: { xs: '52px', sm: '60px', md: '80px' },
               display: 'flex', 
               flexDirection: 'column', 
               alignItems: 'center', 
               justifyContent: 'center'
             }}>
-              <KeyboardReturnOutlinedIcon sx={{ fontSize: { xs: 14, sm: 16 }, mb: 0.3, color: darkMode ? 'white' : 'inherit' }} />
-              <Typography variant="body2" sx={{ fontWeight: 600, color: darkMode ? 'white' : "text.primary", textAlign: 'center', fontSize: { xs: '0.55rem', sm: '0.65rem' } }}>
+              <KeyboardReturnOutlinedIcon sx={{ fontSize: { xs: 16, sm: 14, md: 16 }, mb: 0.2, color: darkMode ? 'white' : 'inherit' }} />
+              <Typography variant="body2" sx={{ fontWeight: 600, color: darkMode ? 'white' : "text.primary", textAlign: 'center', fontSize: { xs: '0.6rem', sm: '0.55rem', md: '0.65rem' }, lineHeight: 1.1 }}>
                 {t("return")}
               </Typography>
             </Box>
           </Link>
         </Box>
-        <Box sx={{ display: 'flex', alignItems: 'center', ml: { xs: 1, sm: 2 } }}>
+        <Box sx={{ 
+          display: 'flex', 
+          alignItems: 'center', 
+          justifyContent: 'flex-end',
+          ml: { xs: 0.5, sm: 1, md: 2 },
+          flexShrink: 0
+        }}>
           <LanguageSwitcher />
         </Box>
       </Box>
@@ -334,29 +358,47 @@ export default function MyAquariumsPage() {
             </Typography>
           </Box>
         ) : (
-          <Grid container spacing={3}>
+          <Grid container spacing={{ xs: 2, sm: 2, md: 3 }}>
             {aquariums.map((aquarium) => (
-              <Grid item xs={12} sm={6} md={4} lg={3} key={aquarium.id} sx={{ display: 'flex' }}>
+              <Grid item xs={12} sm={6} md={4} lg={3} key={aquarium.id} sx={{ display: 'flex', justifyContent: { xs: 'center', sm: 'flex-start' }, alignItems: 'stretch', height: { xs: '200px', sm: '250px', md: '260px', lg: '280px' } }}>
                 <Card
                   sx={{
-                    width: '250px',
-                    height: '280px',
+                    width: { xs: '280px', sm: '200px', md: '220px', lg: '250px' },
+                    minWidth: { xs: '280px', sm: '200px', md: '220px', lg: '250px' },
+                    maxWidth: { xs: '280px', sm: '200px', md: '220px', lg: '250px' },
+                    minHeight: { xs: '200px', sm: '250px', md: '260px', lg: '280px' },
+                    height: { xs: '200px', sm: '250px', md: '260px', lg: '280px' },
+                    maxHeight: { xs: '200px', sm: '250px', md: '260px', lg: '280px' },
                     display: 'flex',
-                    flexDirection: 'column',
+                    flexDirection: 'row',
                     cursor: 'pointer',
                     transition: 'all 0.3s',
+                    overflow: 'hidden',
+                    boxSizing: 'border-box',
                     '&:hover': {
                       transform: 'translateY(-4px)',
                       boxShadow: 6
+                    },
+                    '@media (max-width: 599px)': {
+                      display: 'flex',
+                      flexDirection: 'row',
+                      alignItems: 'center',
+                      justifyContent: 'center',
+                      width: '140px',
+                      minWidth: '140px',
+                      maxWidth: '200px',
+                      minHeight: '200px',
+                      height: '200px',
+                      maxHeight: '200px',
                     }
                   }}
                   onClick={() => handleOpenAquarium(aquarium.id)}
                 >
-                  <CardActionArea sx={{ flex: 1, display: 'flex', flexDirection: 'column', alignItems: 'stretch', height: '100%' }}>
+                  <CardActionArea sx={{ flex: 1, display: 'flex', flexDirection: 'column', alignItems: 'stretch', height: '100%', minHeight: 0, maxHeight: '100%', overflow: 'hidden' }}>
                     <Box
                       sx={{
                         width: '100%',
-                        height: '140px',
+                        height: { xs: '90px', sm: '120px', md: '130px', lg: '140px' },
                         flexShrink: 0,
                         bgcolor: 'rgba(46, 127, 169, 0.2)',
                         backgroundImage: 'linear-gradient(135deg, #cfeef6 0%, #87cde1 50%, #2e7fa9 100%)',
@@ -367,25 +409,33 @@ export default function MyAquariumsPage() {
                         overflow: 'hidden'
                       }}
                     >
-                      <Typography sx={{ fontSize: 48, opacity: 0.6 }}>🐠</Typography>
+                      <Typography sx={{ fontSize: { xs: 32, sm: 40, md: 44, lg: 48 }, opacity: 0.6 }}>🐠</Typography>
                     </Box>
                     <CardContent sx={{ 
                       flex: 1, 
                       display: 'flex', 
                       flexDirection: 'column',
-                      py: 1.5,
-                      overflow: 'hidden'
+                      py: { xs: 0.75, sm: 1.25, md: 1.5 },
+                      px: { xs: 1.25, sm: 1.5, md: 2 },
+                      overflow: 'hidden',
+                      minHeight: 0,
+                      maxHeight: '100%',
+                      '&.MuiCardContent-root': {
+                        paddingBottom: { xs: '12px', sm: '16px', md: '24px' }
+                      }
                     }}>
                       <Typography 
                         variant="h6" 
                         sx={{ 
                           fontWeight: 600, 
-                          mb: 1,
+                          mb: { xs: 0.5, sm: 1 },
+                          fontSize: { xs: '0.85rem', sm: '1rem', md: '1.1rem' },
                           overflow: 'hidden',
                           textOverflow: 'ellipsis',
                           display: '-webkit-box',
                           WebkitLineClamp: 1,
-                          WebkitBoxOrient: 'vertical'
+                          WebkitBoxOrient: 'vertical',
+                          flexShrink: 0
                         }}
                       >
                         {aquarium.name}
@@ -394,8 +444,10 @@ export default function MyAquariumsPage() {
                         variant="body2" 
                         color="text.secondary" 
                         sx={{ 
-                          mb: 1,
+                          mb: { xs: 0.5, sm: 1 },
+                          fontSize: { xs: '0.7rem', sm: '0.8rem', md: '0.875rem' },
                           flex: 1,
+                          minHeight: 0,
                           overflow: 'hidden',
                           textOverflow: 'ellipsis',
                           display: '-webkit-box',
@@ -405,28 +457,38 @@ export default function MyAquariumsPage() {
                       >
                         {aquarium.description || t("noDescription", { defaultValue: "Brak opisu" })}
                       </Typography>
-                      <Box sx={{ display: 'flex', gap: 2, mt: 'auto', pt: 1, flexWrap: 'wrap' }}>
+                      <Box sx={{ 
+                        display: 'flex', 
+                        gap: { xs: 0.75, sm: 1.5, md: 2 }, 
+                        mt: 'auto', 
+                        pt: { xs: 0.5, sm: 1 }, 
+                        flexWrap: 'wrap', 
+                        flexShrink: 0,
+                        maxHeight: { xs: '32px', sm: '40px' },
+                        overflow: 'hidden',
+                        alignItems: 'center'
+                      }}>
                         {}
                         {aquarium.temperature && (
-                          <Typography variant="caption" color="text.secondary">
+                          <Typography variant="caption" color="text.secondary" sx={{ fontSize: { xs: '0.65rem', sm: '0.7rem', md: '0.75rem' } }}>
                             🌡️ {aquarium.temperature}°C
                           </Typography>
                         )}
                         {aquarium.ph && (
-                          <Typography variant="caption" color="text.secondary">
+                          <Typography variant="caption" color="text.secondary" sx={{ fontSize: { xs: '0.65rem', sm: '0.7rem', md: '0.75rem' } }}>
                             pH {aquarium.ph}
                           </Typography>
                         )}
                         {aquarium.hardness && (
-                          <Typography variant="caption" color="text.secondary">
+                          <Typography variant="caption" color="text.secondary" sx={{ fontSize: { xs: '0.65rem', sm: '0.7rem', md: '0.75rem' } }}>
                             🔷 {aquarium.hardness} dGH
                           </Typography>
                         )}
                         {}
-                        <Typography variant="caption" color="text.secondary">
+                        <Typography variant="caption" color="text.secondary" sx={{ fontSize: { xs: '0.65rem', sm: '0.7rem', md: '0.75rem' } }}>
                           🐟 {aquarium.fishes?.length || 0}
                         </Typography>
-                        <Typography variant="caption" color="text.secondary">
+                        <Typography variant="caption" color="text.secondary" sx={{ fontSize: { xs: '0.65rem', sm: '0.7rem', md: '0.75rem' } }}>
                           🌿 {aquarium.plants?.length || 0}
                         </Typography>
                       </Box>

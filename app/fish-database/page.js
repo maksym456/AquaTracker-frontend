@@ -689,8 +689,18 @@ export default function FishDatabasePage() {
         alignItems: 'center',
         justifyContent: 'center',
         minHeight: '100vh',
+        height: '100vh',
         pt: 14,
-        pb: 4
+        pb: 4,
+        overflow: 'auto',
+        '@media (min-width: 1366px) and (max-width: 1919px)': {
+          pt: 12,
+          pb: 2
+        },
+        '@media (min-width: 1366px) and (max-width: 1367px) and (max-height: 768px)': {
+          pt: 10,
+          pb: 1
+        }
       }}>
         {/* Karuzela kafelków - kontener flexbox wyśrodkowujący wszystko */}
         <Box sx={{
@@ -699,18 +709,43 @@ export default function FishDatabasePage() {
           alignItems: 'center',
           justifyContent: 'center',
           width: '100%',
-          minHeight: '800px',
-          gap: 2
+          minHeight: { xs: '600px', md: '700px' },
+          gap: 2,
+          py: 2,
+          '@media (min-width: 1366px) and (max-width: 1919px)': {
+            minHeight: '650px',
+            py: 1
+          },
+          '@media (min-width: 1366px) and (max-width: 1367px) and (max-height: 768px)': {
+            minHeight: '580px',
+            gap: 1
+          },
+          '@media (min-width: 1366px) and (max-width: 1367px) and (max-height: 700px)': {
+            minHeight: '520px',
+            gap: 0.75,
+            py: 0.5
+          }
         }}>
           {/* Wewnętrzny kontener z większą szerokością dla kart */}
           <Box sx={{
             position: 'relative',
-            width: { xs: '90%', md: '45%' },
-            maxWidth: { xs: '100%', md: 400 },
-            height: '800px',
+            width: { xs: '90%', sm: '60%', md: '45%' },
+            maxWidth: { xs: '100%', sm: 450, md: 400 },
+            height: { xs: '600px', md: '700px' },
             display: 'flex',
             alignItems: 'center',
-            justifyContent: 'center'
+            justifyContent: 'center',
+            '@media (min-width: 1366px) and (max-width: 1919px)': {
+              height: '650px'
+            },
+            '@media (min-width: 1366px) and (max-width: 1367px) and (max-height: 768px)': {
+              height: '580px',
+              width: '42%'
+            },
+            '@media (min-width: 1366px) and (max-width: 1367px) and (max-height: 700px)': {
+              height: '520px',
+              width: '42%'
+            }
           }}>
             {/* Renderuj wszystkie karty */}
             {fishCards.map((fish, index) => {
@@ -731,13 +766,26 @@ export default function FishDatabasePage() {
                     borderRadius: 4,
                     overflow: 'hidden',
                     boxShadow: '0 8px 32px rgba(0, 0, 0, 0.4)',
-                    minHeight: '750px',
+                    minHeight: { xs: '550px', md: '650px' },
+                    maxHeight: { xs: '550px', md: '650px' },
                     display: 'flex',
                     flexDirection: 'column',
                     zIndex: position.zIndex,
                     opacity: position.opacity,
                     transition: 'all 0.5s cubic-bezier(0.4, 0, 0.2, 1)',
                     cursor: position.zIndex === 3 ? 'default' : 'pointer',
+                    '@media (min-width: 1366px) and (max-width: 1919px)': {
+                      minHeight: '600px',
+                      maxHeight: '600px'
+                    },
+                    '@media (min-width: 1366px) and (max-width: 1367px) and (max-height: 768px)': {
+                      minHeight: '530px',
+                      maxHeight: '530px'
+                    },
+                    '@media (min-width: 1366px) and (max-width: 1367px) and (max-height: 700px)': {
+                      minHeight: '470px',
+                      maxHeight: '470px'
+                    },
                     '&:hover': position.zIndex === 3 ? {} : {
                       opacity: 0.85,
                       transform: position.translateX === 0
@@ -806,13 +854,20 @@ export default function FishDatabasePage() {
                 {/* Obraz ryby */}
                 <Box sx={{
                   width: '100%',
-                  height: '250px',
+                  height: { xs: '180px', md: '220px' },
                   bgcolor: 'rgba(40, 60, 100, 0.8)',
                   display: 'flex',
                   alignItems: 'center',
                   justifyContent: 'center',
                   position: 'relative',
-                  overflow: 'hidden'
+                  overflow: 'hidden',
+                  flexShrink: 0,
+                  '@media (min-width: 1366px) and (max-width: 1367px) and (max-height: 768px)': {
+                    height: '150px'
+                  },
+                  '@media (min-width: 1366px) and (max-width: 1367px) and (max-height: 700px)': {
+                    height: '140px'
+                  }
                 }}>
                   {fish.image && !failedImages.has(fish.id) ? (
                     <img 
@@ -854,13 +909,33 @@ export default function FishDatabasePage() {
                 </Box>
 
                 {/* Treść kafelka */}
-                <Box sx={{ p: 3, flex: 1, display: 'flex', flexDirection: 'column', overflowY: 'auto' }}>
+                <Box sx={{ 
+                  p: { xs: 2, md: 2.5 }, 
+                  flex: 1, 
+                  display: 'flex', 
+                  flexDirection: 'column', 
+                  overflow: 'hidden',
+                  minHeight: 0,
+                  '@media (min-width: 1366px) and (max-width: 1367px) and (max-height: 700px)': {
+                    p: 1.5
+                  }
+                }}>
                   <Typography 
                     variant="h5" 
                     sx={{ 
                       color: 'white', 
-                      mb: 1.5, 
-                      fontWeight: 600 
+                      mb: 0.75, 
+                      fontWeight: 600,
+                      fontSize: { xs: '1rem', md: '1.15rem' },
+                      flexShrink: 0,
+                      '@media (min-width: 1366px) and (max-width: 1367px) and (max-height: 768px)': {
+                        fontSize: '0.95rem',
+                        mb: 0.5
+                      },
+                      '@media (min-width: 1366px) and (max-width: 1367px) and (max-height: 700px)': {
+                        fontSize: '0.9rem',
+                        mb: 0.5
+                      }
                     }}
                   >
                     {t(`fish.species.${fish.name}.name`, { defaultValue: fish.name })}
@@ -871,99 +946,110 @@ export default function FishDatabasePage() {
                     variant="body2" 
                     sx={{ 
                       color: 'rgba(255, 255, 255, 0.8)',
-                      lineHeight: 1.6,
-                      mb: 2,
-                      fontSize: '0.85rem'
+                      lineHeight: 1.4,
+                      mb: 1,
+                      fontSize: { xs: '0.7rem', md: '0.8rem' },
+                      flexShrink: 0,
+                      '@media (min-width: 1366px) and (max-width: 1367px) and (max-height: 768px)': {
+                        fontSize: '0.65rem',
+                        mb: 0.75,
+                        lineHeight: 1.3
+                      },
+                      '@media (min-width: 1366px) and (max-width: 1367px) and (max-height: 700px)': {
+                        fontSize: '0.65rem',
+                        mb: 0.5,
+                        lineHeight: 1.3
+                      }
                     }}
                   >
                     {t(`fish.species.${fish.name}.description`, { defaultValue: fish.description })}
                   </Typography>
 
                   {/* Parametry */}
-                  <Box sx={{ mb: 2 }}>
-                    <Divider sx={{ borderColor: 'rgba(255,255,255,0.2)', mb: 1.5 }} />
+                  <Box sx={{ mb: 1, flex: 1, minHeight: 0, display: 'flex', flexDirection: 'column' }}>
+                    <Divider sx={{ borderColor: 'rgba(255,255,255,0.2)', mb: 0.75 }} />
                     
                     {/* Typ wody */}
-                    <Box sx={{ display: 'flex', justifyContent: 'space-between', mb: 1 }}>
-                      <Typography variant="body2" sx={{ color: 'rgba(255, 255, 255, 0.7)', fontSize: '0.8rem' }}>
+                    <Box sx={{ display: 'flex', justifyContent: 'space-between', mb: 0.5 }}>
+                      <Typography variant="body2" sx={{ color: 'rgba(255, 255, 255, 0.7)', fontSize: { xs: '0.65rem', md: '0.75rem' } }}>
                         {t('fish.parameters.waterType')}:
                       </Typography>
-                      <Typography variant="body2" sx={{ color: 'white', fontSize: '0.8rem', fontWeight: 500 }}>
+                      <Typography variant="body2" sx={{ color: 'white', fontSize: { xs: '0.65rem', md: '0.75rem' }, fontWeight: 500 }}>
                         {getWaterTypeLabel(fish.waterType)}
                       </Typography>
                     </Box>
 
                     {/* Temperatura */}
-                    <Box sx={{ display: 'flex', justifyContent: 'space-between', mb: 1 }}>
-                      <Typography variant="body2" sx={{ color: 'rgba(255, 255, 255, 0.7)', fontSize: '0.8rem' }}>
+                    <Box sx={{ display: 'flex', justifyContent: 'space-between', mb: 0.5 }}>
+                      <Typography variant="body2" sx={{ color: 'rgba(255, 255, 255, 0.7)', fontSize: { xs: '0.65rem', md: '0.75rem' } }}>
                         {t('fish.parameters.temperature')}:
                       </Typography>
-                      <Typography variant="body2" sx={{ color: 'white', fontSize: '0.8rem', fontWeight: 500 }}>
+                      <Typography variant="body2" sx={{ color: 'white', fontSize: { xs: '0.65rem', md: '0.75rem' }, fontWeight: 500 }}>
                         {fish.tempRange[0]}-{fish.tempRange[1]} °C
                       </Typography>
                     </Box>
 
                     {/* Biotyp */}
-                    <Box sx={{ display: 'flex', justifyContent: 'space-between', mb: 1 }}>
-                      <Typography variant="body2" sx={{ color: 'rgba(255, 255, 255, 0.7)', fontSize: '0.8rem' }}>
+                    <Box sx={{ display: 'flex', justifyContent: 'space-between', mb: 0.5 }}>
+                      <Typography variant="body2" sx={{ color: 'rgba(255, 255, 255, 0.7)', fontSize: { xs: '0.65rem', md: '0.75rem' } }}>
                         {t('fish.parameters.biotope')}:
                       </Typography>
-                      <Typography variant="body2" sx={{ color: 'white', fontSize: '0.8rem', fontWeight: 500 }}>
+                      <Typography variant="body2" sx={{ color: 'white', fontSize: { xs: '0.65rem', md: '0.75rem' }, fontWeight: 500 }}>
                         {getBiotopeLabel(fish.biotope)}
                       </Typography>
                     </Box>
 
                     {/* pH */}
-                    <Box sx={{ display: 'flex', justifyContent: 'space-between', mb: 1 }}>
-                      <Typography variant="body2" sx={{ color: 'rgba(255, 255, 255, 0.7)', fontSize: '0.8rem' }}>
+                    <Box sx={{ display: 'flex', justifyContent: 'space-between', mb: 0.5 }}>
+                      <Typography variant="body2" sx={{ color: 'rgba(255, 255, 255, 0.7)', fontSize: { xs: '0.65rem', md: '0.75rem' } }}>
                         {t('fish.parameters.ph')}:
                       </Typography>
-                      <Typography variant="body2" sx={{ color: 'white', fontSize: '0.8rem', fontWeight: 500 }}>
+                      <Typography variant="body2" sx={{ color: 'white', fontSize: { xs: '0.65rem', md: '0.75rem' }, fontWeight: 500 }}>
                         {fish.phRange[0]}-{fish.phRange[1]}
                       </Typography>
                     </Box>
 
                     {/* Twardość */}
-                    <Box sx={{ display: 'flex', justifyContent: 'space-between', mb: 1 }}>
-                      <Typography variant="body2" sx={{ color: 'rgba(255, 255, 255, 0.7)', fontSize: '0.8rem' }}>
+                    <Box sx={{ display: 'flex', justifyContent: 'space-between', mb: 0.5 }}>
+                      <Typography variant="body2" sx={{ color: 'rgba(255, 255, 255, 0.7)', fontSize: { xs: '0.65rem', md: '0.75rem' } }}>
                         {t('fish.parameters.hardness')}:
                       </Typography>
-                      <Typography variant="body2" sx={{ color: 'white', fontSize: '0.8rem', fontWeight: 500 }}>
+                      <Typography variant="body2" sx={{ color: 'white', fontSize: { xs: '0.65rem', md: '0.75rem' }, fontWeight: 500 }}>
                         {fish.hardness[0]}-{fish.hardness[1]} °dGH
                       </Typography>
                     </Box>
 
                     {/* Usposobienie */}
-                    <Box sx={{ display: 'flex', justifyContent: 'space-between', mb: 1 }}>
-                      <Typography variant="body2" sx={{ color: 'rgba(255, 255, 255, 0.7)', fontSize: '0.8rem' }}>
+                    <Box sx={{ display: 'flex', justifyContent: 'space-between', mb: 0.5 }}>
+                      <Typography variant="body2" sx={{ color: 'rgba(255, 255, 255, 0.7)', fontSize: { xs: '0.65rem', md: '0.75rem' } }}>
                         {t('fish.parameters.temperament')}:
                       </Typography>
-                      <Typography variant="body2" sx={{ color: 'white', fontSize: '0.8rem', fontWeight: 500 }}>
+                      <Typography variant="body2" sx={{ color: 'white', fontSize: { xs: '0.65rem', md: '0.75rem' }, fontWeight: 500 }}>
                         {getTemperamentLabel(fish.temperament)}
                       </Typography>
                     </Box>
 
                     {/* Ilość w stadzie */}
-                    <Box sx={{ display: 'flex', justifyContent: 'space-between', mb: 1 }}>
-                      <Typography variant="body2" sx={{ color: 'rgba(255, 255, 255, 0.7)', fontSize: '0.8rem' }}>
+                    <Box sx={{ display: 'flex', justifyContent: 'space-between', mb: 0.5 }}>
+                      <Typography variant="body2" sx={{ color: 'rgba(255, 255, 255, 0.7)', fontSize: { xs: '0.65rem', md: '0.75rem' } }}>
                         {t('fish.parameters.minSchoolSize')}:
                       </Typography>
-                      <Typography variant="body2" sx={{ color: 'white', fontSize: '0.8rem', fontWeight: 500 }}>
+                      <Typography variant="body2" sx={{ color: 'white', fontSize: { xs: '0.65rem', md: '0.75rem' }, fontWeight: 500 }}>
                         {fish.minSchoolSize} {t(`fish.values.${fish.minSchoolSize === 1 ? 'piece' : 'pieces'}`)}
                       </Typography>
                     </Box>
 
                     {/* Długość życia */}
-                    <Box sx={{ display: 'flex', justifyContent: 'space-between', mb: 1 }}>
-                      <Typography variant="body2" sx={{ color: 'rgba(255, 255, 255, 0.7)', fontSize: '0.8rem' }}>
+                    <Box sx={{ display: 'flex', justifyContent: 'space-between', mb: 0.5 }}>
+                      <Typography variant="body2" sx={{ color: 'rgba(255, 255, 255, 0.7)', fontSize: { xs: '0.65rem', md: '0.75rem' } }}>
                         {t('fish.parameters.lifespan')}:
                       </Typography>
-                      <Typography variant="body2" sx={{ color: 'white', fontSize: '0.8rem', fontWeight: 500 }}>
+                      <Typography variant="body2" sx={{ color: 'white', fontSize: { xs: '0.65rem', md: '0.75rem' }, fontWeight: 500 }}>
                         {fish.lifespan}
                       </Typography>
                     </Box>
 
-                    <Divider sx={{ borderColor: 'rgba(255,255,255,0.2)', mt: 1.5 }} />
+                    <Divider sx={{ borderColor: 'rgba(255,255,255,0.2)', mt: 0.75 }} />
                   </Box>
                   
                   {/* Przycisk "Dodaj do akwarium" tylko na głównej karcie */}
@@ -972,7 +1058,8 @@ export default function FishDatabasePage() {
                       display: 'flex', 
                       justifyContent: 'center', 
                       mt: 'auto',
-                      pt: 2
+                      pt: 1,
+                      flexShrink: 0
                     }}>
                       <Button
                         onClick={(e) => {
@@ -984,12 +1071,17 @@ export default function FishDatabasePage() {
                           bgcolor: '#FFD700',
                           color: '#000',
                           borderRadius: 3,
-                          px: 4,
-                          py: 1.5,
-                          fontSize: '1rem',
+                          px: { xs: 3, md: 4 },
+                          py: { xs: 0.75, md: 1.25 },
+                          fontSize: { xs: '0.75rem', md: '0.9rem' },
                           fontWeight: 600,
                           boxShadow: '0 4px 12px rgba(255, 215, 0, 0.3)',
                           transition: 'all 0.3s',
+                          '@media (min-width: 1366px) and (max-width: 1367px) and (max-height: 700px)': {
+                            py: 0.75,
+                            fontSize: '0.7rem',
+                            px: 2.5
+                          },
                           '&:hover': {
                             bgcolor: '#FFC700',
                             boxShadow: '0 6px 16px rgba(255, 215, 0, 0.4)',
