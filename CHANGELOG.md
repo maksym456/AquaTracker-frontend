@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+## [0.14.0](https://github.com/maksym456/AquaTracker-frontend/compare/v0.13.3...v0.14.0) (2025-12-01)
+
+
+### Features
+
+* **accessibility:** enhance accessibility features and improve language support ([9ca7069](https://github.com/maksym456/AquaTracker-frontend/commit/9ca7069aad5f957c8b36638542974573b5f7ed08))
+
 ### [0.13.3](https://github.com/maksym456/AquaTracker-frontend/compare/v0.13.2...v0.13.3) (2025-11-26)
 
 ### [0.13.2](https://github.com/maksym456/AquaTracker-frontend/compare/v0.13.1...v0.13.2) (2025-11-26)
