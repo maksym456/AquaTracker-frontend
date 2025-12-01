@@ -91,6 +91,7 @@ export default function RegisterForm({ onSwitchToLogin }) {
         muted
         playsInline
         preload="none"
+        aria-label={t("backgroundVideo", { defaultValue: "Dekoracyjne tło wideo z akwarium" })}
         style={{
           position: 'absolute',
           width: '100%',

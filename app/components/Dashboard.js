@@ -145,6 +145,7 @@ export default function Dashboard() {
         muted
         playsInline
         preload="none"
+        aria-label={t("backgroundVideo", { defaultValue: "Dekoracyjne tło wideo z akwarium" })}
         style={{
           position: 'fixed',
           top: 0,
@@ -177,7 +178,11 @@ export default function Dashboard() {
       />
       
        {/* Navbar */}
-       <Box sx={{ 
+       <Box 
+         component="nav"
+         role="navigation"
+         aria-label={t("mainNavigation", { defaultValue: "Główna nawigacja" })}
+         sx={{ 
          display: "flex", 
          flexDirection: 'row',
          justifyContent: "space-between", 
@@ -245,7 +250,9 @@ export default function Dashboard() {
        </Box>
 
       {/* Main Content - Uproszczona struktura z gridem */}
-      <Box sx={{ 
+      <Box 
+        component="main"
+        sx={{ 
         position: 'absolute',
         top: { xs: '110px', sm: '130px', md: '150px', lg: '170px' },
         left: { xs: '0', sm: '0', md: '0', lg: '15%' },
@@ -766,6 +773,10 @@ export default function Dashboard() {
             display: 'flex',
             flexDirection: 'column',
             outline: 'none',
+            '&:focus-visible': {
+              outline: '2px solid #1976d2',
+              outlineOffset: '2px'
+            },
             animation: 'slideDown 0.3s ease-out',
             borderRadius: '16px',
             zIndex: 1000,

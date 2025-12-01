@@ -6,6 +6,7 @@ import "./i18n";
 import { ThemeProvider as MuiThemeProvider } from "@mui/material/styles";
 import CssBaseline from "@mui/material/CssBaseline";
 import { ThemeProvider, useTheme } from "./contexts/ThemeContext";
+import { useTranslation } from "react-i18next";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -33,9 +34,20 @@ function ThemeWrapper({ children }) {
   );
 }
 
+function LanguageWrapper({ children }) {
+  const { i18n } = useTranslation();
+  const currentLang = i18n.language || "en";
+  
+  return (
+    <html lang={currentLang}>
+      {children}
+    </html>
+  );
+}
+
 export default function RootLayout({ children }) {
   return (
-    <html lang="en">
+    <LanguageWrapper>
       <body
         className={`${geistSans.variable} ${geistMono.variable} ${caveat.variable} antialiased`}
         style={{
@@ -52,6 +64,6 @@ export default function RootLayout({ children }) {
           </ThemeWrapper>
         </ThemeProvider>
       </body>
-    </html>
+    </LanguageWrapper>
   );
 }

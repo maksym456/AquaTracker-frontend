@@ -161,7 +161,11 @@ export default function AquariumDetailPage() {
         }} />
       )}
 
-      <Box sx={{ 
+      <Box 
+        component="nav"
+        role="navigation"
+        aria-label={t("mainNavigation", { defaultValue: "Główna nawigacja" })}
+        sx={{ 
         position: 'absolute', top: 0, left: 0, right: 0,
         display: 'flex',
         flexDirection: 'row',
@@ -399,6 +403,7 @@ export default function AquariumDetailPage() {
 
       {}
       <Box 
+        component="main"
         ref={imageContainerRef}
         sx={{ position: 'absolute', left: 0, right: 0, top: { xs: 200, sm: 96 }, bottom: 0, zIndex: 1 }}
       >

@@ -158,6 +158,7 @@ export default function PlantDatabasePage() {
         muted
         playsInline
         preload="none"
+        aria-label={t("backgroundVideo", { defaultValue: "Dekoracyjne tło wideo z akwarium" })}
         style={{
           position: 'absolute',
           width: '100%',
@@ -172,7 +173,11 @@ export default function PlantDatabasePage() {
         <source src="/plantPage-bg.mp4" type="video/mp4" />
       </video>
       {/* Top bar z przyciskami */}
-      <Box sx={{ 
+      <Box 
+        component="nav"
+        role="navigation"
+        aria-label={t("mainNavigation", { defaultValue: "Główna nawigacja" })}
+        sx={{ 
         position: 'absolute', top: 0, left: 0, right: 0,
         display: 'flex', justifyContent: 'space-between', alignItems: 'center',
         px: 4, py: 2, zIndex: 10
@@ -213,7 +218,9 @@ export default function PlantDatabasePage() {
       </Box>
 
       {/* Główna zawartość */}
-      <Box sx={{ 
+      <Box 
+        component="main"
+        sx={{ 
         position: "relative", 
         zIndex: 2, 
         display: 'flex',
@@ -328,6 +335,7 @@ export default function PlantDatabasePage() {
                   }}>
                     <IconButton 
                       onClick={(e) => { e.stopPropagation(); handlePrev(); }}
+                      aria-label={t("previousPlant", { defaultValue: "Poprzednia roślina" })}
                       sx={{
                         color: 'white',
                         bgcolor: 'rgba(0, 0, 0, 0.4)',
@@ -338,6 +346,7 @@ export default function PlantDatabasePage() {
                     </IconButton>
                     <IconButton 
                       onClick={(e) => { e.stopPropagation(); handleNext(); }}
+                      aria-label={t("nextPlant", { defaultValue: "Następna roślina" })}
                       sx={{
                         color: 'white',
                         bgcolor: 'rgba(0, 0, 0, 0.4)',

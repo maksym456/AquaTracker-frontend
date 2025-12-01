@@ -15,27 +15,27 @@ export default function LanguageSwitcher() {
         className="w-12 h-8 px-3 py-1 rounded border text-sm text-black border-gray-300 transition-transform duration-200 hover:scale-110 hover:shadow-lg"
         onClick={() => changeLanguage("en")}
         aria-pressed={i18n.language === "en"}
-        
+        aria-label="Switch to English"
         style={{ backgroundImage: "url('/flags/us.svg')", 
         backgroundRepeat: "no-repeat",
         backgroundSize: "cover",
         backgroundPosition: "center",
         }}
       >
-        
+        <span className="sr-only">English</span>
       </button>
       <button
         className="w-12 h-8 px-3 py-1 rounded border text-sm bg-white text-black border-gray-300 transition-transform duration-200 hover:scale-110 hover:shadow-lg"
         onClick={() => changeLanguage("pl")}
         aria-pressed={i18n.language === "pl"}
+        aria-label="Przełącz na polski"
         style={{ backgroundImage: "url('/flags/pl.svg')", 
           backgroundRepeat: "no-repeat",
           backgroundSize: "cover",
           backgroundPosition: "center",  
           }}
-        
       >
-        
+        <span className="sr-only">Polski</span>
       </button>
     </div>
   );

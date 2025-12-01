@@ -240,7 +240,11 @@ export default function MyAquariumsPage() {
         }}
       />
 
-      <Box sx={{ 
+      <Box 
+        component="nav"
+        role="navigation"
+        aria-label={t("mainNavigation", { defaultValue: "Główna nawigacja" })}
+        sx={{ 
         position: 'absolute', top: 0, left: 0, right: 0,
         display: 'flex', justifyContent: 'space-between', alignItems: 'center',
         px: { xs: 0.5, sm: 2, md: 4 }, 
@@ -360,7 +364,9 @@ export default function MyAquariumsPage() {
       </Box>
 
       {}
-      <Box sx={{ position: "relative", zIndex: 2, p: 4, pt: 14, pb: 14 }}>
+      <Box 
+        component="main"
+        sx={{ position: "relative", zIndex: 2, p: 4, pt: 14, pb: 14 }}>
         {aquariums.length === 0 ? (
           <Box sx={{ 
             display: 'flex', 
