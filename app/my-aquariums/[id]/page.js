@@ -535,15 +535,21 @@ export default function AquariumDetailPage() {
                   {t("statsDesc", { defaultValue: "Podsumowanie" })}
                 </Typography>
                 
-                <Grid container spacing={2}>
+                <Grid container spacing={2} sx={{ display: 'flex' }}>
                   {}
-                  <Grid item xs={12} sm={6} md={3}>
+                  <Grid item xs={12} sm={6} md={3} sx={{ display: 'flex' }}>
                     <Paper
                       elevation={2}
                       sx={{
                         p: 2,
                         textAlign: 'center',
-                        bgcolor: darkMode ? 'rgba(50, 50, 50, 0.5)' : 'rgba(46, 127, 169, 0.1)'
+                        bgcolor: darkMode ? 'rgba(50, 50, 50, 0.5)' : 'rgba(46, 127, 169, 0.1)',
+                        width: '100%',
+                        height: '100%',
+                        minHeight: '120px',
+                        display: 'flex',
+                        flexDirection: 'column',
+                        justifyContent: 'center'
                       }}
                     >
                       <Typography variant="h4" sx={{ color: darkMode ? 'white' : '#2e7fa9', fontWeight: 600 }}>
@@ -556,13 +562,19 @@ export default function AquariumDetailPage() {
                   </Grid>
 
                   {}
-                  <Grid item xs={12} sm={6} md={3}>
+                  <Grid item xs={12} sm={6} md={3} sx={{ display: 'flex' }}>
                     <Paper
                       elevation={2}
                       sx={{
                         p: 2,
                         textAlign: 'center',
-                        bgcolor: darkMode ? 'rgba(50, 50, 50, 0.5)' : 'rgba(76, 175, 80, 0.1)'
+                        bgcolor: darkMode ? 'rgba(50, 50, 50, 0.5)' : 'rgba(76, 175, 80, 0.1)',
+                        width: '100%',
+                        height: '100%',
+                        minHeight: '120px',
+                        display: 'flex',
+                        flexDirection: 'column',
+                        justifyContent: 'center'
                       }}
                     >
                       <Typography variant="h4" sx={{ color: darkMode ? 'white' : '#4caf50', fontWeight: 600 }}>
@@ -575,13 +587,19 @@ export default function AquariumDetailPage() {
                   </Grid>
 
                   {}
-                  <Grid item xs={12} sm={6} md={3}>
+                  <Grid item xs={12} sm={6} md={3} sx={{ display: 'flex' }}>
                     <Paper
                       elevation={2}
                       sx={{
                         p: 2,
                         textAlign: 'center',
-                        bgcolor: darkMode ? 'rgba(50, 50, 50, 0.5)' : 'rgba(156, 39, 176, 0.1)'
+                        bgcolor: darkMode ? 'rgba(50, 50, 50, 0.5)' : 'rgba(156, 39, 176, 0.1)',
+                        width: '100%',
+                        height: '100%',
+                        minHeight: '120px',
+                        display: 'flex',
+                        flexDirection: 'column',
+                        justifyContent: 'center'
                       }}
                     >
                       <Typography variant="h4" sx={{ color: darkMode ? 'white' : '#9c27b0', fontWeight: 600 }}>
@@ -594,13 +612,19 @@ export default function AquariumDetailPage() {
                   </Grid>
 
                   {}
-                  <Grid item xs={12} sm={6} md={3}>
+                  <Grid item xs={12} sm={6} md={3} sx={{ display: 'flex' }}>
                     <Paper
                       elevation={2}
                       sx={{
                         p: 2,
                         textAlign: 'center',
-                        bgcolor: darkMode ? 'rgba(50, 50, 50, 0.5)' : 'rgba(76, 175, 80, 0.2)'
+                        bgcolor: darkMode ? 'rgba(50, 50, 50, 0.5)' : 'rgba(76, 175, 80, 0.2)',
+                        width: '100%',
+                        height: '100%',
+                        minHeight: '120px',
+                        display: 'flex',
+                        flexDirection: 'column',
+                        justifyContent: 'center'
                       }}
                     >
                       <Typography variant="h4" sx={{ color: darkMode ? 'white' : '#4caf50', fontWeight: 600 }}>
@@ -743,15 +767,21 @@ export default function AquariumDetailPage() {
                   {t("mostCommonSpecies", { defaultValue: "Najliczniejszy gatunek" })}
                 </Typography>
                 
-                <Grid container spacing={2}>
+                <Grid container spacing={2} sx={{ display: 'flex' }}>
                   {}
-                  <Grid item xs={12} md={6}>
+                  <Grid item xs={12} md={6} sx={{ display: 'flex' }}>
                     <Paper
                       elevation={2}
                       sx={{
                         p: 3,
                         bgcolor: darkMode ? 'rgba(50, 50, 50, 0.5)' : 'rgba(46, 127, 169, 0.1)',
-                        textAlign: 'center'
+                        textAlign: 'center',
+                        width: '100%',
+                        height: '100%',
+                        minHeight: '180px',
+                        display: 'flex',
+                        flexDirection: 'column',
+                        justifyContent: 'center'
                       }}
                     >
                       <Typography variant="body1" sx={{ mb: 2, color: darkMode ? 'rgba(255,255,255,0.7)' : 'text.secondary' }}>
@@ -775,13 +805,19 @@ export default function AquariumDetailPage() {
                   </Grid>
 
                   {}
-                  <Grid item xs={12} md={6}>
+                  <Grid item xs={12} md={6} sx={{ display: 'flex' }}>
                     <Paper
                       elevation={2}
                       sx={{
                         p: 3,
                         bgcolor: darkMode ? 'rgba(50, 50, 50, 0.5)' : 'rgba(76, 175, 80, 0.1)',
-                        textAlign: 'center'
+                        textAlign: 'center',
+                        width: '100%',
+                        height: '100%',
+                        minHeight: '180px',
+                        display: 'flex',
+                        flexDirection: 'column',
+                        justifyContent: 'center'
                       }}
                     >
                       <Typography variant="body1" sx={{ mb: 2, color: darkMode ? 'rgba(255,255,255,0.7)' : 'text.secondary' }}>

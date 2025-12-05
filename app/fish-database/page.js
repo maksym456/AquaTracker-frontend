@@ -1,7 +1,10 @@
 "use client";
 
-import { useState } from "react";
-import { Box, Typography, IconButton, Button, useTheme, useMediaQuery, List, ListItemButton, ListItemText, Divider, TextField, FormControl, InputLabel, Select, MenuItem } from "@mui/material";
+// Importujemy useState i useEffect z React
+// useState - do przechowywania stanu komponentu (np. dane, loading, błędy)
+// useEffect - do wykonywania akcji przy załadowaniu komponentu (np. pobieranie danych z API)
+import { useState, useEffect } from "react";
+import { Box, Typography, IconButton, Button, useTheme, useMediaQuery, List, ListItemButton, ListItemText, Divider, TextField, FormControl, InputLabel, Select, MenuItem, CircularProgress, Alert } from "@mui/material";
 import { useTranslation } from "react-i18next";
 import { useTheme as useCustomTheme } from "../contexts/ThemeContext";
 import Link from "next/link";
@@ -11,6 +14,10 @@ import ArrowBackIosIcon from '@mui/icons-material/ArrowBackIos';
 import ArrowForwardIosIcon from '@mui/icons-material/ArrowForwardIos';
 import ChevronRightIcon from '@mui/icons-material/ChevronRight';
 import ChevronLeftIcon from '@mui/icons-material/ChevronLeft';
+
+// Importujemy funkcję do pobierania ryb z API
+// Dla początkujących: import pozwala nam używać funkcji z innych plików
+import { getFishes } from "../lib/api";
 
 export default function FishDatabasePage() {
   const { t } = useTranslation();
@@ -73,376 +80,84 @@ export default function FishDatabasePage() {
     return t(`fish.biotopes.${biotope}`, { defaultValue: biotope });
   };
 
-  // Dane kafelków z pełnymi parametrami
-  const fishCards = [
-    { 
-      id: 1, 
-      name: "Welonka (Złota rybka)", 
-      description: "Welonka (Złota rybka) to spokojna ryba, która porusza się powoli i dobrze czuje się w grupie. Lubi akwaria z roślinami i miejscami do ukrycia. Jest odporna, ale wymaga czystej wody i odpowiedniej temperatury, aby żyć długo.",
-      image: getFishImage("Welonka (Złota rybka)"), 
-      waterType: "freshwater", 
-      waterTypeLabel: "Słodkowodna",
-      tempRange: [18, 22], 
-      biotope: "Azja",
-      phRange: [6.0, 7.5], 
-      hardness: [5, 20],
-      temperament: "spokojne",
-      minSchoolSize: 2,
-      lifespan: "5-8 lat"
-    },
-    { 
-      id: 2, 
-      name: "Gupik (Głupik)", 
-      description: "Gupik to żyworodna, bardzo odporna ryba o wyjątkowo zróżnicowanym ubarwieniu, szczególnie u samców, które mają długie, efektowne ogony. Jest aktywna, towarzyska i łatwa w hodowli, dlatego świetnie sprawdza się u początkujących akwarystów.",
-      image: getFishImage("Gupik (Głupik)"), 
-      waterType: "freshwater",
-      waterTypeLabel: "Słodkowodna",
-      tempRange: [24, 28], 
-      biotope: "Ameryka Południowa",
-      phRange: [6.0, 8.0], 
-      hardness: [10, 30],
-      temperament: "spokojne",
-      minSchoolSize: 5,
-      lifespan: "2-3 lata"
-    },
-    { 
-      id: 3, 
-      name: "Bojownik syjamski", 
-      description: "Bojownik syjamski to efektowna, majestatyczna ryba znana z długich, falujących płetw i intensywnych barw. Samce są terytorialne i potrafią być agresywne wobec innych samców oraz ryb o podobnych płetwach, dlatego zwykle trzyma się je pojedynczo.",
-      image: getFishImage("Bojownik syjamski"), 
-      waterType: "freshwater",
-      waterTypeLabel: "Słodkowodna",
-      tempRange: [25, 30], 
-      biotope: "Azja",
-      phRange: [6.0, 8.0], 
-      hardness: [1, 19],
-      temperament: "pół-agresywne",
-      minSchoolSize: 1,
-      lifespan: "3-5 lat"
-    },
-    { 
-      id: 4, 
-      name: "Neon Innesa", 
-      description: "Neon Innesa to drobna, energiczna ryba ławicowa, znana z intensywnego niebieskiego połysku widocznego nawet w słabym oświetleniu.",
-      image: getFishImage("Neon Innesa"), 
-      waterType: "freshwater",
-      waterTypeLabel: "Słodkowodna",
-      tempRange: [22, 26], 
-      biotope: "Ameryka Południowa",
-      phRange: [6.5, 7.5], 
-      hardness: [1, 12],
-      temperament: "spokojne",
-      minSchoolSize: 10,
-      lifespan: "3-5 lat"
-    },
-    { 
-      id: 5, 
-      name: "Skalar (Żaglowiec)", 
-      description: "Skalar (Żaglowiec) to ryba pół-agresywna, która najlepiej czuje się w grupie. Lubi dużo miejsca do pływania i rośliny, przy których może się chować. Może pokazywać dominujące zachowania wobec innych ryb, dlatego najlepiej trzymać ją z gatunkami o podobnym temperamencie.",
-      image: getFishImage("Skalar (Żaglowiec)"), 
-      waterType: "freshwater",
-      waterTypeLabel: "Słodkowodna",
-      tempRange: [25, 29], 
-      biotope: "Ameryka Południowa",
-      phRange: [6.0, 7.4], 
-      hardness: [5, 13],
-      temperament: "pół-agresywne",
-      minSchoolSize: 5,
-      lifespan: "10-15 lat"
-    },
-    { 
-      id: 6, 
-      name: "Mieczyk Hellera", 
-      description: "Mieczyk Hellera to żyworodna, wyrazista ryba znana z charakterystycznego 'mieczyka' na ogonie samców. Jest ruchliwa, wytrzymała i dobrze odnajduje się w większych akwariach. Choć generalnie towarzyska, potrafi wykazywać lekko dominujące zachowania, zwłaszcza samce między sobą, dlatego najlepiej trzymać ją w większej grupie.",
-      image: getFishImage("Mieczyk Hellera"), 
-      waterType: "freshwater",
-      waterTypeLabel: "Słodkowodna",
-      tempRange: [24, 28], 
-      biotope: "Ameryka Północna",
-      phRange: [6.0, 8.5], 
-      hardness: [10, 30],
-      temperament: "pół-agresywne",
-      minSchoolSize: 8,
-      lifespan: "3-5 lat"
-    },
-    { 
-      id: 7, 
-      name: "Molinezja", 
-      description: "Molinezja to spokojna ryba, która najlepiej czuje się w grupie. Jest aktywna i lubi pływać wśród roślin. Jest odporna i łatwa w utrzymaniu, dobrze nadaje się do akwarium z innymi spokojnymi rybami.",
-      image: getFishImage("Molinezja"), 
-      waterType: "freshwater",
-      waterTypeLabel: "Słodkowodna",
-      tempRange: [24, 28], 
-      biotope: "Ameryka Południowa",
-      phRange: [7.5, 8.5], 
-      hardness: [15, 30],
-      temperament: "spokojne",
-      minSchoolSize: 3,
-      lifespan: "3-5 lat"
-    },
-    { 
-      id: 8, 
-      name: "Gurami mozaikowy", 
-      description: "Gurami mozaikowy to spokojna ryba o charakterystycznym, drobnym, mozaikowym wzorze na ciele. Porusza się powoli i często wykorzystuje wydłużone płetwy piersiowe do badania otoczenia.",
-      image: getFishImage("Gurami mozaikowy"), 
-      waterType: "freshwater",
-      waterTypeLabel: "Słodkowodna",
-      tempRange: [24, 28], 
-      biotope: "Azja",
-      phRange: [5.5, 8.0], 
-      hardness: [2, 30],
-      temperament: "spokojne",
-      minSchoolSize: 2,
-      lifespan: "3-5 lat"
-    },
-    { 
-      id: 9, 
-      name: "Danio pręgowany", 
-      description: "Danio pręgowany to szybka, energiczna ryba ławicowa o smukłym ciele i wyraźnych, poziomych pręgach. Jest bardzo odporna i dobrze adaptuje się do różnych warunków, dzięki czemu świetnie nadaje się dla początkujących.",
-      image: getFishImage("Danio pręgowany"), 
-      waterType: "freshwater",
-      waterTypeLabel: "Słodkowodna",
-      tempRange: [20, 25], 
-      biotope: "Azja",
-      phRange: [6.0, 8.0], 
-      hardness: [5, 20],
-      temperament: "spokojne",
-      minSchoolSize: 8,
-      lifespan: "3-5 lat"
-    },
-    { 
-      id: 10, 
-      name: "Kardynałek chiński", 
-      description: "Kardynałek chiński to niewielka, żywa i spokojna ryba o metalicznym połysku i czerwonym zabarwieniu płetw. Jest wyjątkowo odporna i dobrze czuje się nawet w chłodniejszych akwariach. W grupie prezentuje naturalne, harmonijne zachowania, tworząc efektowne mini-ławice.",
-      image: getFishImage("Kardynałek chiński"), 
-      waterType: "freshwater",
-      waterTypeLabel: "Słodkowodna",
-      tempRange: [18, 24], 
-      biotope: "Azja",
-      phRange: [6.0, 8.5], 
-      hardness: [5, 25],
-      temperament: "spokojne",
-      minSchoolSize: 6,
-      lifespan: "4-5 lat"
-    },
-    { 
-      id: 11, 
-      name: "Razbora klinowa", 
-      description: "Razbora klinowa to spokojna ryba ławicowa, która najlepiej czuje się w grupie. Jest aktywna i porusza się wśród roślin, tworząc efektowne grupy. Lubi dobrze oświetlone akwaria z miejscami do pływania i kryjówkami.",
-      image: getFishImage("Razbora klinowa"), 
-      waterType: "freshwater",
-      waterTypeLabel: "Słodkowodna",
-      tempRange: [24, 27], 
-      biotope: "Azja",
-      phRange: [5.0, 7.5], 
-      hardness: [1, 12],
-      temperament: "spokojne",
-      minSchoolSize: 10,
-      lifespan: "5-8 lat"
-    },
-    { 
-      id: 12, 
-      name: "Tęczanka neonowa", 
-      description: "Tęczanka neonowa to spokojna ryba ławicowa, która najlepiej czuje się w grupie. Ma kolorowe, metaliczne ubarwienie i lubi poruszać się wśród roślin. Jest odporna i łatwa w utrzymaniu, dobrze nadaje się do akwarium z innymi spokojnymi rybami.",
-      image: getFishImage("Tęczanka neonowa"), 
-      waterType: "freshwater",
-      waterTypeLabel: "Słodkowodna",
-      tempRange: [25, 28], 
-      biotope: "Austalia/Oceania",
-      phRange: [6.5, 7.5], 
-      hardness: [5, 15],
-      temperament: "spokojne",
-      minSchoolSize: 6,
-      lifespan: "4-6 lat"
-    },
-    { 
-      id: 13, 
-      name: "Kirys pstry", 
-      description: "Kirysek pstry to spokojna ryba, która lubi przebywać przy dnie akwarium i chować się między roślinami. Najlepiej czuje się w grupie, wtedy porusza się naturalnie i aktywnie.",
-      image: getFishImage("Kirys pstry"), 
-      waterType: "freshwater",
-      waterTypeLabel: "Słodkowodna",
-      tempRange: [23, 27], 
-      biotope: "Ameryka Południowa",
-      phRange: [6.0, 7.0], 
-      hardness: [5, 15],
-      temperament: "spokojne",
-      minSchoolSize: 6,
-      lifespan: "3-5 lat"
-    },
-    { 
-      id: 14, 
-      name: "Glonojad (Zbrojnik)", 
-      description: "Glonojad / Zbrojnik to spokojna ryba, która pomaga utrzymać akwarium w czystości, zjadając glony z roślin i szybów. Lubi kryjówki i spokojne miejsca w zbiorniku. Jest odporna i łatwa w utrzymaniu, dobrze nadaje się do akwarium z innymi spokojnymi rybami.",
-      image: getFishImage("Glonojad (Zbrojnik)"), 
-      waterType: "freshwater",
-      waterTypeLabel: "Słodkowodna",
-      tempRange: [23, 28], 
-      biotope: "Ameryka Południowa",
-      phRange: [6.5, 7.5], 
-      hardness: [1, 15],
-      temperament: "spokojne",
-      minSchoolSize: 1,
-      lifespan: "3-7 lat"
-    },
-    { 
-      id: 15, 
-      name: "Błazenek pomarańczowy", 
-      description: "Błazenek pomarańczowy to spokojna ryba, która najlepiej czuje się w parze. Lubi miejsca do ukrycia, np. między skałami lub wśród korali. Jest odporna, ale wymaga stabilnych warunków wody słonowodnej i odpowiedniej temperatury.",
-      image: getFishImage("Błazenek pomarańczowy"), 
-      waterType: "saltwater",
-      waterTypeLabel: "Słona",
-      tempRange: [25, 27], 
-      biotope: "Azja",
-      phRange: [7.8, 8.4], 
-      hardness: [8, 25],
-      temperament: "spokojne",
-      minSchoolSize: 2,
-      lifespan: "1 rok"
-    },
-    { 
-      id: 16, 
-      name: "Pirania czerwona", 
-      description: "Pirania czerwona to agresywna ryba, która najlepiej żyje w grupie. Potrzebuje dużo miejsca do pływania i odpowiedniego akwarium, aby mogła wykazywać naturalne zachowania.",
-      image: getFishImage("Pirania czerwona"), 
-      waterType: "freshwater",
-      waterTypeLabel: "Słodkowodna",
-      tempRange: [25, 30], 
-      biotope: "Ameryka Południowa",
-      phRange: [6.0, 7.0], 
-      hardness: [0, 18],
-      temperament: "agresywne",
-      minSchoolSize: 5,
-      lifespan: "10-13 lat"
-    },
-    { 
-      id: 17, 
-      name: "Pokolec królewski", 
-      description: "Pokolec królewski to spokojna ryba, która najlepiej trzymać pojedynczo. Lubi mieć miejsca do ukrycia, np. między skałami lub koralami. Jest odporna i może żyć długo w akwarium słonowodnym przy stabilnych warunkach wody.",
-      image: getFishImage("Pokolec królewski"), 
-      waterType: "saltwater",
-      waterTypeLabel: "Słona",
-      tempRange: [25, 27], 
-      biotope: "Azja",
-      phRange: [8.1, 8.5], 
-      hardness: [8, 12],
-      temperament: "spokojne",
-      minSchoolSize: 1,
-      lifespan: "8-12 lat"
-    },
-    { 
-      id: 18, 
-      name: "Proporczykowiec", 
-      description: "Proporczykowiec to ryba pół-agresywna, która najlepiej czuje się w grupie. Lubi mieć kryjówki i miejsca do pływania. Może wykazywać dominujące zachowania wobec innych ryb, dlatego najlepiej trzymać ją z gatunkami o podobnym temperamencie.",
-      image: getFishImage("Proporczykowiec"), 
-      waterType: "freshwater",
-      waterTypeLabel: "Słodkowodna",
-      tempRange: [22, 26], 
-      biotope: "Afryka",
-      phRange: [6.0, 7.5], 
-      hardness: [2, 10],
-      temperament: "pół-agresywne",
-      minSchoolSize: 4,
-      lifespan: "10-15 lat"
-    },
-    { 
-      id: 19, 
-      name: "Pyszczak (Malawi)", 
-      description: "Pyszczak (Malawi) to agresywna ryba, która najlepiej czuje się w swoim terytorium. Lubi mieć kryjówki i przestrzeń do pływania.",
-      image: getFishImage("Pyszczak (Malawi)"), 
-      waterType: "freshwater",
-      waterTypeLabel: "Słodkowodna",
-      tempRange: [25, 28], 
-      biotope: "Afryka",
-      phRange: [7.6, 8.8], 
-      hardness: [10, 25],
-      temperament: "agresywne",
-      minSchoolSize: 1,
-      lifespan: "8-10 lat"
-    },
-    { 
-      id: 20, 
-      name: "Księżniczka z Burundi", 
-      description: "Księżniczka z Burundi to agresywna ryba, która najlepiej czuje się w grupie. Lubi mieć kryjówki i dużo miejsca do pływania.",
-      image: getFishImage("Księżniczka z Burundi"), 
-      waterType: "freshwater",
-      waterTypeLabel: "Słodkowodna",
-      tempRange: [24, 28], 
-      biotope: "Afryka",
-      phRange: [7.5, 9.0], 
-      hardness: [9, 19],
-      temperament: "agresywne",
-      minSchoolSize: 6,
-      lifespan: "5-10 lat"
-    },
-    { 
-      id: 21, 
-      name: "Kolcobrzuch karłowaty", 
-      description: "Kolcobrzuch karłowaty to agresywna ryba, która najlepiej trzymać pojedynczo. Ma mocny charakter i potrafi bronić swojego terytorium. Lubi kryjówki i miejsca do ukrycia. Jest odporna, ale wymaga stabilnych warunków wody.",
-      image: getFishImage("Kolcobrzuch karłowaty"), 
-      waterType: "freshwater",
-      waterTypeLabel: "Słodkowodna",
-      tempRange: [24, 28], 
-      biotope: "Azja",
-      phRange: [6.8, 8.0], 
-      hardness: [5, 25],
-      temperament: "agresywne",
-      minSchoolSize: 1,
-      lifespan: "2-3 lata"
-    },
-    { 
-      id: 22, 
-      name: "Mandaryn wspaniały", 
-      description: "Mandaryn wspaniały to spokojna ryba, która najlepiej trzymać pojedynczo. Lubi miejsca do ukrycia i rośliny lub koralowce, w których może się poruszać. Jest wrażliwa na warunki wody, dlatego wymaga stabilnego akwarium słonowodnego.",
-      image: getFishImage("Mandaryn wspaniały"), 
-      waterType: "saltwater",
-      waterTypeLabel: "Słona",
-      tempRange: [25, 27], 
-      biotope: "Azja",
-      phRange: [8.1, 8.4], 
-      hardness: [4, 16],
-      temperament: "spokojne",
-      minSchoolSize: 1,
-      lifespan: "4-5 lat"
-    },
-    { 
-      id: 23, 
-      name: "Ustnik słoneczny", 
-      description: "Ustnik słoneczny to spokojna ryba, którą najlepiej trzymać pojedynczo. Lubi mieć miejsca do ukrycia, np. między skałami lub koralami. Jest odporna i może żyć długo w akwarium słonowodnym przy stabilnych warunkach wody.",
-      image: getFishImage("Ustnik słoneczny"), 
-      waterType: "saltwater",
-      waterTypeLabel: "Słona",
-      tempRange: [24, 27], 
-      biotope: "Azja",
-      phRange: [8.1, 8.3], 
-      hardness: [5, 15],
-      temperament: "spokojne",
-      minSchoolSize: 1,
-      lifespan: "8-10 lat"
-    },
-    { 
-      id: 24, 
-      name: "Babka złota", 
-      description: "Babka złota to spokojna ryba, która najlepiej czuje się w grupie. Jest aktywna i lubi pływać wśród roślin oraz kryjówek. Jest odporna i łatwa w utrzymaniu, dobrze nadaje się do akwarium z innymi spokojnymi rybami.",
-      image: getFishImage("Babka złota"), 
-      waterType: "freshwater",
-      waterTypeLabel: "Słodkowodna",
-      tempRange: [24, 28], 
-      biotope: "Azja",
-      phRange: [7.0, 8.5], 
-      hardness: [8, 20],
-      temperament: "spokojne",
-      minSchoolSize: 6,
-      lifespan: "2-3 lata"
-    },
-  ];
+  // ============================================
+  // UWAGA: USUNIĘTO HARDCODED DANE
+  // ============================================
+  // Wcześniej tutaj była duża tablica fishCards z hardcoded danymi (około 370 linii)
+  // Teraz dane są pobierane z API w useEffect powyżej
+  // Jeśli API nie działa, możesz tymczasowo przywrócić mock data jako fallback
   
+  // ============================================
+  // STAN KOMPONENTU (STATE)
+  // ============================================
+  // Dla początkujących: useState to hook React, który pozwala przechowywać dane w komponencie
+  // Gdy zmieniamy stan (np. setFishCards), React automatycznie odświeża komponent
+  
+  // Stan dla listy ryb - początkowo pusta tablica, bo dane pobierzemy z API
+  const [fishCards, setFishCards] = useState([]);
+  
+  // Stan dla informacji o ładowaniu - true gdy pobieramy dane z API
+  const [isLoading, setIsLoading] = useState(true);
+  
+  // Stan dla błędów - null gdy wszystko OK, obiekt z błędem gdy coś poszło nie tak
+  const [error, setError] = useState(null);
+  
+  // Pozostałe stany (nie zmieniamy ich, bo nie są związane z API)
   const [currentCard, setCurrentCard] = useState(0);
   const [panelOpen, setPanelOpen] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
   const [waterFilter, setWaterFilter] = useState("all"); // all | freshwater | brackish | saltwater
   const [sortAggressiveness, setSortAggressiveness] = useState("none"); // none | asc | desc
   const [failedImages, setFailedImages] = useState(new Set()); // Track failed image loads
+
+  useEffect(() => {
+    async function fetchFishData() {
+      try {
+        setIsLoading(true);
+        setError(null);
+        
+        const fishes = await getFishes();
+        
+        if (fishes && Array.isArray(fishes)) {
+          const processedFishes = fishes.map((fish) => {
+            return {
+              id: fish.id,
+              name: fish.name,
+              description: fish.description || "",
+              image: fish.image || getFishImage(fish.name),
+              waterType: fish.waterType || "freshwater",
+              waterTypeLabel: fish.waterTypeLabel || getWaterTypeLabel(fish.waterType || "freshwater"),
+              tempRange: Array.isArray(fish.tempRange) 
+                ? fish.tempRange 
+                : [fish.tempMin || 22, fish.tempMax || 26],
+              biotope: fish.biotope || "",
+              phRange: Array.isArray(fish.phRange) 
+                ? fish.phRange 
+                : [fish.phMin || 6.5, fish.phMax || 7.5],
+              hardness: Array.isArray(fish.hardness) 
+                ? fish.hardness 
+                : [fish.hardnessMin || 5, fish.hardnessMax || 15],
+              temperament: fish.temperament || "spokojne",
+              minSchoolSize: fish.minSchoolSize || 1,
+              lifespan: fish.lifespan || "3-5 lat"
+            };
+          });
+          
+          setFishCards(processedFishes);
+        } else {
+          throw new Error("Invalid data format from API");
+        }
+      } catch (err) {
+        console.error("Error fetching fishes:", err);
+        setError(err.message || "Failed to load fishes. Please try again later.");
+        setFishCards([]);
+      } finally {
+        setIsLoading(false);
+      }
+    }
+    
+    fetchFishData();
+  }, []);
 
   // Lista przefiltrowana i posortowana dla panelu
   const filteredFish = fishCards
@@ -499,6 +214,84 @@ export default function FishDatabasePage() {
     }
   };
 
+  // ============================================
+  // RENDEROWANIE KOMPONENTU
+  // ============================================
+  // Dla początkujących: return zwraca JSX (HTML w JavaScript), który React wyświetli na stronie
+  
+  // Jeśli dane się ładują, pokazujemy wskaźnik ładowania
+  if (isLoading) {
+    return (
+      <Box sx={{ 
+        minHeight: "100vh",
+        height: "100vh",
+        position: "relative",
+        overflow: 'hidden',
+        display: 'flex',
+        alignItems: 'center',
+        justifyContent: 'center'
+      }}>
+        <CircularProgress sx={{ color: 'white', zIndex: 10 }} />
+        <Typography sx={{ color: 'white', mt: 2, zIndex: 10 }}>
+          {t("loadingFishes", { defaultValue: "Ładowanie ryb..." })}
+        </Typography>
+      </Box>
+    );
+  }
+  
+  // Jeśli wystąpił błąd, pokazujemy komunikat błędu
+  if (error) {
+    return (
+      <Box sx={{ 
+        minHeight: "100vh",
+        height: "100vh",
+        position: "relative",
+        overflow: 'hidden',
+        display: 'flex',
+        alignItems: 'center',
+        justifyContent: 'center',
+        flexDirection: 'column',
+        p: 4
+      }}>
+        <Alert severity="error" sx={{ mb: 2, maxWidth: 600, zIndex: 10 }}>
+          <Typography variant="h6" sx={{ mb: 1 }}>
+            {t("errorLoadingFishes", { defaultValue: "Błąd ładowania danych" })}
+          </Typography>
+          <Typography>
+            {error}
+          </Typography>
+          <Button 
+            onClick={() => window.location.reload()} 
+            sx={{ mt: 2 }}
+            variant="contained"
+          >
+            {t("retry", { defaultValue: "Spróbuj ponownie" })}
+          </Button>
+        </Alert>
+      </Box>
+    );
+  }
+  
+  // Jeśli nie ma ryb (pusta tablica), pokazujemy odpowiedni komunikat
+  if (fishCards.length === 0) {
+    return (
+      <Box sx={{ 
+        minHeight: "100vh",
+        height: "100vh",
+        position: "relative",
+        overflow: 'hidden',
+        display: 'flex',
+        alignItems: 'center',
+        justifyContent: 'center'
+      }}>
+        <Typography sx={{ color: 'white', zIndex: 10 }}>
+          {t("noFishesFound", { defaultValue: "Nie znaleziono żadnych ryb" })}
+        </Typography>
+      </Box>
+    );
+  }
+
+  // Jeśli wszystko OK, renderujemy normalny widok
   return (
     <Box sx={{ 
       minHeight: "100vh",

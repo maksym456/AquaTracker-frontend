@@ -292,12 +292,12 @@ export default function PlantDatabasePage() {
                       : `translate(calc(-50% + ${position.translateX}px), -50%) scale(${position.scale})`,
                     transformOrigin: 'center center',
                     bgcolor: 'rgba(20, 50, 30, 0.95)',
-                    borderRadius: 4,
-                    overflow: 'hidden',
-                    boxShadow: '0 8px 32px rgba(0, 0, 0, 0.4)',
+            borderRadius: 4,
+            overflow: 'hidden',
+            boxShadow: '0 8px 32px rgba(0, 0, 0, 0.4)',
                     minHeight: { xs: '500px', md: '550px' },
                     maxHeight: { xs: '500px', md: '550px' },
-                    display: 'flex',
+            display: 'flex',
                     flexDirection: 'column',
                     zIndex: position.zIndex,
                     opacity: position.opacity,
@@ -322,69 +322,69 @@ export default function PlantDatabasePage() {
                 >
                 {/* Strzałki nawigacyjne tylko na głównej karcie */}
                 {position.zIndex === 3 && (
-                  <Box sx={{
-                    position: 'absolute',
-                    top: 16,
-                    left: 0,
-                    right: 0,
-                    display: 'flex',
-                    justifyContent: 'space-between',
-                    alignItems: 'center',
+            <Box sx={{
+              position: 'absolute',
+              top: 16,
+              left: 0,
+              right: 0,
+              display: 'flex',
+              justifyContent: 'space-between',
+              alignItems: 'center',
                     px: { xs: 1, md: 2 },
-                    zIndex: 10
-                  }}>
-                    <IconButton 
+              zIndex: 10
+            }}>
+              <IconButton 
                       onClick={(e) => { e.stopPropagation(); handlePrev(); }}
                       aria-label={t("previousPlant", { defaultValue: "Poprzednia roślina" })}
-                      sx={{
-                        color: 'white',
-                        bgcolor: 'rgba(0, 0, 0, 0.4)',
-                        '&:hover': { bgcolor: 'rgba(0, 0, 0, 0.6)' }
-                      }}
-                    >
-                      <ArrowBackIosIcon />
-                    </IconButton>
-                    <IconButton 
+                sx={{
+                  color: 'white',
+                  bgcolor: 'rgba(0, 0, 0, 0.4)',
+                  '&:hover': { bgcolor: 'rgba(0, 0, 0, 0.6)' }
+                }}
+              >
+                <ArrowBackIosIcon />
+              </IconButton>
+              <IconButton 
                       onClick={(e) => { e.stopPropagation(); handleNext(); }}
                       aria-label={t("nextPlant", { defaultValue: "Następna roślina" })}
-                      sx={{
-                        color: 'white',
-                        bgcolor: 'rgba(0, 0, 0, 0.4)',
-                        '&:hover': { bgcolor: 'rgba(0, 0, 0, 0.6)' }
-                      }}
-                    >
-                      <ArrowForwardIosIcon />
-                    </IconButton>
-                  </Box>
+                sx={{
+                  color: 'white',
+                  bgcolor: 'rgba(0, 0, 0, 0.4)',
+                  '&:hover': { bgcolor: 'rgba(0, 0, 0, 0.6)' }
+                }}
+              >
+                <ArrowForwardIosIcon />
+              </IconButton>
+            </Box>
                 )}
                 
                 {/* Obraz rośliny */}
-                <Box sx={{
-                  width: '100%',
+            <Box sx={{
+              width: '100%',
                   height: { xs: '200px', md: '250px' },
                   bgcolor: 'rgba(40, 100, 60, 0.8)',
                   backgroundImage: `url("${plant.image}")`,
-                  backgroundSize: 'cover',
-                  backgroundPosition: 'center',
-                  display: 'flex',
-                  alignItems: 'center',
+              backgroundSize: 'cover',
+              backgroundPosition: 'center',
+              display: 'flex',
+              alignItems: 'center',
                   justifyContent: 'center',
                   '@media (min-width: 1366px) and (max-width: 1367px) and (max-height: 768px)': {
                     height: '180px'
                   }
-                }}>
-                  {/* Placeholder jeśli brak obrazu */}
-                  <Typography sx={{ color: 'white', opacity: 0.5 }}>
+            }}>
+              {/* Placeholder jeśli brak obrazu */}
+              <Typography sx={{ color: 'white', opacity: 0.5 }}>
                     {plant.image || 'Image'}
-                  </Typography>
-                </Box>
+              </Typography>
+            </Box>
 
-                {/* Treść kafelka */}
+            {/* Treść kafelka */}
                 <Box sx={{ p: 3, flex: 1, display: 'flex', flexDirection: 'column', overflow: 'hidden' }}>
-                  <Typography 
-                    variant="h5" 
-                    sx={{ 
-                      color: 'white', 
+              <Typography 
+                variant="h5" 
+                sx={{ 
+                  color: 'white', 
                       mb: 1.5, 
                       fontWeight: 600,
                       fontSize: { xs: '1.1rem', md: '1.25rem' },
@@ -392,14 +392,14 @@ export default function PlantDatabasePage() {
                         mb: 1,
                         fontSize: '1rem'
                       }
-                    }}
-                  >
+                }}
+              >
                     {plant.name}
-                  </Typography>
-                  <Typography 
-                    variant="body1" 
-                    sx={{ 
-                      color: 'rgba(255, 255, 255, 0.8)',
+              </Typography>
+              <Typography 
+                variant="body1" 
+                sx={{ 
+                  color: 'rgba(255, 255, 255, 0.8)',
                       lineHeight: 1.5,
                       mb: 'auto',
                       fontSize: { xs: '0.85rem', md: '0.95rem' },
@@ -407,50 +407,50 @@ export default function PlantDatabasePage() {
                         fontSize: '0.8rem',
                         lineHeight: 1.4
                       }
-                    }}
-                  >
+                }}
+              >
                     {plant.description}
-                  </Typography>
-                  
+              </Typography>
+              
                   {/* Przycisk "Dodaj do akwarium" tylko na głównej karcie */}
                   {position.zIndex === 3 && (
-                    <Box sx={{ 
-                      display: 'flex', 
-                      justifyContent: 'center', 
+              <Box sx={{ 
+                display: 'flex', 
+                justifyContent: 'center', 
                       mt: 2,
                       pt: 2
-                    }}>
-                      <Button
+              }}>
+                <Button
                         onClick={(e) => {
                           e.stopPropagation();
                           alert(`Dodano ${plant.name} do akwarium!`);
                         }}
-                        variant="contained"
-                        sx={{
-                          bgcolor: '#FFD700',
-                          color: '#000',
-                          borderRadius: 3,
-                          px: 4,
+                  variant="contained"
+                  sx={{
+                    bgcolor: '#FFD700',
+                    color: '#000',
+                    borderRadius: 3,
+                    px: 4,
                           py: { xs: 1, md: 1.5 },
                           fontSize: { xs: '0.85rem', md: '1rem' },
-                          fontWeight: 600,
-                          boxShadow: '0 4px 12px rgba(255, 215, 0, 0.3)',
-                          transition: 'all 0.3s',
-                          '&:hover': {
-                            bgcolor: '#FFC700',
-                            boxShadow: '0 6px 16px rgba(255, 215, 0, 0.4)',
-                            transform: 'translateY(-2px)'
-                          },
-                          '&:active': {
-                            transform: 'translateY(0)'
-                          }
-                        }}
-                      >
-                        {t("addToAquarium", { defaultValue: "Add to Aquarium" })}
-                      </Button>
-                    </Box>
+                    fontWeight: 600,
+                    boxShadow: '0 4px 12px rgba(255, 215, 0, 0.3)',
+                    transition: 'all 0.3s',
+                    '&:hover': {
+                      bgcolor: '#FFC700',
+                      boxShadow: '0 6px 16px rgba(255, 215, 0, 0.4)',
+                      transform: 'translateY(-2px)'
+                    },
+                    '&:active': {
+                      transform: 'translateY(0)'
+                    }
+                  }}
+                >
+                  {t("addToAquarium", { defaultValue: "Add to Aquarium" })}
+                </Button>
+              </Box>
                   )}
-                </Box>
+            </Box>
               </Box>
             );
           })}

@@ -93,8 +93,8 @@ export default function LoginForm({ onSwitchToRegister }) {
         }}
         onLoadedData={(e) => {
           e.target.play().catch(() => {});
-        }}
-      >
+      }}
+    >
         <source src="/loginPage-bg.mp4" type="video/mp4" />
       </video>
       <Container maxWidth="sm" sx={{ position: 'relative', zIndex: 1 }}>

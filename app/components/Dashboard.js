@@ -132,7 +132,7 @@ export default function Dashboard() {
   
   return (
     <Box sx={{ 
-      minHeight: "100vh",
+      minHeight: "100vh", 
       display: 'flex',
       flexDirection: 'column',
       position: 'relative',
@@ -166,9 +166,9 @@ export default function Dashboard() {
       <Box
         sx={{
           position: 'fixed',
-          top: 0,
-          left: 0,
-          right: 0,
+        top: 0,
+        left: 0,
+        right: 0,
           bottom: 0,
           bgcolor: darkMode ? 'rgba(0, 0, 0, 0.75)' : 'transparent',
           zIndex: 1,
@@ -183,10 +183,10 @@ export default function Dashboard() {
          role="navigation"
          aria-label={t("mainNavigation", { defaultValue: "Główna nawigacja" })}
          sx={{ 
-         display: "flex", 
+        display: "flex", 
          flexDirection: 'row',
-         justifyContent: "space-between", 
-         alignItems: "center",
+        justifyContent: "space-between", 
+        alignItems: "center",
          px: { xs: 1.5, sm: 1.5, md: 2, lg: 4 },
          py: { xs: 0.75, sm: 1, md: 1, lg: 2 },
          zIndex: 10,
@@ -194,32 +194,32 @@ export default function Dashboard() {
          '@media (max-height: 700px)': {
            py: { xs: 0.5, sm: 0.75 }
          }
-       }}>
-         <Typography variant="h4" component="h1" sx={{ 
-           fontWeight: 700, 
-           color: "white",
+      }}>
+        <Typography variant="h4" component="h1" sx={{ 
+          fontWeight: 700, 
+          color: "white",
            fontSize: { xs: '1.2rem', sm: '1.4rem', md: '1.5rem', lg: '2.2rem' },
-           letterSpacing: '1px',
-           fontFamily: 'var(--font-caveat)',
+          letterSpacing: '1px',
+          fontFamily: 'var(--font-caveat)',
            textShadow: '2px 2px 4px rgba(0,0,0,0.5)',
            lineHeight: 1,
            '@media (max-height: 700px)': {
              fontSize: { xs: '1.1rem', sm: '1.3rem', md: '1.4rem' }
            }
-         }}>
-           AquaTracker
-         </Typography>
+        }}>
+          AquaTracker
+        </Typography>
          <Box sx={{ 
            display: "flex", 
            gap: 1, 
            alignItems: "center",
            ml: 'auto'
          }}>
-           <LanguageSwitcher />
+          <LanguageSwitcher />
            {/* Settings button */}
             <Box 
             onClick={handleOpenSettings}
-            sx={{
+            sx={{ 
               bgcolor: darkMode ? 'rgba(30, 30, 30, 0.85)' : 'rgba(255, 255, 255, 0.4)',
               p: 1,
               borderRadius: 1.5,
@@ -246,8 +246,8 @@ export default function Dashboard() {
                {t("settings")}
              </Typography>
            </Box>
-         </Box>
-       </Box>
+        </Box>
+      </Box>
 
       {/* Main Content - Uproszczona struktura z gridem */}
       <Box 
@@ -1146,8 +1146,8 @@ export default function Dashboard() {
             <Button variant="contained" onClick={handleCloseSessionInfo}>
               {t("close", { defaultValue: "Zamknij" })}
             </Button>
-          </Box>
         </Box>
+      </Box>
       </Modal>
 
 
