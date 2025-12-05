@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+## [0.15.0](https://github.com/maksym456/AquaTracker-frontend/compare/v0.14.0...v0.15.0) (2025-12-05)
+
+
+### Features
+
+* **fish-database:** refactor FishDatabasePage to fetch fish data from API ([a8be30e](https://github.com/maksym456/AquaTracker-frontend/commit/a8be30ef26c9a0d9718603a30fb0059396e317eb))
+
 ## [0.14.0](https://github.com/maksym456/AquaTracker-frontend/compare/v0.13.3...v0.14.0) (2025-12-01)
 
 
