@@ -8,7 +8,6 @@ import { useRouter } from "next/navigation";
 import LanguageSwitcher from "../components/LanguageSwitcher";
 import KeyboardReturnOutlinedIcon from '@mui/icons-material/KeyboardReturnOutlined';
 import PersonAddIcon from '@mui/icons-material/PersonAdd';
-import { mockAquariums, addAquarium, mockFishes, mockPlants } from "../lib/mockData";
 import { useTheme } from "../contexts/ThemeContext";
 
 export default function MyAquariumsPage() {
@@ -30,8 +29,8 @@ export default function MyAquariumsPage() {
   const [newAquariumHardness, setNewAquariumHardness] = useState("8");
 
   useEffect(() => {
-    
-    setAquariums(mockAquariums);
+    // TODO: Pobierz akwaria z API
+    setAquariums([]);
   }, []);
 
   function handleCreateAquarium() {
@@ -49,8 +48,8 @@ export default function MyAquariumsPage() {
         hardness: parseFloat(newAquariumHardness),
         description: ""
       };
-      addAquarium(newAquarium);
-      setAquariums([...mockAquariums]);
+      // TODO: Zapisz akwarium przez API
+      setAquariums([...aquariums, { ...newAquarium, id: `${Date.now()}`, fishes: [], plants: [] }]);
       setNewAquariumName("");
       setNewAquariumWaterType("freshwater");
       setNewAquariumTemperature("24");
@@ -81,7 +80,8 @@ export default function MyAquariumsPage() {
     setHistoryModalOpen(false);
   };
 
-  const mockActivityHistory = [
+  // TODO: Pobierz historię aktywności z API
+  const activityHistory = [
     { id: '1', type: 'created', aquarium: 'Moje pierwsze akwarium', date: new Date('2024-01-15T10:30:00'), details: 'Akwarium zostało utworzone' },
     { id: '2', type: 'fishAdded', aquarium: 'Moje pierwsze akwarium', date: new Date('2024-01-16T14:20:00'), details: 'Dodano rybę: Gupik' },
     { id: '3', type: 'plantAdded', aquarium: 'Moje pierwsze akwarium', date: new Date('2024-01-17T09:15:00'), details: 'Dodano roślinę: Anubias' },
@@ -122,7 +122,7 @@ export default function MyAquariumsPage() {
     return colors[type] || '#757575';
   };
 
-  const filteredAndSortedActivities = mockActivityHistory
+  const filteredAndSortedActivities = activityHistory
     .filter(activity => {
       const actionMatch = selectedActionFilter === 'all' || activity.type === selectedActionFilter;
       const aquariumMatch = selectedAquariumFilter === 'all' || activity.aquarium === selectedAquariumFilter;
@@ -136,18 +136,18 @@ export default function MyAquariumsPage() {
       }
     });
 
-  const uniqueAquariums = [...new Set(mockActivityHistory.map(a => a.aquarium))];
+  const uniqueAquariums = [...new Set(activityHistory.map(a => a.aquarium))];
   const actionTypes = ['created', 'edited', 'deleted', 'fishAdded', 'fishRemoved', 'plantAdded', 'plantRemoved', 'parameterChanged'];
 
   const allStatistics = useMemo(() => {
     if (aquariums.length === 0) return null;
 
     const allFishes = aquariums.flatMap(aquarium => 
-      mockFishes.filter(fish => aquarium.fishes?.includes(fish.id))
+      [] // TODO: Pobierz ryby z API
     );
 
     const allPlants = aquariums.flatMap(aquarium =>
-      mockPlants.filter(plant => aquarium.plants?.includes(plant.id))
+      [] // TODO: Pobierz rośliny z API
     );
 
     const uniqueFishSpecies = new Set(allFishes.map(fish => fish.species));

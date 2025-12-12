@@ -4,6 +4,8 @@
   "private": true,
   "scripts": {
     "dev": "next dev --turbopack",
+    "dev:all": "concurrently \"npm run dev:backend\" \"npm run dev\"",
+    "dev:backend": "cd ../AquaTracker-backend && mvnw.cmd spring-boot:run",
     "build": "next build --turbopack",
     "start": "next start",
     "lint": "eslint",
@@ -30,6 +32,7 @@
     "@playwright/test": "^1.56.1",
     "@tailwindcss/postcss": "^4",
     "@types/node": "24.9.2",
+    "concurrently": "^9.2.1",
     "eslint": "^9",
     "eslint-config-next": "15.5.4",
     "standard-version": "^9.5.0",

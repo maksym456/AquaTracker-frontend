@@ -42,7 +42,8 @@ export function AuthProvider({ children }) {
       email: email,
       name: email.split("@")[0],
       token: "mock-token-" + Date.now(),
-      loginTime: loginTime
+      loginTime: loginTime,
+      role: 'user'
     };
     
     localStorage.setItem("user", JSON.stringify(mockUser));
@@ -70,7 +71,8 @@ export function AuthProvider({ children }) {
       email: email,
       name: name,
       token: "mock-token-" + Date.now(),
-      loginTime: loginTime
+      loginTime: loginTime,
+      role: 'user'
     };
     
     localStorage.setItem("user", JSON.stringify(mockUser));

@@ -85,7 +85,6 @@ export default function FishDatabasePage() {
   // ============================================
   // Wcześniej tutaj była duża tablica fishCards z hardcoded danymi (około 370 linii)
   // Teraz dane są pobierane z API w useEffect powyżej
-  // Jeśli API nie działa, możesz tymczasowo przywrócić mock data jako fallback
   
   // ============================================
   // STAN KOMPONENTU (STATE)
@@ -110,46 +109,96 @@ export default function FishDatabasePage() {
   const [sortAggressiveness, setSortAggressiveness] = useState("none"); // none | asc | desc
   const [failedImages, setFailedImages] = useState(new Set()); // Track failed image loads
 
+  // Funkcja pomocnicza do konwersji formatu API v1 na format używany w UI
+  // Dla początkujących: API zwraca dane w jednym formacie, a UI potrzebuje w innym
+  // Ta funkcja "tłumaczy" dane z formatu API na format UI
+  const convertApiFishToUI = (fish) => {
+    // Konwersja waterType z polskiego na angielski (dla filtrowania)
+    // API zwraca: "Słodkowodna", UI potrzebuje: "freshwater"
+    const waterTypeMap = {
+      "Słodkowodna": "freshwater",
+      "Słonowodna": "saltwater",
+      "Słonawa": "brackish"
+    };
+    const waterType = waterTypeMap[fish.waterType] || "freshwater";
+    
+    // Konwersja temperature z stringa "22-26" na tablicę [22, 26]
+    // Dla początkujących: split dzieli string na części, map konwertuje na liczby
+    let tempRange = [22, 26]; // domyślne wartości
+    if (fish.temperature) {
+      const tempParts = fish.temperature.split('-').map(t => parseFloat(t.trim()));
+      if (tempParts.length === 2 && !isNaN(tempParts[0]) && !isNaN(tempParts[1])) {
+        tempRange = tempParts;
+      }
+    }
+    
+    // Konwersja ph z stringa "6.5-7.5" na tablicę [6.5, 7.5]
+    let phRange = [6.5, 7.5]; // domyślne wartości
+    if (fish.ph) {
+      const phParts = fish.ph.split('-').map(p => parseFloat(p.trim()));
+      if (phParts.length === 2 && !isNaN(phParts[0]) && !isNaN(phParts[1])) {
+        phRange = phParts;
+      }
+    }
+    
+    // Konwersja hardnessDGH z stringa "1-12" na tablicę [1, 12]
+    let hardness = [5, 15]; // domyślne wartości
+    if (fish.hardnessDGH) {
+      const hardnessParts = fish.hardnessDGH.split('-').map(h => parseFloat(h.trim()));
+      if (hardnessParts.length === 2 && !isNaN(hardnessParts[0]) && !isNaN(hardnessParts[1])) {
+        hardness = hardnessParts;
+      }
+    }
+    
+    // Konwersja iconName na pełną ścieżkę do obrazka
+    // API zwraca: "neon_innesa.png", UI potrzebuje: "/fish/Neon_Innesa.png"
+    const image = fish.iconName 
+      ? `/fish/${fish.iconName}` 
+      : getFishImage(fish.name);
+    
+    return {
+      id: fish.id,
+      name: fish.name,
+      description: fish.description || "", // API v1 nie ma description, ale zostawiamy dla kompatybilności
+      image: image,
+      waterType: waterType,
+      waterTypeLabel: getWaterTypeLabel(waterType),
+      tempRange: tempRange,
+      biotope: fish.biotope || "",
+      phRange: phRange,
+      hardness: hardness,
+      temperament: fish.temperament || "spokojne",
+      minSchoolSize: fish.minShoalSize || fish.minSchoolSize || 1, // API v1 używa minShoalSize
+      lifespan: fish.lifeSpan || fish.lifespan || "3-5 lat" // API v1 używa lifeSpan
+    };
+  };
+
   useEffect(() => {
     async function fetchFishData() {
       try {
         setIsLoading(true);
         setError(null);
         
+        // Pobieramy dane z API
         const fishes = await getFishes();
         
         if (fishes && Array.isArray(fishes)) {
-          const processedFishes = fishes.map((fish) => {
-            return {
-              id: fish.id,
-              name: fish.name,
-              description: fish.description || "",
-              image: fish.image || getFishImage(fish.name),
-              waterType: fish.waterType || "freshwater",
-              waterTypeLabel: fish.waterTypeLabel || getWaterTypeLabel(fish.waterType || "freshwater"),
-              tempRange: Array.isArray(fish.tempRange) 
-                ? fish.tempRange 
-                : [fish.tempMin || 22, fish.tempMax || 26],
-              biotope: fish.biotope || "",
-              phRange: Array.isArray(fish.phRange) 
-                ? fish.phRange 
-                : [fish.phMin || 6.5, fish.phMax || 7.5],
-              hardness: Array.isArray(fish.hardness) 
-                ? fish.hardness 
-                : [fish.hardnessMin || 5, fish.hardnessMax || 15],
-              temperament: fish.temperament || "spokojne",
-              minSchoolSize: fish.minSchoolSize || 1,
-              lifespan: fish.lifespan || "3-5 lat"
-            };
-          });
+          // Konwertujemy każdą rybę z formatu API v1 na format używany w UI
+          const processedFishes = fishes.map(convertApiFishToUI);
           
           setFishCards(processedFishes);
+          
+          // Jeśli nie ma żadnych ryb, pokazujemy komunikat
+          if (processedFishes.length === 0) {
+            setError("Brak danych z API. Sprawdź czy API jest dostępne.");
+          }
         } else {
-          throw new Error("Invalid data format from API");
+          setError("Nieprawidłowy format danych z API.");
+          setFishCards([]);
         }
       } catch (err) {
         console.error("Error fetching fishes:", err);
-        setError(err.message || "Failed to load fishes. Please try again later.");
+        setError(err.message || "Nie udało się załadować danych. Sprawdź czy API jest dostępne.");
         setFishCards([]);
       } finally {
         setIsLoading(false);

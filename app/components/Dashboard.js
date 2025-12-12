@@ -5,7 +5,6 @@ import { useTranslation } from "react-i18next";
 import LanguageSwitcher from "./LanguageSwitcher";
 import { useAuth } from "../contexts/AuthContext";
 import { Button, Box, Typography, Modal, TextField, Alert, Select, MenuItem, FormControl, InputLabel, Divider, Switch } from "@mui/material";
-import { mockAquariums } from "../lib/mockData";
 import { APP_VERSION } from "../version";
 import { useTheme } from "../contexts/ThemeContext";
 import Link from "next/link";
@@ -894,7 +893,7 @@ export default function Dashboard() {
                 <Box sx={{ pl: 4, pr: 2, pb: 2 }}>
                   <Box sx={{ mb: 2, p: 1.5, bgcolor: 'rgba(255, 255, 255, 0.5)', borderRadius: 1.5 }}>
                     <Typography variant="body2" sx={{ fontWeight: 600, mb: 0.5 }}>{t("dataSourceType")}:</Typography>
-                    <Typography variant="body2" color="text.secondary">{t("mockData")}</Typography>
+                    <Typography variant="body2" color="text.secondary">{t("api")}</Typography>
                   </Box>
                   <Box sx={{ mb: 2, p: 1.5, bgcolor: 'rgba(255, 255, 255, 0.5)', borderRadius: 1.5 }}>
                     <Typography variant="body2" sx={{ fontWeight: 600, mb: 0.5 }}>{t("environment")}:</Typography>

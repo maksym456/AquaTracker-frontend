@@ -9,7 +9,6 @@ import { useTheme } from "../../contexts/ThemeContext";
 import LanguageSwitcher from "../../components/LanguageSwitcher";
 import KeyboardReturnOutlinedIcon from '@mui/icons-material/KeyboardReturnOutlined';
 import BarChartIcon from '@mui/icons-material/BarChart';
-import { mockAquariums, mockFishes, mockPlants } from "../../lib/mockData";
 
 export default function AquariumDetailPage() {
   
@@ -32,15 +31,15 @@ export default function AquariumDetailPage() {
 
   useEffect(() => {
 
-    const foundAquarium = mockAquariums.find(a => a.id === aquariumId);
-    
-    if (foundAquarium) {
-      
-      setAquarium(foundAquarium);
-    } else {
-      
-      router.push('/my-aquariums');
-    }
+    // TODO: Pobierz akwarium z API
+    // const foundAquarium = await getAquariumById(aquariumId);
+    // if (foundAquarium) {
+    //   setAquarium(foundAquarium);
+    // } else {
+    //   router.push('/my-aquariums');
+    // }
+    setAquarium(null);
+    router.push('/my-aquariums');
   }, [aquariumId, router]);
 
   useEffect(() => {
@@ -69,13 +68,9 @@ export default function AquariumDetailPage() {
   const statistics = useMemo(() => {
     if (!aquarium) return null;
 
-    const aquariumFishes = mockFishes.filter(fish => 
-      aquarium.fishes?.includes(fish.id)
-    );
-
-    const aquariumPlants = mockPlants.filter(plant => 
-      aquarium.plants?.includes(plant.id)
-    );
+    // TODO: Pobierz ryby i rośliny z API
+    const aquariumFishes = []; // await getFishesByAquariumId(aquarium.id);
+    const aquariumPlants = []; // await getPlantsByAquariumId(aquarium.id);
 
     const uniqueFishSpecies = new Set(aquariumFishes.map(fish => fish.species));
     const fishSpeciesCount = uniqueFishSpecies.size;

@@ -6,6 +6,7 @@ import "./i18n";
 import { ThemeProvider as MuiThemeProvider } from "@mui/material/styles";
 import CssBaseline from "@mui/material/CssBaseline";
 import { ThemeProvider, useTheme } from "./contexts/ThemeContext";
+import { AuthProvider } from "./contexts/AuthContext";
 import { useTranslation } from "react-i18next";
 
 const geistSans = Geist({
@@ -58,11 +59,13 @@ export default function RootLayout({ children }) {
           backgroundAttachment: 'fixed'
         }}
       >
-        <ThemeProvider>
-          <ThemeWrapper>
-        {children}
-          </ThemeWrapper>
-        </ThemeProvider>
+        <AuthProvider>
+          <ThemeProvider>
+            <ThemeWrapper>
+              {children}
+            </ThemeWrapper>
+          </ThemeProvider>
+        </AuthProvider>
       </body>
     </LanguageWrapper>
   );

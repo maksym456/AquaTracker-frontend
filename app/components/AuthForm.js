@@ -209,6 +209,7 @@ export default function AuthForm() {
                   height: 40,
                   '&:hover': { bgcolor: 'rgba(0,0,0,0.04)' }
                 }}
+                aria-label="Login with Google"
               >
                 <GoogleIcon />
               </IconButton>
@@ -221,6 +222,7 @@ export default function AuthForm() {
                   height: 40,
                   '&:hover': { bgcolor: 'rgba(0,0,0,0.04)' }
                 }}
+                aria-label="Login with Facebook"
               >
                 <FacebookIcon />
               </IconButton>
@@ -371,6 +373,7 @@ export default function AuthForm() {
                   height: 40,
                   '&:hover': { bgcolor: 'rgba(0,0,0,0.04)' }
                 }}
+                aria-label="Login with Google"
               >
                 <GoogleIcon />
               </IconButton>
@@ -383,6 +386,7 @@ export default function AuthForm() {
                   height: 40,
                   '&:hover': { bgcolor: 'rgba(0,0,0,0.04)' }
                 }}
+                aria-label="Login with Facebook"
               >
                 <FacebookIcon />
               </IconButton>
