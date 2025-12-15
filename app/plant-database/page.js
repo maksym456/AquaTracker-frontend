@@ -1,7 +1,10 @@
 "use client";
 
-import { useState } from "react";
-import { Box, Typography, IconButton, Button, useTheme, useMediaQuery, List, ListItemButton, ListItemText, Divider, TextField } from "@mui/material";
+// Importujemy useState i useEffect z React
+// useState - do przechowywania stanu komponentu (np. dane, loading, błędy)
+// useEffect - do wykonywania akcji przy załadowaniu komponentu (np. pobieranie danych z API)
+import { useState, useEffect } from "react";
+import { Box, Typography, IconButton, Button, useTheme, useMediaQuery, List, ListItemButton, ListItemText, Divider, TextField, CircularProgress, Alert } from "@mui/material";
 import { useTranslation } from "react-i18next";
 import { useTheme as useCustomTheme } from "../contexts/ThemeContext";
 import Link from "next/link";
@@ -12,34 +15,153 @@ import ArrowForwardIosIcon from '@mui/icons-material/ArrowForwardIos';
 import ChevronRightIcon from '@mui/icons-material/ChevronRight';
 import ChevronLeftIcon from '@mui/icons-material/ChevronLeft';
 
+// Importujemy funkcję do pobierania roślin z API
+// Dla początkujących: import pozwala nam używać funkcji z innych plików
+import { getPlants } from "../lib/api";
+
 export default function PlantDatabasePage() {
   const { t } = useTranslation();
   const theme = useTheme();
   const { darkMode } = useCustomTheme();
   const isMobile = useMediaQuery(theme.breakpoints.down('md'));
   
-  // Przykładowe dane kafelków roślin
-  const plantCards = [
-    { id: 1, name: "Anubias", description: "Odporna roślina akwariowa, idealna dla początkujących", image: "/plant1.jpg" },
-    { id: 2, name: "Moczarka", description: "Szybko rosnąca roślina tlenowa", image: "/plant2.jpg" },
-    { id: 3, name: "Kryptokoryna", description: "Piękna roślina z szerokimi liśćmi", image: "/plant3.jpg" },
-  ];
+  // ============================================
+  // STAN KOMPONENTU (STATE)
+  // ============================================
+  // Dla początkujących: useState to hook React, który pozwala przechowywać dane w komponencie
+  // Gdy zmieniamy stan (np. setPlantCards), React automatycznie odświeża komponent
+  
+  // Stan dla listy roślin - początkowo pusta tablica, bo dane pobierzemy z API
+  const [plantCards, setPlantCards] = useState([]);
+  
+  // Stan dla informacji o ładowaniu - true gdy pobieramy dane z API
+  const [isLoading, setIsLoading] = useState(true);
+  
+  // Stan dla błędów - null gdy wszystko OK, string z komunikatem gdy wystąpi błąd
+  const [error, setError] = useState(null);
   
   const [currentCard, setCurrentCard] = useState(0);
   const [panelOpen, setPanelOpen] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
 
+  // Funkcja pomocnicza do mapowania nazw roślin na ścieżki ikon
+  // Dla początkujących: jeśli API zwróci iconName, używamy go, w przeciwnym razie używamy domyślnej ikony
+  const getPlantImage = (plantName, iconName) => {
+    // Jeśli API zwróciło iconName, używamy go
+    if (iconName) {
+      return `/plant/${iconName}`;
+    }
+    
+    // W przeciwnym razie używamy domyślnej ikony
+    // TODO: Można dodać mapowanie nazw na ikony podobnie jak dla ryb
+    return "/plant/default.png";
+  };
+
+  // ============================================
+  // KONWERSJA DANYCH Z API NA FORMAT UI
+  // ============================================
+  // Dla początkujących: API zwraca dane w jednym formacie, a UI potrzebuje innego
+  // Ta funkcja "tłumaczy" dane z formatu API na format używany w UI
+  const convertApiPlantToUI = (apiPlant) => {
+    // Funkcja pomocnicza do parsowania zakresów (np. "12-20" -> [12, 20])
+    const parseRange = (rangeString, defaultValue) => {
+      if (typeof rangeString === 'string' && rangeString.includes('-')) {
+        const parts = rangeString.split('-').map(Number);
+        return parts.length === 2 ? parts : defaultValue;
+      }
+      return defaultValue;
+    };
+
+    // Parsujemy zakresy z API (API zwraca stringi jak "12-20")
+    const tempRange = parseRange(apiPlant.temperature, [20, 26]);
+    const phRange = parseRange(apiPlant.ph, [6.5, 7.5]);
+    const hardness = parseRange(apiPlant.hardnessDGH, [5, 15]);
+
+    // Tworzymy opis na podstawie dostępnych danych
+    const description = apiPlant.description || 
+      `Temperatura: ${apiPlant.temperature || '20-26'}°C, pH: ${apiPlant.ph || '6.5-7.5'}, Biotop: ${apiPlant.biotope || 'Ogólny'}`;
+
+    // Pobieramy ścieżkę do obrazka
+    const image = apiPlant.iconName 
+      ? `/plant/${apiPlant.iconName}` 
+      : getPlantImage(apiPlant.name, apiPlant.iconName);
+    
+    return {
+      id: apiPlant.id,
+      name: apiPlant.name,
+      description: description,
+      image: image,
+      tempRange: tempRange,
+      biotope: apiPlant.biotope || "",
+      phRange: phRange,
+      hardness: hardness,
+    };
+  };
+
+  // ============================================
+  // POBIERANIE DANYCH Z API
+  // ============================================
+  // Dla początkujących: useEffect wykonuje się automatycznie gdy komponent się załaduje
+  // async function - funkcja asynchroniczna, która może czekać na dane z API
+  useEffect(() => {
+    async function fetchPlantData() {
+      try {
+        // Ustawiamy loading na true - pokazujemy użytkownikowi, że ładujemy dane
+        setIsLoading(true);
+        setError(null);
+        
+        // Pobieramy dane z API używając funkcji getPlants()
+        const plants = await getPlants();
+        
+        // Sprawdzamy czy API zwróciło poprawny format (tablicę)
+        if (plants && Array.isArray(plants)) {
+          // Konwertujemy każdą roślinę z formatu API na format używany w UI
+          const processedPlants = plants.map(convertApiPlantToUI);
+          
+          // Zapisujemy przetworzone dane w stanie komponentu
+          setPlantCards(processedPlants);
+          
+          // Jeśli nie ma żadnych roślin, pokazujemy komunikat
+          if (processedPlants.length === 0) {
+            setError("Brak danych z API. Sprawdź czy API jest dostępne.");
+          }
+        } else {
+          setError("Nieprawidłowy format danych z API.");
+          setPlantCards([]);
+        }
+      } catch (err) {
+        // Jeśli wystąpi błąd, zapisujemy komunikat błędu
+        console.error("Error fetching plants:", err);
+        setError(err.message || "Nie udało się załadować danych. Sprawdź czy API jest dostępne.");
+        setPlantCards([]);
+      } finally {
+        // Zawsze ustawiamy loading na false, nawet jeśli wystąpił błąd
+        setIsLoading(false);
+      }
+    }
+    
+    // Wywołujemy funkcję pobierającą dane
+    fetchPlantData();
+  }, []); // Pusta tablica [] oznacza, że useEffect wykona się tylko raz przy załadowaniu komponentu
+
+  // Lista przefiltrowana dla panelu bocznego
+  // Dla początkujących: filter() tworzy nową tablicę z elementami spełniającymi warunek
   const filteredPlants = plantCards.filter((p) => {
     const q = searchQuery.trim().toLowerCase();
     return q === "" || p.name.toLowerCase().includes(q) || p.description.toLowerCase().includes(q);
   });
   
+  // Funkcje do nawigacji między kartami
   const handleNext = () => {
-    setCurrentCard((prev) => (prev + 1) % plantCards.length);
+    if (plantCards.length > 0) {
+      setCurrentCard((prev) => (prev + 1) % plantCards.length);
+    }
   };
   
   const handlePrev = () => {
-    setCurrentCard((prev) => (prev - 1 + plantCards.length) % plantCards.length);
+    if (plantCards.length > 0) {
+      setCurrentCard((prev) => (prev - 1 + plantCards.length) % plantCards.length);
+    }
   };
   
   // Funkcja do obliczania pozycji karty w karuzeli
@@ -276,8 +398,27 @@ export default function PlantDatabasePage() {
               width: '42%'
             }
           }}>
-            {/* Renderuj wszystkie karty */}
-            {plantCards.map((plant, index) => {
+            {/* Wyświetlanie stanu ładowania */}
+            {isLoading && (
+              <Box sx={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 2 }}>
+                <CircularProgress sx={{ color: 'white' }} />
+                <Typography sx={{ color: 'white' }}>
+                  {t('loading', { defaultValue: 'Ładowanie...' })}
+                </Typography>
+              </Box>
+            )}
+
+            {/* Wyświetlanie błędu */}
+            {error && !isLoading && (
+              <Box sx={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 2, px: 4 }}>
+                <Alert severity="warning" sx={{ bgcolor: 'rgba(255, 152, 0, 0.2)', color: 'white', border: '1px solid rgba(255, 152, 0, 0.5)' }}>
+                  {error}
+                </Alert>
+              </Box>
+            )}
+
+            {/* Renderuj wszystkie karty tylko jeśli nie ma loading i error */}
+            {!isLoading && !error && plantCards.map((plant, index) => {
               const position = getCardPosition(index);
               return (
                 <Box

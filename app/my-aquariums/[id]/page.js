@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useEffect, useRef, useMemo } from "react";
-import { Box, Button, Typography, Modal, Paper, Grid, Divider, CircularProgress } from "@mui/material";
+import { Box, Button, Typography, Modal, Paper, Grid, Divider, CircularProgress, Alert } from "@mui/material";
 import { useTranslation } from "react-i18next";
 import { useRouter, useParams } from "next/navigation";
 import Link from "next/link";
@@ -9,6 +9,7 @@ import { useTheme } from "../../contexts/ThemeContext";
 import LanguageSwitcher from "../../components/LanguageSwitcher";
 import KeyboardReturnOutlinedIcon from '@mui/icons-material/KeyboardReturnOutlined';
 import BarChartIcon from '@mui/icons-material/BarChart';
+import { getAquariumById } from "../../lib/api";
 
 export default function AquariumDetailPage() {
   
@@ -22,24 +23,39 @@ export default function AquariumDetailPage() {
   const aquariumId = params?.id;
 
   const [aquarium, setAquarium] = useState(null);
-
   const [imageLoaded, setImageLoaded] = useState(false);
-
   const [statisticsOpen, setStatisticsOpen] = useState(false);
-
+  const [isLoading, setIsLoading] = useState(true);
+  const [error, setError] = useState(null);
   const imageContainerRef = useRef(null);
 
   useEffect(() => {
-
-    // TODO: Pobierz akwarium z API
-    // const foundAquarium = await getAquariumById(aquariumId);
-    // if (foundAquarium) {
-    //   setAquarium(foundAquarium);
-    // } else {
-    //   router.push('/my-aquariums');
-    // }
-    setAquarium(null);
-    router.push('/my-aquariums');
+    async function fetchAquarium() {
+      if (!aquariumId) {
+        router.push('/my-aquariums');
+        return;
+      }
+      
+      try {
+        setIsLoading(true);
+        setError(null);
+        const foundAquarium = await getAquariumById(aquariumId);
+        if (foundAquarium) {
+          setAquarium(foundAquarium);
+        } else {
+          setError("Akwarium nie zostało znalezione.");
+          router.push('/my-aquariums');
+        }
+      } catch (err) {
+        console.error("Error fetching aquarium:", err);
+        setError(err.message || "Nie udało się załadować akwarium.");
+        router.push('/my-aquariums');
+      } finally {
+        setIsLoading(false);
+      }
+    }
+    
+    fetchAquarium();
   }, [aquariumId, router]);
 
   useEffect(() => {
@@ -68,9 +84,9 @@ export default function AquariumDetailPage() {
   const statistics = useMemo(() => {
     if (!aquarium) return null;
 
-    // TODO: Pobierz ryby i rośliny z API
-    const aquariumFishes = []; // await getFishesByAquariumId(aquarium.id);
-    const aquariumPlants = []; // await getPlantsByAquariumId(aquarium.id);
+    // API zwraca ryby i rośliny w obiekcie akwarium
+    const aquariumFishes = aquarium.fishes || aquarium.fishList || [];
+    const aquariumPlants = aquarium.plants || aquarium.plantList || [];
 
     const uniqueFishSpecies = new Set(aquariumFishes.map(fish => fish.species));
     const fishSpeciesCount = uniqueFishSpecies.size;

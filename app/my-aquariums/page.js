@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useEffect, useMemo } from "react";
-import { Box, Button, Typography, Modal, TextField, Grid, Card, CardContent, CardActionArea, Select, MenuItem, FormControl, InputLabel, Paper, Divider, CircularProgress, List, ListItem, ListItemText, Chip } from "@mui/material";
+import { Box, Button, Typography, Modal, TextField, Grid, Card, CardContent, CardActionArea, Select, MenuItem, FormControl, InputLabel, Paper, Divider, CircularProgress, List, ListItem, ListItemText, Chip, Alert } from "@mui/material";
 import { useTranslation } from "react-i18next";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
@@ -9,6 +9,7 @@ import LanguageSwitcher from "../components/LanguageSwitcher";
 import KeyboardReturnOutlinedIcon from '@mui/icons-material/KeyboardReturnOutlined';
 import PersonAddIcon from '@mui/icons-material/PersonAdd';
 import { useTheme } from "../contexts/ThemeContext";
+import { getAquariums, createAquarium } from "../lib/api";
 
 export default function MyAquariumsPage() {
   const { t } = useTranslation();
@@ -27,18 +28,35 @@ export default function MyAquariumsPage() {
   const [newAquariumBiotope, setNewAquariumBiotope] = useState("ameryka południowa");
   const [newAquariumPh, setNewAquariumPh] = useState("7.0");
   const [newAquariumHardness, setNewAquariumHardness] = useState("8");
+  const [isLoading, setIsLoading] = useState(true);
+  const [error, setError] = useState(null);
 
   useEffect(() => {
-    // TODO: Pobierz akwaria z API
-    setAquariums([]);
+    async function fetchAquariums() {
+      try {
+        setIsLoading(true);
+        setError(null);
+        const data = await getAquariums();
+        setAquariums(data || []);
+      } catch (err) {
+        console.error("Error fetching aquariums:", err);
+        setError(err.message || "Nie udało się załadować akwariów.");
+        setAquariums([]);
+      } finally {
+        setIsLoading(false);
+      }
+    }
+    fetchAquariums();
   }, []);
 
   function handleCreateAquarium() {
     setCreateModalOpen(true);
   }
 
-  function handleSaveAquarium() {
-    if (newAquariumName.trim()) {
+  async function handleSaveAquarium() {
+    if (!newAquariumName.trim()) return;
+    
+    try {
       const newAquarium = {
         name: newAquariumName,
         waterType: newAquariumWaterType,
@@ -48,8 +66,13 @@ export default function MyAquariumsPage() {
         hardness: parseFloat(newAquariumHardness),
         description: ""
       };
-      // TODO: Zapisz akwarium przez API
-      setAquariums([...aquariums, { ...newAquarium, id: `${Date.now()}`, fishes: [], plants: [] }]);
+      
+      const created = await createAquarium(newAquarium);
+      
+      // Dodajemy nowe akwarium do listy
+      setAquariums([...aquariums, created]);
+      
+      // Resetujemy formularz
       setNewAquariumName("");
       setNewAquariumWaterType("freshwater");
       setNewAquariumTemperature("24");
@@ -57,6 +80,9 @@ export default function MyAquariumsPage() {
       setNewAquariumPh("7.0");
       setNewAquariumHardness("8");
       setCreateModalOpen(false);
+    } catch (err) {
+      console.error("Error creating aquarium:", err);
+      setError(err.message || "Nie udało się utworzyć akwarium.");
     }
   }
 

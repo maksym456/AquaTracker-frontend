@@ -1,6 +1,7 @@
 "use client";
 
 import { createContext, useContext, useState, useEffect } from "react";
+import { loginUser, registerUser } from "../lib/api";
 
 const AuthContext = createContext();
 
@@ -25,61 +26,55 @@ export function AuthProvider({ children }) {
   }, []);
 
   const login = async (email, password) => {
-    // TODO: Replace with actual API call when backend is ready
-    // Example backend integration:
-    // const response = await fetch('/api/auth/login', {
-    //   method: 'POST',
-    //   headers: { 'Content-Type': 'application/json' },
-    //   body: JSON.stringify({ email, password })
-    // });
-    // if (!response.ok) throw new Error('Login failed');
-    // const data = await response.json();
-    
-    // For now, simulate API call
-    const loginTime = new Date().toISOString();
-    const mockUser = {
-      id: 1,
-      email: email,
-      name: email.split("@")[0],
-      token: "mock-token-" + Date.now(),
-      loginTime: loginTime,
-      role: 'user'
-    };
-    
-    localStorage.setItem("user", JSON.stringify(mockUser));
-    localStorage.setItem("sessionLoginTime", loginTime);
-    setUser(mockUser);
-    
-    return { success: true, user: mockUser };
+    try {
+      const response = await loginUser(email, password);
+      
+      // API zwraca token i dane użytkownika
+      const loginTime = new Date().toISOString();
+      const userData = {
+        id: response.user?.id || response.id,
+        email: response.user?.email || email,
+        name: response.user?.name || response.name || email.split("@")[0],
+        token: response.token || response.user?.token,
+        loginTime: loginTime,
+        role: response.user?.role || 'user'
+      };
+      
+      localStorage.setItem("user", JSON.stringify(userData));
+      localStorage.setItem("sessionLoginTime", loginTime);
+      setUser(userData);
+      
+      return { success: true, user: userData };
+    } catch (error) {
+      console.error('Login error:', error);
+      throw error;
+    }
   };
 
   const register = async (name, email, password) => {
-    // TODO: Replace with actual API call when backend is ready
-    // Example backend integration:
-    // const response = await fetch('/api/auth/register', {
-    //   method: 'POST',
-    //   headers: { 'Content-Type': 'application/json' },
-    //   body: JSON.stringify({ name, email, password })
-    // });
-    // if (!response.ok) throw new Error('Registration failed');
-    // const data = await response.json();
-    
-    // For now, simulate API call
-    const loginTime = new Date().toISOString();
-    const mockUser = {
-      id: 1,
-      email: email,
-      name: name,
-      token: "mock-token-" + Date.now(),
-      loginTime: loginTime,
-      role: 'user'
-    };
-    
-    localStorage.setItem("user", JSON.stringify(mockUser));
-    localStorage.setItem("sessionLoginTime", loginTime);
-    setUser(mockUser);
-    
-    return { success: true, user: mockUser };
+    try {
+      const response = await registerUser(name, email, password);
+      
+      // API zwraca token i dane użytkownika
+      const loginTime = new Date().toISOString();
+      const userData = {
+        id: response.user?.id || response.id,
+        email: response.user?.email || email,
+        name: response.user?.name || response.name || name,
+        token: response.token || response.user?.token,
+        loginTime: loginTime,
+        role: response.user?.role || 'user'
+      };
+      
+      localStorage.setItem("user", JSON.stringify(userData));
+      localStorage.setItem("sessionLoginTime", loginTime);
+      setUser(userData);
+      
+      return { success: true, user: userData };
+    } catch (error) {
+      console.error('Registration error:', error);
+      throw error;
+    }
   };
 
   const logout = () => {
