@@ -2,6 +2,14 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+## [0.16.0](https://github.com/maksym456/AquaTracker-frontend/compare/v0.15.0...v0.16.0) (2025-12-15)
+
+
+### Features
+
+* **api:** implement plant and aquarium management functions ([3f793ab](https://github.com/maksym456/AquaTracker-frontend/commit/3f793ab0e12f6b22ee54d8879a3b93700df681a4))
+* **auth:** integrate AuthProvider and enhance authentication context ([99b19ad](https://github.com/maksym456/AquaTracker-frontend/commit/99b19addbfd2dd40bb4c727409879a3c201eff36))
+
 ## [0.15.0](https://github.com/maksym456/AquaTracker-frontend/compare/v0.14.0...v0.15.0) (2025-12-05)
 
 
