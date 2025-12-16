@@ -1,32 +1,43 @@
 "use client";
 
 import dynamic from "next/dynamic";
-import { AuthProvider, useAuth } from "./contexts/AuthContext";
-import AuthForm from "./components/AuthForm";
+import { useSession, signIn } from "next-auth/react";
+import { useEffect } from "react";
 
 const Dashboard = dynamic(() => import("./components/Dashboard"), {
-  loading: () => <div style={{ minHeight: "100vh", display: "flex", alignItems: "center", justifyContent: "center", color: "white" }}>Loading...</div>,
-  ssr: false
+    loading: () => (
+        <div
+            style={{
+                minHeight: "100vh",
+                display: "flex",
+                alignItems: "center",
+                justifyContent: "center",
+                color: "white",
+            }}
+        >
+            Loading...
+        </div>
+    ),
+    ssr: false,
 });
 
-function AuthFlow() {
-  const { user, loading } = useAuth();
+function AuthGate() {
+    const { status } = useSession();
 
-  if (loading) {
-    return null; // or a loading spinner
-  }
+    useEffect(() => {
+        if (status === "unauthenticated") {
+            void signIn("cognito");
+        }
+    }, [status]);
 
-  if (user) {
+    if (status !== "authenticated") {
+        return null;
+    }
+
     return <Dashboard />;
-  }
-
-  return <AuthForm />;
 }
 
+
 export default function Home() {
-  return (
-    <AuthProvider>
-      <AuthFlow />
-    </AuthProvider>
-  );
+    return <AuthGate />;
 }
