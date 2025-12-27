@@ -1,4 +1,4 @@
-const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001/api';
+const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001/api/v1';
 
 async function fetchAPI(endpoint, options = {}) {
   try {
@@ -94,7 +94,7 @@ export async function getFishes() {
       return [];
     }
 
-    const fishes = await fetchAPI('/fishes');
+    const fishes = await fetchAPI('/fish');
     
     if (fishes && Array.isArray(fishes)) {
       return fishes;
@@ -111,7 +111,7 @@ export async function getFishes() {
 
 export async function getFishById(id) {
   try {
-    const fish = await fetchAPI(`/fishes/${id}`);
+    const fish = await fetchAPI(`/fish/${id}`);
     return fish;
   } catch (error) {
     console.error(`Error fetching fish with id ${id}:`, error);
@@ -133,7 +133,7 @@ export async function searchFishes(filters = {}) {
       queryParams.append('biotope', filters.biotope);
     }
 
-    const endpoint = `/fishes/search?${queryParams.toString()}`;
+    const endpoint = `/fish/search?${queryParams.toString()}`;
     const fishes = await fetchAPI(endpoint);
     return fishes;
   } catch (error) {
@@ -279,7 +279,7 @@ export async function deleteAquarium(id) {
 // Dodaje rybę do akwarium
 export async function addFishToAquarium(aquariumId, fishId, count = 1) {
   try {
-    const result = await fetchAPI(`/aquariums/${aquariumId}/fishes`, {
+    const result = await fetchAPI(`/aquariums/${aquariumId}/fish`, {
       method: 'POST',
       body: { fishId, count }
     });
