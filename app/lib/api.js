@@ -87,17 +87,17 @@ async function fetchAPI(endpoint, options = {}) {
   }
 }
 
-export async function getFishes() {
+export async function getfishes() {
   try {
     if (typeof window === 'undefined') {
       console.warn('Running on server, cannot fetch data');
       return [];
     }
 
-    const fishes = await fetchAPI('/fish');
+    const fish = await fetchAPI('/fish');
     
-    if (fishes && Array.isArray(fishes)) {
-      return fishes;
+    if (fish && Array.isArray(fish)) {
+      return fish;
     }
     
     console.warn('API returned invalid data format');
@@ -119,7 +119,7 @@ export async function getFishById(id) {
   }
 }
 
-export async function searchFishes(filters = {}) {
+export async function searchfish(filters = {}) {
   try {
     const queryParams = new URLSearchParams();
     
@@ -134,10 +134,10 @@ export async function searchFishes(filters = {}) {
     }
 
     const endpoint = `/fish/search?${queryParams.toString()}`;
-    const fishes = await fetchAPI(endpoint);
-    return fishes;
+    const fish = await fetchAPI(endpoint);
+    return fish;
   } catch (error) {
-    console.error('Error searching fishes:', error);
+    console.error('Error searching fish:', error);
     return [];
   }
 }
@@ -388,9 +388,9 @@ export async function updateUser(userData) {
 }
 
 export default {
-  getFishes,
+  getfishes,
   getFishById,
-  searchFishes,
+  searchfish,
   getPlants,
   getPlantById,
   searchPlants,
