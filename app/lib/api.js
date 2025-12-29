@@ -87,7 +87,7 @@ async function fetchAPI(endpoint, options = {}) {
   }
 }
 
-export async function getfishes() {
+export async function getFishes() {
   try {
     if (typeof window === 'undefined') {
       console.warn('Running on server, cannot fetch data');
@@ -388,7 +388,7 @@ export async function updateUser(userData) {
 }
 
 export default {
-  getfishes,
+  getFishes,
   getFishById,
   searchfish,
   getPlants,
