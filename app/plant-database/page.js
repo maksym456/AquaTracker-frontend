@@ -123,7 +123,7 @@ export default function PlantDatabasePage() {
           
           // Jeśli nie ma żadnych roślin, pokazujemy komunikat
           if (processedPlants.length === 0) {
-            setError("Brak danych z API. Sprawdź czy API jest dostępne.");
+            setError("Brak danych z API... Sprawdź czy API jest dostępne.");
           }
         } else {
           setError("Nieprawidłowy format danych z API.");

@@ -4,9 +4,10 @@
     <option name="autoReloadType" value="SELECTIVE" />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="3e1dcb7d-ed08-49a0-9ff9-f0c8beeee611" name="Changes" comment="Fixing API">
+    <list default="true" id="3e1dcb7d-ed08-49a0-9ff9-f0c8beeee611" name="Changes" comment="Api tweaks">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/app/lib/api.js" beforeDir="false" afterPath="$PROJECT_DIR$/app/lib/api.js" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/app/page.js" beforeDir="false" afterPath="$PROJECT_DIR$/app/page.js" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/app/plant-database/page.js" beforeDir="false" afterPath="$PROJECT_DIR$/app/plant-database/page.js" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -17,6 +18,11 @@
     <option name="cachedIndexableFilesCount" value="94" />
   </component>
   <component name="Git.Settings">
+    <option name="RECENT_BRANCH_BY_REPOSITORY">
+      <map>
+        <entry key="$PROJECT_DIR$" value="master" />
+      </map>
+    </option>
     <option name="RECENT_GIT_ROOT_PATH" value="$PROJECT_DIR$" />
   </component>
   <component name="GitHubPullRequestSearchHistory">{
@@ -44,25 +50,31 @@
     <option name="hideEmptyMiddlePackages" value="true" />
     <option name="showLibraryContents" value="true" />
   </component>
-  <component name="PropertiesComponent">{
-  &quot;keyToString&quot;: {
-    &quot;ModuleVcsDetector.initialDetectionPerformed&quot;: &quot;true&quot;,
-    &quot;RunOnceActivity.MCP Project settings loaded&quot;: &quot;true&quot;,
-    &quot;RunOnceActivity.ShowReadmeOnStart&quot;: &quot;true&quot;,
-    &quot;RunOnceActivity.git.unshallow&quot;: &quot;true&quot;,
-    &quot;RunOnceActivity.typescript.service.memoryLimit.init&quot;: &quot;true&quot;,
-    &quot;git-widget-placeholder&quot;: &quot;master&quot;,
-    &quot;js.debugger.nextJs.config.created.client&quot;: &quot;true&quot;,
-    &quot;js.debugger.nextJs.config.created.server&quot;: &quot;true&quot;,
-    &quot;node.js.detected.package.eslint&quot;: &quot;true&quot;,
-    &quot;node.js.detected.package.tslint&quot;: &quot;true&quot;,
-    &quot;node.js.selected.package.eslint&quot;: &quot;(autodetect)&quot;,
-    &quot;node.js.selected.package.tslint&quot;: &quot;(autodetect)&quot;,
-    &quot;nodejs_package_manager_path&quot;: &quot;npm&quot;,
-    &quot;npm.Next.js: server-side.executor&quot;: &quot;Run&quot;,
-    &quot;vue.rearranger.settings.migration&quot;: &quot;true&quot;
+  <component name="PropertiesComponent"><![CDATA[{
+  "keyToString": {
+    "ModuleVcsDetector.initialDetectionPerformed": "true",
+    "RunOnceActivity.MCP Project settings loaded": "true",
+    "RunOnceActivity.ShowReadmeOnStart": "true",
+    "RunOnceActivity.git.unshallow": "true",
+    "RunOnceActivity.typescript.service.memoryLimit.init": "true",
+    "git-widget-placeholder": "pokazowy-branch",
+    "js.debugger.nextJs.config.created.client": "true",
+    "js.debugger.nextJs.config.created.server": "true",
+    "node.js.detected.package.eslint": "true",
+    "node.js.detected.package.tslint": "true",
+    "node.js.selected.package.eslint": "(autodetect)",
+    "node.js.selected.package.tslint": "(autodetect)",
+    "nodejs_package_manager_path": "npm",
+    "npm.Next.js: server-side.executor": "Run",
+    "ts.external.directory.path": "C:\\Program Files\\JetBrains\\WebStorm 2024.3\\plugins\\javascript-plugin\\jsLanguageServicesImpl\\external",
+    "vue.rearranger.settings.migration": "true"
+  },
+  "keyToStringList": {
+    "DatabaseDriversLRU": [
+      "postgresql"
+    ]
   }
-}</component>
+}]]></component>
   <component name="RunManager" selected="npm.Next.js: server-side">
     <configuration name="Next.js: debug client-side" type="JavascriptDebugType" uri="http://localhost:3000/">
       <method v="2" />
@@ -98,7 +110,9 @@
       <workItem from="1766871088670" duration="526000" />
       <workItem from="1766931670158" duration="98000" />
       <workItem from="1766931779559" duration="1729000" />
-      <workItem from="1767001956987" duration="393000" />
+      <workItem from="1767001956987" duration="2678000" />
+      <workItem from="1767005866783" duration="919000" />
+      <workItem from="1767120494892" duration="1268000" />
     </task>
     <task id="LOCAL-00001" summary="Fixing API">
       <option name="closed" value="true" />
@@ -108,7 +122,15 @@
       <option name="project" value="LOCAL" />
       <updated>1766933397289</updated>
     </task>
-    <option name="localTasksCounter" value="2" />
+    <task id="LOCAL-00002" summary="Api tweaks">
+      <option name="closed" value="true" />
+      <created>1767002536544</created>
+      <option name="number" value="00002" />
+      <option name="presentableId" value="LOCAL-00002" />
+      <option name="project" value="LOCAL" />
+      <updated>1767002536544</updated>
+    </task>
+    <option name="localTasksCounter" value="3" />
     <servers />
   </component>
   <component name="TypeScriptGeneratedFilesManager">
@@ -127,18 +149,8 @@
   </component>
   <component name="VcsManagerConfiguration">
     <MESSAGE value="Fixing API" />
-    <option name="LAST_COMMIT_MESSAGE" value="Fixing API" />
-  </component>
-  <component name="XDebuggerManager">
-    <breakpoint-manager>
-      <breakpoints>
-        <line-breakpoint enabled="true" type="javascript">
-          <url>file://$PROJECT_DIR$/app/lib/api.js</url>
-          <line>103</line>
-          <option name="timeStamp" value="1" />
-        </line-breakpoint>
-      </breakpoints>
-    </breakpoint-manager>
+    <MESSAGE value="Api tweaks" />
+    <option name="LAST_COMMIT_MESSAGE" value="Api tweaks" />
   </component>
   <component name="github-copilot-workspace">
     <instructionFileLocations>
