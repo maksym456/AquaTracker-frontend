@@ -87,6 +87,18 @@ async function fetchAPI(endpoint, options = {}) {
   }
 }
 
+export async function getContacts(userId) {
+  try {
+    if (typeof window === 'undefined') return [];
+    if (!userId) return [];
+    const contacts = await fetchAPI(`/contacts/${userId}`);
+    return Array.isArray(contacts) ? contacts : [];
+  } catch (error) {
+    console.warn('API request failed, returning empty array:', error.message);
+    return [];
+  }
+}
+
 export async function getFishes() {
   try {
     if (typeof window === 'undefined') {
@@ -202,27 +214,18 @@ export async function searchPlants(filters = {}) {
 // ============================================
 
 // Pobiera wszystkie akwaria użytkownika
-export async function getAquariums() {
+export async function getAquariums(userId) {
   try {
-    if (typeof window === 'undefined') {
-      console.warn('Running on server, cannot fetch data');
-      return [];
-    }
-
-    const aquariums = await fetchAPI('/aquariums');
-    
-    if (aquariums && Array.isArray(aquariums)) {
-      return aquariums;
-    }
-    
-    console.warn('API returned invalid data format');
-    return [];
-    
+    if (typeof window === 'undefined') return [];
+    if (!userId) return [];
+    const aquariums = await fetchAPI(`/aquariums/${userId}`);
+    return Array.isArray(aquariums) ? aquariums : [];
   } catch (error) {
     console.warn('API request failed, returning empty array:', error.message);
     return [];
   }
 }
+
 
 // Pobiera jedno akwarium po ID
 export async function getAquariumById(id) {
@@ -388,6 +391,7 @@ export async function updateUser(userData) {
 }
 
 export default {
+  getContacts,
   getFishes,
   getFishById,
   searchfish,

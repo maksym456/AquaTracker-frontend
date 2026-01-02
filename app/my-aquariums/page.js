@@ -9,45 +9,52 @@ import LanguageSwitcher from "../components/LanguageSwitcher";
 import KeyboardReturnOutlinedIcon from '@mui/icons-material/KeyboardReturnOutlined';
 import PersonAddIcon from '@mui/icons-material/PersonAdd';
 import { useTheme } from "../contexts/ThemeContext";
+import { useSession } from "next-auth/react";
+
 import { getAquariums, createAquarium } from "../lib/api";
 
 export default function MyAquariumsPage() {
-  const { t } = useTranslation();
-  const router = useRouter();
-  const { darkMode } = useTheme();
-  const [aquariums, setAquariums] = useState([]);
-  const [createModalOpen, setCreateModalOpen] = useState(false);
-  const [statisticsModalOpen, setStatisticsModalOpen] = useState(false);
-  const [historyModalOpen, setHistoryModalOpen] = useState(false);
-  const [selectedActionFilter, setSelectedActionFilter] = useState("all");
-  const [selectedAquariumFilter, setSelectedAquariumFilter] = useState("all");
-  const [sortOrder, setSortOrder] = useState("newest");
-  const [newAquariumName, setNewAquariumName] = useState("");
-  const [newAquariumWaterType, setNewAquariumWaterType] = useState("freshwater");
-  const [newAquariumTemperature, setNewAquariumTemperature] = useState("24");
-  const [newAquariumBiotope, setNewAquariumBiotope] = useState("ameryka południowa");
-  const [newAquariumPh, setNewAquariumPh] = useState("7.0");
-  const [newAquariumHardness, setNewAquariumHardness] = useState("8");
-  const [isLoading, setIsLoading] = useState(true);
-  const [error, setError] = useState(null);
+    const { t } = useTranslation();
+    const router = useRouter();
+    const { darkMode } = useTheme();
+    const [aquariums, setAquariums] = useState([]);
+    const [createModalOpen, setCreateModalOpen] = useState(false);
+    const [statisticsModalOpen, setStatisticsModalOpen] = useState(false);
+    const [historyModalOpen, setHistoryModalOpen] = useState(false);
+    const [selectedActionFilter, setSelectedActionFilter] = useState("all");
+    const [selectedAquariumFilter, setSelectedAquariumFilter] = useState("all");
+    const [sortOrder, setSortOrder] = useState("newest");
+    const [newAquariumName, setNewAquariumName] = useState("");
+    const [newAquariumWaterType, setNewAquariumWaterType] = useState("freshwater");
+    const [newAquariumTemperature, setNewAquariumTemperature] = useState("24");
+    const [newAquariumBiotope, setNewAquariumBiotope] = useState("ameryka południowa");
+    const [newAquariumPh, setNewAquariumPh] = useState("7.0");
+    const [newAquariumHardness, setNewAquariumHardness] = useState("8");
+    const [isLoading, setIsLoading] = useState(true);
+    const [error, setError] = useState(null);
+    const { data: session } = useSession();
+    const userId = session?.user?.id;
 
-  useEffect(() => {
-    async function fetchAquariums() {
-      try {
-        setIsLoading(true);
-        setError(null);
-        const data = await getAquariums();
-        setAquariums(data || []);
-      } catch (err) {
-        console.error("Error fetching aquariums:", err);
-        setError(err.message || "Nie udało się załadować akwariów.");
-        setAquariums([]);
-      } finally {
-        setIsLoading(false);
-      }
-    }
-    fetchAquariums();
-  }, []);
+
+    useEffect(() => {
+        if (!userId) return;
+
+        (async () => {
+            try {
+                setIsLoading(true);
+                setError(null);
+
+                const data = await getAquariums(userId);
+                setAquariums(Array.isArray(data) ? data : []);
+            } catch (e) {
+                console.error(e);
+                setError(e.message || "Nie udało się załadować akwariów.");
+                setAquariums([]);
+            } finally {
+                setIsLoading(false);
+            }
+        })();
+    }, [userId]);
 
   function handleCreateAquarium() {
     setCreateModalOpen(true);
