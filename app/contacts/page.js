@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { Box, Typography, TextField, Button, Card, CardContent, List, ListItem, ListItemText, Avatar, IconButton } from "@mui/material";
 import { useTranslation } from "react-i18next";
 import Link from "next/link";
@@ -8,20 +8,34 @@ import LanguageSwitcher from "../components/LanguageSwitcher";
 import KeyboardReturnOutlinedIcon from '@mui/icons-material/KeyboardReturnOutlined';
 import DeleteIcon from '@mui/icons-material/Delete';
 import { useTheme } from "../contexts/ThemeContext";
+import { useSession } from "next-auth/react";
+
+import { getContacts } from "../lib/api";
 
 export default function ContactsPage() {
+  const { data: session } = useSession();
+  const userId = session?.user?.id;
   const { t } = useTranslation();
   const { darkMode } = useTheme();
   const [inviteEmail, setInviteEmail] = useState("");
-  const [contacts, setContacts] = useState([
-    { id: '1', name: 'Jan Kowalski', email: 'jan.kowalski@example.com', status: 'accepted' },
-    { id: '2', name: 'Anna Nowak', email: 'anna.nowak@example.com', status: 'pending' },
-    { id: '3', name: 'Piotr Wiśniewski', email: 'piotr.wisniewski@example.com', status: 'accepted' },
-  ]);
+  const [contacts, setContacts] = useState([]);
+
+  useEffect(() => {
+    if (!userId) return;
+
+    (async () => {
+      try {
+        const data = await getContacts(userId);
+        setContacts(Array.isArray(data) ? data : []);
+      } catch (e) {
+        console.error(e);
+        setContacts([]);
+      }
+    })();
+  }, [userId]);
 
   const handleSendInvite = () => {
     if (inviteEmail.trim()) {
-      // Dodaj nowy kontakt jako pending
       const newContact = {
         id: `${Date.now()}`,
         name: inviteEmail.split('@')[0],
@@ -234,8 +248,8 @@ export default function ContactsPage() {
             }
           }}>
             <CardContent sx={{ p: { xs: 1.5, sm: 2, md: 2.5 }, display: 'flex', flexDirection: 'column', height: '100%', overflow: 'hidden', '@media (min-width: 1366px) and (max-width: 1367px) and (max-height: 700px)': { p: 1.5 } }}>
-              <Typography variant="h5" sx={{ fontWeight: 600, mb: { xs: 1.5, sm: 2 }, fontSize: { xs: '1rem', sm: '1.15rem' }, flexShrink: 0, '@media (min-width: 1366px) and (max-width: 1367px) and (max-height: 700px)': { fontSize: '0.95rem', mb: 1 } }}>
-                {t("contactsList", { defaultValue: "Lista znajomych" })}
+              <Typography variant="h5" sx={{ /* ...bez zmian... */ }}>
+                {t("contactsList", { defaultValue: "Contacts List" })}: {userId ?? "-"}
               </Typography>
               {contacts.length === 0 ? (
                 <Typography variant="body2" color="text.secondary" sx={{ textAlign: 'center', py: 4 }}>
