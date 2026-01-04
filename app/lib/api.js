@@ -1,4 +1,4 @@
-const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001/api/v1';
+const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001/api';
 
 async function fetchAPI(endpoint, options = {}) {
   try {
@@ -94,10 +94,10 @@ export async function getFishes() {
       return [];
     }
 
-    const fish = await fetchAPI('/fish');
+    const fishes = await fetchAPI('/fishes');
     
-    if (fish && Array.isArray(fish)) {
-      return fish;
+    if (fishes && Array.isArray(fishes)) {
+      return fishes;
     }
     
     console.warn('API returned invalid data format');
@@ -119,7 +119,7 @@ export async function getFishById(id) {
   }
 }
 
-export async function searchfish(filters = {}) {
+export async function searchFishes(filters = {}) {
   try {
     const queryParams = new URLSearchParams();
     
@@ -134,10 +134,10 @@ export async function searchfish(filters = {}) {
     }
 
     const endpoint = `/fish/search?${queryParams.toString()}`;
-    const fish = await fetchAPI(endpoint);
-    return fish;
+    const fishes = await fetchAPI(endpoint);
+    return fishes;
   } catch (error) {
-    console.error('Error searching fish:', error);
+    console.error('Error searching fishes:', error);
     return [];
   }
 }
@@ -277,11 +277,11 @@ export async function deleteAquarium(id) {
 }
 
 // Dodaje rybę do akwarium
-export async function addFishToAquarium(aquariumId, fishId, count = 1) {
+export async function addFishToAquarium(aquariumId, fishId, quantity = 1) {
   try {
     const result = await fetchAPI(`/aquariums/${aquariumId}/fish`, {
       method: 'POST',
-      body: { fishId, count }
+      body: { fishId, quantity }
     });
     return result;
   } catch (error) {
@@ -390,7 +390,7 @@ export async function updateUser(userData) {
 export default {
   getFishes,
   getFishById,
-  searchfish,
+  searchFishes,
   getPlants,
   getPlantById,
   searchPlants,
