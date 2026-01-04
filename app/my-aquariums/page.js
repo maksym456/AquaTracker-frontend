@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useEffect, useMemo } from "react";
-import { Box, Button, Typography, Modal, TextField, Grid, Card, CardContent, CardActionArea, Select, MenuItem, FormControl, InputLabel, Paper, Divider, CircularProgress, List, ListItem, ListItemText, Chip, Alert } from "@mui/material";
+import { Box, Button, Typography, Modal, TextField, Grid, Card, CardContent, Select, MenuItem, FormControl, InputLabel, Paper, Divider, CircularProgress, List, ListItem, ListItemText, Chip, Alert } from "@mui/material";
 import { useTranslation } from "react-i18next";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
@@ -9,9 +9,11 @@ import LanguageSwitcher from "../components/LanguageSwitcher";
 import KeyboardReturnOutlinedIcon from '@mui/icons-material/KeyboardReturnOutlined';
 import PersonAddIcon from '@mui/icons-material/PersonAdd';
 import { useTheme } from "../contexts/ThemeContext";
-import { useSession } from "next-auth/react";
+import { useAuth } from "../contexts/AuthContext";
 
-import { getAquariums, createAquarium } from "../lib/api";
+import { getAquariums, createAquarium, updateAquarium, deleteAquarium } from "../lib/api";
+import EditIcon from '@mui/icons-material/Edit';
+import DeleteIcon from '@mui/icons-material/Delete';
 
 export default function MyAquariumsPage() {
     const { t } = useTranslation();
@@ -19,6 +21,10 @@ export default function MyAquariumsPage() {
     const { darkMode } = useTheme();
     const [aquariums, setAquariums] = useState([]);
     const [createModalOpen, setCreateModalOpen] = useState(false);
+    const [editModalOpen, setEditModalOpen] = useState(false);
+    const [editingAquarium, setEditingAquarium] = useState(null);
+    const [deleteConfirmOpen, setDeleteConfirmOpen] = useState(false);
+    const [aquariumToDelete, setAquariumToDelete] = useState(null);
     const [statisticsModalOpen, setStatisticsModalOpen] = useState(false);
     const [historyModalOpen, setHistoryModalOpen] = useState(false);
     const [selectedActionFilter, setSelectedActionFilter] = useState("all");
@@ -32,29 +38,42 @@ export default function MyAquariumsPage() {
     const [newAquariumHardness, setNewAquariumHardness] = useState("8");
     const [isLoading, setIsLoading] = useState(true);
     const [error, setError] = useState(null);
-    const { data: session } = useSession();
-    const userId = session?.user?.id;
-
+    const { user, loading: authLoading } = useAuth();
 
     useEffect(() => {
-        if (!userId) return;
+        console.log('useEffect triggered, user:', user, 'authLoading:', authLoading);
+        
+        // Czekamy aż AuthContext się załaduje
+        if (authLoading) {
+            console.log('Auth still loading, waiting...');
+            return;
+        }
 
+        // Backend zwraca wszystkie akwaria, więc możemy pobrać je nawet bez user
         (async () => {
             try {
                 setIsLoading(true);
                 setError(null);
+                console.log('Fetching aquariums...');
 
-                const data = await getAquariums(userId);
-                setAquariums(Array.isArray(data) ? data : []);
+                const data = await getAquariums();
+                console.log('Received data from getAquariums:', data);
+                console.log('Data type:', typeof data);
+                console.log('Is array:', Array.isArray(data));
+                console.log('Data length:', Array.isArray(data) ? data.length : 'not an array');
+                
+                const aquariumsArray = Array.isArray(data) ? data : [];
+                console.log('Setting aquariums state with:', aquariumsArray);
+                setAquariums(aquariumsArray);
             } catch (e) {
-                console.error(e);
+                console.error('Error in useEffect:', e);
                 setError(e.message || "Nie udało się załadować akwariów.");
                 setAquariums([]);
             } finally {
                 setIsLoading(false);
             }
         })();
-    }, [userId]);
+    }, [user, authLoading]);
 
   function handleCreateAquarium() {
     setCreateModalOpen(true);
@@ -74,10 +93,14 @@ export default function MyAquariumsPage() {
         description: ""
       };
       
+      console.log('Creating aquarium with data:', newAquarium);
       const created = await createAquarium(newAquarium);
+      console.log('Created aquarium response:', created);
       
       // Dodajemy nowe akwarium do listy
+      console.log('Current aquariums before adding:', aquariums);
       setAquariums([...aquariums, created]);
+      console.log('Updated aquariums state');
       
       // Resetujemy formularz
       setNewAquariumName("");
@@ -94,7 +117,83 @@ export default function MyAquariumsPage() {
   }
 
   function handleOpenAquarium(aquariumId) {
+    console.log('Opening aquarium with ID:', aquariumId);
+    if (!aquariumId) {
+      console.error('No aquarium ID provided');
+      return;
+    }
     router.push(`/my-aquariums/${aquariumId}`);
+  }
+
+  function handleEditAquarium(e, aquarium) {
+    e.stopPropagation();
+    setEditingAquarium(aquarium);
+    setNewAquariumName(aquarium.name);
+    setNewAquariumWaterType(aquarium.waterType || "freshwater");
+    setNewAquariumTemperature(aquarium.temperature?.toString() || "24");
+    setNewAquariumBiotope(aquarium.biotope || "ameryka południowa");
+    setNewAquariumPh(aquarium.ph?.toString() || "7.0");
+    setNewAquariumHardness(aquarium.hardness?.toString() || "8");
+    setEditModalOpen(true);
+  }
+
+  async function handleUpdateAquarium() {
+    if (!editingAquarium || !newAquariumName.trim()) return;
+    
+    try {
+      const updatedData = {
+        name: newAquariumName,
+        waterType: newAquariumWaterType,
+        temperature: parseFloat(newAquariumTemperature),
+        biotope: newAquariumBiotope,
+        ph: parseFloat(newAquariumPh),
+        hardness: parseFloat(newAquariumHardness),
+        description: editingAquarium.description || ""
+      };
+      
+      const updated = await updateAquarium(editingAquarium.id, updatedData);
+      
+      // Aktualizujemy listę akwariów
+      setAquariums(aquariums.map(aq => aq.id === editingAquarium.id ? updated : aq));
+      
+      // Resetujemy formularz
+      setEditingAquarium(null);
+      setNewAquariumName("");
+      setNewAquariumWaterType("freshwater");
+      setNewAquariumTemperature("24");
+      setNewAquariumBiotope("ameryka południowa");
+      setNewAquariumPh("7.0");
+      setNewAquariumHardness("8");
+      setEditModalOpen(false);
+    } catch (err) {
+      console.error("Error updating aquarium:", err);
+      setError(err.message || "Nie udało się zaktualizować akwarium.");
+    }
+  }
+
+  function handleDeleteAquarium(e, aquarium) {
+    e.stopPropagation();
+    setAquariumToDelete(aquarium);
+    setDeleteConfirmOpen(true);
+  }
+
+  async function handleConfirmDelete() {
+    if (!aquariumToDelete) return;
+    
+    try {
+      await deleteAquarium(aquariumToDelete.id);
+      
+      // Usuwamy akwarium z listy
+      setAquariums(aquariums.filter(aq => aq.id !== aquariumToDelete.id));
+      
+      setDeleteConfirmOpen(false);
+      setAquariumToDelete(null);
+    } catch (err) {
+      console.error("Error deleting aquarium:", err);
+      setError(err.message || "Nie udało się usunąć akwarium.");
+      setDeleteConfirmOpen(false);
+      setAquariumToDelete(null);
+    }
   }
 
   const handleOpenStatistics = () => {
@@ -400,7 +499,11 @@ export default function MyAquariumsPage() {
       <Box 
         component="main"
         sx={{ position: "relative", zIndex: 2, p: 4, pt: 14, pb: 14 }}>
-        {aquariums.length === 0 ? (
+        {isLoading ? (
+          <Box sx={{ display: 'flex', justifyContent: 'center', alignItems: 'center', minHeight: '400px' }}>
+            <CircularProgress />
+          </Box>
+        ) : aquariums.length === 0 ? (
           <Box sx={{ 
             display: 'flex', 
             flexDirection: 'column', 
@@ -421,6 +524,7 @@ export default function MyAquariumsPage() {
             {aquariums.map((aquarium) => (
               <Grid item xs={12} sm={6} md={4} lg={3} key={aquarium.id} sx={{ display: 'flex', justifyContent: { xs: 'center', sm: 'flex-start' }, alignItems: 'stretch', height: { xs: '200px', sm: '250px', md: '260px', lg: '280px' } }}>
                 <Card
+                  onClick={() => handleOpenAquarium(aquarium.id)}
                   sx={{
                     width: { xs: '280px', sm: '200px', md: '220px', lg: '250px' },
                     minWidth: { xs: '280px', sm: '200px', md: '220px', lg: '250px' },
@@ -451,9 +555,8 @@ export default function MyAquariumsPage() {
                       maxHeight: '200px',
                     }
                   }}
-                  onClick={() => handleOpenAquarium(aquarium.id)}
                 >
-                  <CardActionArea sx={{ flex: 1, display: 'flex', flexDirection: 'column', alignItems: 'stretch', height: '100%', minHeight: 0, maxHeight: '100%', overflow: 'hidden' }}>
+                  <Box sx={{ flex: 1, display: 'flex', flexDirection: 'column', alignItems: 'stretch', height: '100%', minHeight: 0, maxHeight: '100%', overflow: 'hidden' }}>
                     <Box
                       sx={{
                         width: '100%',
@@ -469,6 +572,47 @@ export default function MyAquariumsPage() {
                       }}
                     >
                       <Typography sx={{ fontSize: { xs: 32, sm: 40, md: 44, lg: 48 }, opacity: 0.6 }}>🐠</Typography>
+                      <Box
+                        component="div"
+                        sx={{
+                          position: 'absolute',
+                          top: 4,
+                          right: 4,
+                          display: 'flex',
+                          gap: 0.5,
+                          zIndex: 10
+                        }}
+                        onClick={(e) => e.stopPropagation()}
+                      >
+                        <Button
+                          size="small"
+                          onClick={(e) => handleEditAquarium(e, aquarium)}
+                          sx={{
+                            minWidth: 'auto',
+                            width: 28,
+                            height: 28,
+                            p: 0,
+                            bgcolor: 'rgba(255, 255, 255, 0.9)',
+                            '&:hover': { bgcolor: 'rgba(255, 255, 255, 1)' }
+                          }}
+                        >
+                          <EditIcon sx={{ fontSize: 16, color: '#1976d2' }} />
+                        </Button>
+                        <Button
+                          size="small"
+                          onClick={(e) => handleDeleteAquarium(e, aquarium)}
+                          sx={{
+                            minWidth: 'auto',
+                            width: 28,
+                            height: 28,
+                            p: 0,
+                            bgcolor: 'rgba(255, 255, 255, 0.9)',
+                            '&:hover': { bgcolor: 'rgba(255, 255, 255, 1)' }
+                          }}
+                        >
+                          <DeleteIcon sx={{ fontSize: 16, color: '#d32f2f' }} />
+                        </Button>
+                      </Box>
                     </Box>
                     <CardContent sx={{ 
                       flex: 1, 
@@ -552,7 +696,7 @@ export default function MyAquariumsPage() {
                         </Typography>
                       </Box>
                     </CardContent>
-                  </CardActionArea>
+                  </Box>
                 </Card>
               </Grid>
             ))}
@@ -685,6 +829,155 @@ export default function MyAquariumsPage() {
             </Button>
             <Button variant="contained" onClick={handleSaveAquarium} disabled={!newAquariumName.trim()}>
               {t("create", { defaultValue: "Utwórz" })}
+            </Button>
+          </Box>
+        </Box>
+      </Modal>
+
+      {/* Modal edycji akwarium */}
+      <Modal
+        open={editModalOpen}
+        onClose={() => {
+          setEditModalOpen(false);
+          setEditingAquarium(null);
+        }}
+        sx={{
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'center',
+          p: 2
+        }}
+      >
+        <Box sx={{
+          width: { xs: '90%', sm: 400 },
+          bgcolor: 'background.paper',
+          borderRadius: 2,
+          p: 3,
+          boxShadow: 24
+        }}>
+          <Typography variant="h6" sx={{ mb: 3, fontWeight: 600 }}>
+            {t("editAquarium", { defaultValue: "Edytuj akwarium" })}
+          </Typography>
+          <TextField
+            fullWidth
+            label={t("aquariumName", { defaultValue: "Nazwa akwarium" })}
+            value={newAquariumName}
+            onChange={(e) => setNewAquariumName(e.target.value)}
+            sx={{ mb: 2 }}
+          />
+          <FormControl fullWidth sx={{ mb: 2 }}>
+            <InputLabel>{t("waterType", { defaultValue: "Typ wody" })}</InputLabel>
+            <Select
+              value={newAquariumWaterType}
+              label={t("waterType", { defaultValue: "Typ wody" })}
+              onChange={(e) => setNewAquariumWaterType(e.target.value)}
+            >
+              <MenuItem value="freshwater">{t("freshwater", { defaultValue: "Słodkowodne" })}</MenuItem>
+              <MenuItem value="saltwater">{t("saltwater", { defaultValue: "Słonowodne" })}</MenuItem>
+            </Select>
+          </FormControl>
+          <TextField
+            fullWidth
+            type="number"
+            label={t("temperature", { defaultValue: "Temperatura wody (°C)" })}
+            value={newAquariumTemperature}
+            onChange={(e) => setNewAquariumTemperature(e.target.value)}
+            inputProps={{ min: 18, max: 30, step: 0.5 }}
+            sx={{ mb: 2 }}
+            helperText={t("temperatureRange", { defaultValue: "Zakres: 18-30°C" })}
+          />
+          <FormControl fullWidth sx={{ mb: 2 }}>
+            <InputLabel>{t("biotope", { defaultValue: "Biotop" })}</InputLabel>
+            <Select
+              value={newAquariumBiotope}
+              label={t("biotope", { defaultValue: "Biotop" })}
+              onChange={(e) => setNewAquariumBiotope(e.target.value)}
+            >
+              <MenuItem value="ameryka południowa">{t("biotopeSouthAmerica", { defaultValue: "Ameryka Południowa" })}</MenuItem>
+              <MenuItem value="ameryka północna">{t("biotopeNorthAmerica", { defaultValue: "Ameryka Północna" })}</MenuItem>
+              <MenuItem value="azja">{t("biotopeAsia", { defaultValue: "Azja" })}</MenuItem>
+              <MenuItem value="afryka">{t("biotopeAfrica", { defaultValue: "Afryka" })}</MenuItem>
+              <MenuItem value="australia/Oceania">{t("biotopeAustralia", { defaultValue: "Australia/Oceania" })}</MenuItem>
+            </Select>
+          </FormControl>
+          <TextField
+            fullWidth
+            type="number"
+            label={t("ph", { defaultValue: "pH wody" })}
+            value={newAquariumPh}
+            onChange={(e) => setNewAquariumPh(e.target.value)}
+            inputProps={{ min: 5.5, max: 9.0, step: 0.1 }}
+            sx={{ mb: 2 }}
+            helperText={t("phRange", { defaultValue: "Zakres: 5.5-9.0" })}
+          />
+          <TextField
+            fullWidth
+            type="number"
+            label={t("hardness", { defaultValue: "Twardość wody (dGH)" })}
+            value={newAquariumHardness}
+            onChange={(e) => setNewAquariumHardness(e.target.value)}
+            inputProps={{ min: 1, max: 30, step: 1 }}
+            sx={{ mb: 3 }}
+            helperText={t("hardnessRange", { defaultValue: "Zakres: 1-30 dGH" })}
+          />
+          <Box sx={{ display: 'flex', gap: 2, justifyContent: 'flex-end' }}>
+            <Button onClick={() => {
+              setEditModalOpen(false);
+              setEditingAquarium(null);
+            }}>
+              {t("cancel", { defaultValue: "Anuluj" })}
+            </Button>
+            <Button variant="contained" onClick={handleUpdateAquarium} disabled={!newAquariumName.trim()}>
+              {t("save", { defaultValue: "Zapisz" })}
+            </Button>
+          </Box>
+        </Box>
+      </Modal>
+
+      {/* Modal potwierdzenia usunięcia */}
+      <Modal
+        open={deleteConfirmOpen}
+        onClose={() => {
+          setDeleteConfirmOpen(false);
+          setAquariumToDelete(null);
+        }}
+        sx={{
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'center',
+          p: 2
+        }}
+      >
+        <Box sx={{
+          width: { xs: '90%', sm: 400 },
+          bgcolor: 'background.paper',
+          borderRadius: 2,
+          p: 3,
+          boxShadow: 24
+        }}>
+          <Typography variant="h6" sx={{ mb: 2, fontWeight: 600 }}>
+            {t("confirmDelete", { defaultValue: "Potwierdź usunięcie" })}
+          </Typography>
+          <Typography variant="body1" sx={{ mb: 3 }}>
+            {t("deleteAquariumConfirm", { 
+              defaultValue: "Czy na pewno chcesz usunąć akwarium" 
+            })} "{aquariumToDelete?.name}"? {t("deleteWarning", { 
+              defaultValue: "Tej operacji nie można cofnąć." 
+            })}
+          </Typography>
+          <Box sx={{ display: 'flex', gap: 2, justifyContent: 'flex-end' }}>
+            <Button onClick={() => {
+              setDeleteConfirmOpen(false);
+              setAquariumToDelete(null);
+            }}>
+              {t("cancel", { defaultValue: "Anuluj" })}
+            </Button>
+            <Button 
+              variant="contained" 
+              color="error" 
+              onClick={handleConfirmDelete}
+            >
+              {t("delete", { defaultValue: "Usuń" })}
             </Button>
           </Box>
         </Box>
