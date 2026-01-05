@@ -2,7 +2,7 @@
 
 ---
 
-# Andrzej - Pracownik biurowy
+# Andrzej — Pracownik biurowy
 
 > "Po 8 godzinach gapienia się w Excela chcę popatrzeć na kolorowe królestwo ryb za szybą, a nie doktoryzować się z chemii wody na forach internetowych. Ma być ładnie i bezproblemowo."
 
