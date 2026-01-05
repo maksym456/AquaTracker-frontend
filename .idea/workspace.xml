@@ -4,8 +4,9 @@
     <option name="autoReloadType" value="SELECTIVE" />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="3e1dcb7d-ed08-49a0-9ff9-f0c8beeee611" name="Changes" comment="Testowanie i wprowadzenie funkcji usuwania ryb.">
+    <list default="true" id="3e1dcb7d-ed08-49a0-9ff9-f0c8beeee611" name="Changes" comment="Działające usuwanie ryb.">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/app/lib/api.js" beforeDir="false" afterPath="$PROJECT_DIR$/app/lib/api.js" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -114,7 +115,7 @@
       <workItem from="1766931779559" duration="1729000" />
       <workItem from="1767001956987" duration="393000" />
       <workItem from="1767541748695" duration="9283000" />
-      <workItem from="1767626006438" duration="1554000" />
+      <workItem from="1767626006438" duration="5300000" />
     </task>
     <task id="LOCAL-00001" summary="Fixing API">
       <option name="closed" value="true" />
@@ -132,7 +133,15 @@
       <option name="project" value="LOCAL" />
       <updated>1767554383826</updated>
     </task>
-    <option name="localTasksCounter" value="3" />
+    <task id="LOCAL-00003" summary="Działające usuwanie ryb.">
+      <option name="closed" value="true" />
+      <created>1767627698133</created>
+      <option name="number" value="00003" />
+      <option name="presentableId" value="LOCAL-00003" />
+      <option name="project" value="LOCAL" />
+      <updated>1767627698133</updated>
+    </task>
+    <option name="localTasksCounter" value="4" />
     <servers />
   </component>
   <component name="TypeScriptGeneratedFilesManager">
@@ -152,14 +161,15 @@
   <component name="VcsManagerConfiguration">
     <MESSAGE value="Fixing API" />
     <MESSAGE value="Testowanie i wprowadzenie funkcji usuwania ryb." />
-    <option name="LAST_COMMIT_MESSAGE" value="Testowanie i wprowadzenie funkcji usuwania ryb." />
+    <MESSAGE value="Działające usuwanie ryb." />
+    <option name="LAST_COMMIT_MESSAGE" value="Działające usuwanie ryb." />
   </component>
   <component name="XDebuggerManager">
     <breakpoint-manager>
       <breakpoints>
         <line-breakpoint enabled="true" type="javascript">
           <url>file://$PROJECT_DIR$/app/lib/api.js</url>
-          <line>464</line>
+          <line>572</line>
           <properties lambdaOrdinal="-1" />
           <option name="timeStamp" value="1" />
         </line-breakpoint>

@@ -238,6 +238,40 @@ export async function getAquariums() {
 export async function getAquariumById(id) {
   try {
     const aquarium = await fetchAPI(`/v1/aquariums/${id}`);
+    console.log('🔵 getAquariumById: received data from API:', aquarium);
+    
+    if (aquarium) {
+      // Mapowanie danych z backendu do formatu oczekiwanego przez frontend
+      const mapped = {
+        ...aquarium,
+        // Backend zwraca fish, frontend oczekuje fishes
+        fishes: aquarium.fish || aquarium.fishes || [],
+        // Backend zwraca plants (może być już OK)
+        plants: aquarium.plants || [],
+        // Mapowanie nazw pól (jeśli backend zwraca inne nazwy)
+        temperature: aquarium.temperatureC !== undefined ? aquarium.temperatureC : aquarium.temperature,
+        hardness: aquarium.hardnessDGH !== undefined ? aquarium.hardnessDGH : aquarium.hardness,
+        volume: aquarium.volumeLiters !== undefined ? aquarium.volumeLiters : aquarium.volume
+      };
+      
+      // Usuń stare pola, jeśli były zmapowane
+      if (aquarium.fish && !aquarium.fishes) {
+        delete mapped.fish;
+      }
+      if (aquarium.temperatureC !== undefined && aquarium.temperature === undefined) {
+        delete mapped.temperatureC;
+      }
+      if (aquarium.hardnessDGH !== undefined && aquarium.hardness === undefined) {
+        delete mapped.hardnessDGH;
+      }
+      if (aquarium.volumeLiters !== undefined && aquarium.volume === undefined) {
+        delete mapped.volumeLiters;
+      }
+      
+      console.log('🔵 getAquariumById: mapped data, fishes:', mapped.fishes?.length || 0, 'items');
+      return mapped;
+    }
+    
     return aquarium;
   } catch (error) {
     console.error(`Error fetching aquarium with id ${id}:`, error);
@@ -295,10 +329,36 @@ export async function addFishToAquarium(aquariumId, fishId, count = 1) {
     });
     // Backend zwraca {aquarium: ..., logEntry: ...}
     // Zwracamy zaktualizowane akwarium, jeśli jest w odpowiedzi
-    if (result && result.aquarium) {
-      return result.aquarium;
+    const aquariumData = result?.aquarium || result;
+    
+    if (aquariumData) {
+      // Mapowanie danych jak w getAquariumById
+      const mapped = {
+        ...aquariumData,
+        fishes: aquariumData.fish || aquariumData.fishes || [],
+        plants: aquariumData.plants || [],
+        temperature: aquariumData.temperatureC !== undefined ? aquariumData.temperatureC : aquariumData.temperature,
+        hardness: aquariumData.hardnessDGH !== undefined ? aquariumData.hardnessDGH : aquariumData.hardness,
+        volume: aquariumData.volumeLiters !== undefined ? aquariumData.volumeLiters : aquariumData.volume
+      };
+      
+      if (aquariumData.fish && !aquariumData.fishes) {
+        delete mapped.fish;
+      }
+      if (aquariumData.temperatureC !== undefined && aquariumData.temperature === undefined) {
+        delete mapped.temperatureC;
+      }
+      if (aquariumData.hardnessDGH !== undefined && aquariumData.hardness === undefined) {
+        delete mapped.hardnessDGH;
+      }
+      if (aquariumData.volumeLiters !== undefined && aquariumData.volume === undefined) {
+        delete mapped.volumeLiters;
+      }
+      
+      return mapped;
     }
-    return result;
+    
+    return aquariumData;
   } catch (error) {
     console.error(`Error adding fish to aquarium ${aquariumId}:`, error);
     throw error;
@@ -308,52 +368,50 @@ export async function addFishToAquarium(aquariumId, fishId, count = 1) {
 // Usuwa rybę z akwarium
 export async function removeFishFromAquarium(aquariumId, fishId) {
   try {
-    console.log('removeFishFromAquarium called with:', { aquariumId, fishId });
+    console.log('🔴 removeFishFromAquarium called with:', { aquariumId, fishId });
     const endpoint = `/v1/aquariums/${aquariumId}/fish/${fishId}`;
-    console.log('Calling DELETE endpoint:', endpoint);
     
     const result = await fetchAPI(endpoint, {
       method: 'DELETE'
     });
     
-    console.log('removeFishFromAquarium response:', result);
-    console.log('removeFishFromAquarium response type:', typeof result);
-    console.log('removeFishFromAquarium response keys:', result ? Object.keys(result) : 'null');
-    console.log('removeFishFromAquarium result.aquarium:', result?.aquarium);
-    console.log('removeFishFromAquarium result.logEntry:', result?.logEntry);
-    console.log('removeFishFromAquarium result.LogEntry:', result?.LogEntry);
+    console.log('🔴 removeFishFromAquarium response:', result);
     
     // Backend zwraca {aquarium: ..., logEntry: ...}
-    // Sprawdzamy wszystkie możliwe warianty
-    if (result && result.aquarium) {
-      console.log('Returning result.aquarium (lowercase)');
-      return result.aquarium;
+    const aquariumData = result?.aquarium || result?.Aquarium || (result?.id ? result : null);
+    
+    if (aquariumData) {
+      // Mapowanie danych jak w getAquariumById
+      const mapped = {
+        ...aquariumData,
+        fishes: aquariumData.fish || aquariumData.fishes || [],
+        plants: aquariumData.plants || [],
+        temperature: aquariumData.temperatureC !== undefined ? aquariumData.temperatureC : aquariumData.temperature,
+        hardness: aquariumData.hardnessDGH !== undefined ? aquariumData.hardnessDGH : aquariumData.hardness,
+        volume: aquariumData.volumeLiters !== undefined ? aquariumData.volumeLiters : aquariumData.volume
+      };
+      
+      if (aquariumData.fish && !aquariumData.fishes) {
+        delete mapped.fish;
+      }
+      if (aquariumData.temperatureC !== undefined && aquariumData.temperature === undefined) {
+        delete mapped.temperatureC;
+      }
+      if (aquariumData.hardnessDGH !== undefined && aquariumData.hardness === undefined) {
+        delete mapped.hardnessDGH;
+      }
+      if (aquariumData.volumeLiters !== undefined && aquariumData.volume === undefined) {
+        delete mapped.volumeLiters;
+      }
+      
+      console.log('🔴 removeFishFromAquarium: mapped data, fishes:', mapped.fishes?.length || 0, 'items');
+      return mapped;
     }
-    if (result && result.Aquarium) {
-      console.log('Returning result.Aquarium (uppercase)');
-      return result.Aquarium;
-    }
-    // Jeśli result ma id i fishes, to może jest już akwarium (nie obiekt z aquarium i logEntry)
-    // To może się zdarzyć, jeśli backend zwraca bezpośrednio akwarium
-    if (result && result.id && Array.isArray(result.fishes)) {
-      console.log('Result is already aquarium (has id and fishes array), returning as is');
-      return result;
-    }
-    // Jeśli result ma LogEntry (z wielkiej litery) i aquarium, to może backend zwraca inny format
-    if (result && result.LogEntry && result.aquarium) {
-      console.log('Returning result.aquarium (with LogEntry uppercase)');
-      return result.aquarium;
-    }
-    console.log('No aquarium found in response, returning result or true');
+    
+    console.log('🔴 removeFishFromAquarium: no aquarium in response');
     return result || true;
   } catch (error) {
     console.error(`Error removing fish from aquarium ${aquariumId}:`, error);
-    console.error('Error details:', {
-      message: error.message,
-      stack: error.stack,
-      aquariumId,
-      fishId
-    });
     throw error;
   }
 }
@@ -366,11 +424,36 @@ export async function addPlantToAquarium(aquariumId, plantId, count = 1) {
       body: { plantId, count }
     });
     // Backend zwraca {aquarium: ..., logEntry: ...}
-    // Zwracamy zaktualizowane akwarium, jeśli jest w odpowiedzi
-    if (result && result.aquarium) {
-      return result.aquarium;
+    const aquariumData = result?.aquarium || result;
+    
+    if (aquariumData) {
+      // Mapowanie danych jak w getAquariumById
+      const mapped = {
+        ...aquariumData,
+        fishes: aquariumData.fish || aquariumData.fishes || [],
+        plants: aquariumData.plants || [],
+        temperature: aquariumData.temperatureC !== undefined ? aquariumData.temperatureC : aquariumData.temperature,
+        hardness: aquariumData.hardnessDGH !== undefined ? aquariumData.hardnessDGH : aquariumData.hardness,
+        volume: aquariumData.volumeLiters !== undefined ? aquariumData.volumeLiters : aquariumData.volume
+      };
+      
+      if (aquariumData.fish && !aquariumData.fishes) {
+        delete mapped.fish;
+      }
+      if (aquariumData.temperatureC !== undefined && aquariumData.temperature === undefined) {
+        delete mapped.temperatureC;
+      }
+      if (aquariumData.hardnessDGH !== undefined && aquariumData.hardness === undefined) {
+        delete mapped.hardnessDGH;
+      }
+      if (aquariumData.volumeLiters !== undefined && aquariumData.volume === undefined) {
+        delete mapped.volumeLiters;
+      }
+      
+      return mapped;
     }
-    return result;
+    
+    return aquariumData;
   } catch (error) {
     console.error(`Error adding plant to aquarium ${aquariumId}:`, error);
     throw error;
@@ -384,10 +467,35 @@ export async function removePlantFromAquarium(aquariumId, plantId) {
       method: 'DELETE'
     });
     // Backend zwraca {aquarium: ..., logEntry: ...}
-    // Zwracamy zaktualizowane akwarium, jeśli jest w odpowiedzi
-    if (result && result.aquarium) {
-      return result.aquarium;
+    const aquariumData = result?.aquarium || (result?.id ? result : null);
+    
+    if (aquariumData) {
+      // Mapowanie danych jak w getAquariumById
+      const mapped = {
+        ...aquariumData,
+        fishes: aquariumData.fish || aquariumData.fishes || [],
+        plants: aquariumData.plants || [],
+        temperature: aquariumData.temperatureC !== undefined ? aquariumData.temperatureC : aquariumData.temperature,
+        hardness: aquariumData.hardnessDGH !== undefined ? aquariumData.hardnessDGH : aquariumData.hardness,
+        volume: aquariumData.volumeLiters !== undefined ? aquariumData.volumeLiters : aquariumData.volume
+      };
+      
+      if (aquariumData.fish && !aquariumData.fishes) {
+        delete mapped.fish;
+      }
+      if (aquariumData.temperatureC !== undefined && aquariumData.temperature === undefined) {
+        delete mapped.temperatureC;
+      }
+      if (aquariumData.hardnessDGH !== undefined && aquariumData.hardness === undefined) {
+        delete mapped.hardnessDGH;
+      }
+      if (aquariumData.volumeLiters !== undefined && aquariumData.volume === undefined) {
+        delete mapped.volumeLiters;
+      }
+      
+      return mapped;
     }
+    
     return result || true;
   } catch (error) {
     console.error(`Error removing plant from aquarium ${aquariumId}:`, error);
