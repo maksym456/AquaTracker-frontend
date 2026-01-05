@@ -1,8 +1,4 @@
 "use client";
-
-// Importujemy useState i useEffect z React
-// useState - do przechowywania stanu komponentu (np. dane, loading, błędy)
-// useEffect - do wykonywania akcji przy załadowaniu komponentu (np. pobieranie danych z API)
 import { useState, useEffect } from "react";
 import { Box, Typography, IconButton, Button, useTheme, useMediaQuery, List, ListItemButton, ListItemText, Divider, TextField, FormControl, InputLabel, Select, MenuItem, CircularProgress, Alert } from "@mui/material";
 import { useTranslation } from "react-i18next";
@@ -14,9 +10,6 @@ import ArrowBackIosIcon from '@mui/icons-material/ArrowBackIos';
 import ArrowForwardIosIcon from '@mui/icons-material/ArrowForwardIos';
 import ChevronRightIcon from '@mui/icons-material/ChevronRight';
 import ChevronLeftIcon from '@mui/icons-material/ChevronLeft';
-
-// Importujemy funkcję do pobierania ryb z API
-// Dla początkujących: import pozwala nam używać funkcji z innych plików
 import { getFishes } from "../lib/api";
 
 export default function FishDatabasePage() {
