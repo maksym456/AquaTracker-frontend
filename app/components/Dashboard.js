@@ -282,7 +282,7 @@ export default function Dashboard() {
                 width: '400px',
                 maxWidth: '400px'
               },
-              '@media (min-width: 1368px) and (max-width: 1919px)': {
+              '@media (min-width: 1368px) and (max-width: 1368px)': {
                 top: '30px',
                 width: '420px',
                 maxWidth: '420px'
@@ -291,8 +291,13 @@ export default function Dashboard() {
                 top: '170px',
                 left: 'calc(15% + 50px)'
               },
-              '@media (min-width: 1369px) and (max-width: 1919px)': {
+              '@media (min-width: 1369px) and (max-width: 1373px)': {
                 top: '350px',
+                width: '480px',
+                maxWidth: '500px'
+              },
+              '@media (min-width: 1374px) and (max-width: 1919px)': {
+                top: '270px',
                 width: '480px',
                 maxWidth: '500px'
               },

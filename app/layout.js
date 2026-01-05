@@ -6,6 +6,7 @@ import "./i18n";
 import { ThemeProvider as MuiThemeProvider } from "@mui/material/styles";
 import CssBaseline from "@mui/material/CssBaseline";
 import { ThemeProvider, useTheme } from "./contexts/ThemeContext";
+import { AuthProvider } from "./contexts/AuthContext";
 import { useTranslation } from "react-i18next";
 import { SessionProvider } from "next-auth/react";
 
@@ -80,11 +81,13 @@ export default function RootLayout({ children }) {
           backgroundRepeat: 'no-repeat',
           backgroundAttachment: 'fixed'
         }}>
-            <SessionProvider>
-                <ThemeProvider>
-                    <ThemeWrapper>{children}</ThemeWrapper>
-                </ThemeProvider>
-            </SessionProvider>
+            <AuthProvider>
+                <SessionProvider>
+                    <ThemeProvider>
+                        <ThemeWrapper>{children}</ThemeWrapper>
+                    </ThemeProvider>
+                </SessionProvider>
+            </AuthProvider>
             </body>
         </LanguageWrapper>
     );
