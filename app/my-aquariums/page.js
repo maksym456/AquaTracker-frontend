@@ -11,7 +11,7 @@ import PersonAddIcon from '@mui/icons-material/PersonAdd';
 import { useTheme } from "../contexts/ThemeContext";
 import { useAuth } from "../contexts/AuthContext";
 
-import { getAquariums, createAquarium, updateAquarium, deleteAquarium } from "../lib/api";
+import { getAquariums, createAquarium, updateAquarium, deleteAquarium, getFishes, getPlants } from "../lib/api";
 import EditIcon from '@mui/icons-material/Edit';
 import DeleteIcon from '@mui/icons-material/Delete';
 
@@ -38,6 +38,8 @@ export default function MyAquariumsPage() {
     const [newAquariumHardness, setNewAquariumHardness] = useState("8");
     const [isLoading, setIsLoading] = useState(true);
     const [error, setError] = useState(null);
+    const [availableFishes, setAvailableFishes] = useState([]);
+    const [availablePlants, setAvailablePlants] = useState([]);
     const { user, loading: authLoading } = useAuth();
 
     useEffect(() => {
@@ -62,6 +64,21 @@ export default function MyAquariumsPage() {
                 console.log('Is array:', Array.isArray(data));
                 console.log('Data length:', Array.isArray(data) ? data.length : 'not an array');
                 
+                // Sprawdź strukturę pierwszego akwarium
+                if (Array.isArray(data) && data.length > 0) {
+                  console.log('First aquarium structure:', data[0]);
+                  console.log('First aquarium has fishes?', 'fishes' in (data[0] || {}));
+                  console.log('First aquarium has fish?', 'fish' in (data[0] || {}));
+                  console.log('First aquarium has plants?', 'plants' in (data[0] || {}));
+                  console.log('First aquarium fishes:', data[0]?.fishes);
+                  console.log('First aquarium fish:', data[0]?.fish);
+                  console.log('First aquarium plants:', data[0]?.plants);
+                  if (data[0]?.fish) {
+                    console.log('First aquarium fish array length:', data[0].fish.length);
+                    console.log('First aquarium fish items:', data[0].fish);
+                  }
+                }
+                
                 const aquariumsArray = Array.isArray(data) ? data : [];
                 console.log('Setting aquariums state with:', aquariumsArray);
                 setAquariums(aquariumsArray);
@@ -74,6 +91,23 @@ export default function MyAquariumsPage() {
             }
         })();
     }, [user, authLoading]);
+
+  // Pobierz dostępne ryby i rośliny dla statystyk
+  useEffect(() => {
+    async function fetchAvailableData() {
+      try {
+        const [fishes, plants] = await Promise.all([
+          getFishes(),
+          getPlants()
+        ]);
+        setAvailableFishes(fishes || []);
+        setAvailablePlants(plants || []);
+      } catch (err) {
+        console.error("Error fetching available fishes/plants:", err);
+      }
+    }
+    fetchAvailableData();
+  }, []);
 
   function handleCreateAquarium() {
     setCreateModalOpen(true);
@@ -188,9 +222,11 @@ export default function MyAquariumsPage() {
       
       setDeleteConfirmOpen(false);
       setAquariumToDelete(null);
+      setError(null); // Wyczyść poprzednie błędy
     } catch (err) {
       console.error("Error deleting aquarium:", err);
-      setError(err.message || "Nie udało się usunąć akwarium.");
+      const errorMessage = err.message || "Nie udało się usunąć akwarium. Spróbuj ponownie później.";
+      setError(errorMessage);
       setDeleteConfirmOpen(false);
       setAquariumToDelete(null);
     }
@@ -274,13 +310,37 @@ export default function MyAquariumsPage() {
   const allStatistics = useMemo(() => {
     if (aquariums.length === 0) return null;
 
-    const allFishes = aquariums.flatMap(aquarium => 
-      [] // TODO: Pobierz ryby z API
-    );
+    // Pobierz wszystkie ryby ze wszystkich akwariów
+    const allFishes = aquariums.flatMap(aquarium => {
+      const fishes = aquarium.fishes || aquarium.fish || [];
+      // Rozwiń każdą rybę na count sztuk
+      return fishes.flatMap(fish => {
+        const count = fish.count || 1;
+        // Backend może zwracać fishId lub id
+        const fishId = fish.fishId || fish.id;
+        const fishDetails = availableFishes?.find(f => f.id === fishId) || {};
+        return Array(count).fill(null).map(() => ({
+          species: fishDetails.name || fishId,
+          fishId: fishId
+        }));
+      });
+    });
 
-    const allPlants = aquariums.flatMap(aquarium =>
-      [] // TODO: Pobierz rośliny z API
-    );
+    // Pobierz wszystkie rośliny ze wszystkich akwariów
+    const allPlants = aquariums.flatMap(aquarium => {
+      const plants = aquarium.plants || [];
+      // Rozwiń każdą roślinę na count sztuk
+      return plants.flatMap(plant => {
+        const count = plant.count || 1;
+        // Backend może zwracać plantId lub id
+        const plantId = plant.plantId || plant.id;
+        const plantDetails = availablePlants?.find(p => p.id === plantId) || {};
+        return Array(count).fill(null).map(() => ({
+          species: plantDetails.name || plantId,
+          plantId: plantId
+        }));
+      });
+    });
 
     const uniqueFishSpecies = new Set(allFishes.map(fish => fish.species));
     const fishSpeciesCount = uniqueFishSpecies.size;
@@ -689,10 +749,10 @@ export default function MyAquariumsPage() {
                         )}
                         {}
                         <Typography variant="caption" color="text.secondary" sx={{ fontSize: { xs: '0.65rem', sm: '0.7rem', md: '0.75rem' } }}>
-                          🐟 {aquarium.fishes?.length || 0}
+                          🐟 {(aquarium.fishes || aquarium.fish || []).reduce((sum, fish) => sum + (fish.count || 1), 0)}
                         </Typography>
                         <Typography variant="caption" color="text.secondary" sx={{ fontSize: { xs: '0.65rem', sm: '0.7rem', md: '0.75rem' } }}>
-                          🌿 {aquarium.plants?.length || 0}
+                          🌿 {(aquarium.plants || []).reduce((sum, plant) => sum + (plant.count || 1), 0)}
                         </Typography>
                       </Box>
                     </CardContent>

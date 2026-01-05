@@ -62,13 +62,64 @@ async function fetchAPI(endpoint, options = {}) {
       
       if (!response.ok) {
         const errorText = await response.text();
-        console.error(`API Error Response:`, errorText);
-        throw new Error(`API Error: ${response.status} ${response.statusText}`);
+        
+        // Spróbuj sparsować JSON z błędem z backendu
+        let errorMessage = `API Error: ${response.status} ${response.statusText}`;
+        try {
+          const errorJson = JSON.parse(errorText);
+          if (errorJson.message) {
+            errorMessage = errorJson.message;
+          } else if (errorJson.error) {
+            errorMessage = errorJson.error;
+          }
+        } catch (e) {
+          // Jeśli nie jest JSON, użyj oryginalnego tekstu
+          if (errorText && errorText.trim()) {
+            errorMessage = errorText;
+          }
+        }
+        
+        // Loguj tylko raz, na poziomie debugowania
+        if (process.env.NODE_ENV === 'development') {
+          console.warn(`API Error (${response.status}):`, errorMessage);
+        }
+        
+        const error = new Error(errorMessage);
+        error.status = response.status;
+        error.statusText = response.statusText;
+        error.originalResponse = errorText;
+        throw error;
       }
 
-      const data = await response.json();
-      console.log(`API Response Data:`, data);
-      return data;
+      // Sprawdź, czy odpowiedź ma zawartość (DELETE może zwracać 204 No Content)
+      const contentType = response.headers.get('content-type');
+      const contentLength = response.headers.get('content-length');
+      
+      // Jeśli odpowiedź jest pusta (204 No Content) lub nie ma content-type JSON, zwróć null
+      if (response.status === 204 || 
+          contentLength === '0' || 
+          !contentType || 
+          !contentType.includes('application/json')) {
+        return null;
+      }
+
+      // Spróbuj sparsować JSON, ale obsłuż przypadek pustej odpowiedzi
+      try {
+        const text = await response.text();
+        if (!text || text.trim() === '') {
+          return null;
+        }
+        const data = JSON.parse(text);
+        console.log(`API Response Data:`, data);
+        return data;
+      } catch (jsonError) {
+        // Jeśli nie można sparsować JSON, zwróć null (dla DELETE 204)
+        if (response.status === 204) {
+          return null;
+        }
+        console.warn('Failed to parse JSON response:', jsonError);
+        throw new Error(`Failed to parse response: ${jsonError.message}`);
+      }
       
     } catch (fetchError) {
       if (timeoutId) {
@@ -315,8 +366,25 @@ export async function deleteAquarium(id) {
     });
     return true;
   } catch (error) {
-    console.error(`Error deleting aquarium with id ${id}:`, error);
-    throw error;
+    // Spróbuj sparsować komunikat błędu z backendu
+    let errorMessage = error.message || "Nie udało się usunąć akwarium.";
+    
+    // Jeśli błąd zawiera informację o foreign key constraint, pokaż bardziej zrozumiały komunikat
+    if (errorMessage.includes('foreign key constraint') || 
+        errorMessage.includes('log_entries') || 
+        errorMessage.includes('still referenced')) {
+      errorMessage = "Nie można usunąć akwarium, ponieważ ma powiązane wpisy w historii. Skontaktuj się z administratorem.";
+    }
+    
+    // Loguj tylko raz, jeśli to development
+    if (process.env.NODE_ENV === 'development') {
+      console.warn(`Error deleting aquarium ${id}:`, errorMessage);
+    }
+    
+    // Utwórz nowy błąd z lepszym komunikatem
+    const improvedError = new Error(errorMessage);
+    improvedError.originalError = error;
+    throw improvedError;
   }
 }
 
