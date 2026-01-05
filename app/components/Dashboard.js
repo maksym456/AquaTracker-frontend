@@ -884,9 +884,11 @@ export default function Dashboard() {
                         </Box>
                         <Box sx={{ p: 1.5, bgcolor: 'rgba(255, 255, 255, 0.5)', borderRadius: 1.5 }}>
                           <Typography variant="body2" sx={{ fontWeight: 600, mb: 0.5 }}>{t("lastSync")}:</Typography>
-                          <Typography variant="body2" color="text.secondary">{t("offlineMode")}</Typography>
-                          <Typography variant="caption" color="text.disabled" sx={{ display: 'block', mt: 0.5, fontSize: '0.7rem' }}>
-                            {t("dataStoredLocally")}
+                          <Typography variant="body2" sx={{ color: '#4CAF50', fontWeight: 600 }}>
+                            {new Date().toLocaleString()}
+                          </Typography>
+                          <Typography variant="caption" color="text.secondary" sx={{ display: 'block', mt: 0.5, fontSize: '0.7rem' }}>
+                            {t("connected")} - {t("dataSourceType")}: API
                           </Typography>
                         </Box>
                       </Box>

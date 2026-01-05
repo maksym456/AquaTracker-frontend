@@ -649,4 +649,35 @@ export default {
   registerUser,
   getCurrentUser,
   updateUser,
+  getLogs,
 };
+
+// Pobiera logi aktywności
+export async function getLogs(filters = {}) {
+  try {
+    const queryParams = new URLSearchParams();
+    
+    if (filters.actionType) {
+      queryParams.append('actionType', filters.actionType);
+    }
+    if (filters.aquariumId) {
+      queryParams.append('aquariumId', filters.aquariumId);
+    }
+    if (filters.sort) {
+      queryParams.append('sort', filters.sort);
+    }
+    if (filters.limit) {
+      queryParams.append('limit', filters.limit.toString());
+    }
+    if (filters.offset) {
+      queryParams.append('offset', filters.offset.toString());
+    }
+
+    const endpoint = `/v1/logs${queryParams.toString() ? '?' + queryParams.toString() : ''}`;
+    const logs = await fetchAPI(endpoint);
+    return Array.isArray(logs) ? logs : [];
+  } catch (error) {
+    console.error('Error fetching logs:', error);
+    return [];
+  }
+}
