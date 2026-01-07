@@ -36,6 +36,7 @@ export default function MyAquariumsPage() {
     const [newAquariumBiotope, setNewAquariumBiotope] = useState("ameryka południowa");
     const [newAquariumPh, setNewAquariumPh] = useState("7.0");
     const [newAquariumHardness, setNewAquariumHardness] = useState("8");
+    const [newAquariumDescription, setNewAquariumDescription] = useState("");
     const [isLoading, setIsLoading] = useState(true);
     const [error, setError] = useState(null);
     const [availableFishes, setAvailableFishes] = useState([]);
@@ -126,7 +127,7 @@ export default function MyAquariumsPage() {
         biotope: newAquariumBiotope,
         ph: parseFloat(newAquariumPh),
         hardness: parseFloat(newAquariumHardness),
-        description: ""
+        description: newAquariumDescription.trim()
       };
       
       console.log('Creating aquarium with data:', newAquarium);
@@ -145,6 +146,7 @@ export default function MyAquariumsPage() {
       setNewAquariumBiotope("ameryka południowa");
       setNewAquariumPh("7.0");
       setNewAquariumHardness("8");
+      setNewAquariumDescription("");
       setCreateModalOpen(false);
     } catch (err) {
       console.error("Error creating aquarium:", err);
@@ -170,6 +172,7 @@ export default function MyAquariumsPage() {
     setNewAquariumBiotope(aquarium.biotope || "ameryka południowa");
     setNewAquariumPh(aquarium.ph?.toString() || "7.0");
     setNewAquariumHardness(aquarium.hardness?.toString() || "8");
+    setNewAquariumDescription(aquarium.description || "");
     setEditModalOpen(true);
   }
 
@@ -184,7 +187,7 @@ export default function MyAquariumsPage() {
         biotope: newAquariumBiotope,
         ph: parseFloat(newAquariumPh),
         hardness: parseFloat(newAquariumHardness),
-        description: editingAquarium.description || ""
+        description: newAquariumDescription.trim()
       };
       
       const updated = await updateAquarium(editingAquarium.id, updatedData);
@@ -197,6 +200,7 @@ export default function MyAquariumsPage() {
       setNewAquariumName("");
       setNewAquariumWaterType("freshwater");
       setNewAquariumTemperature("24");
+      setNewAquariumDescription("");
       setNewAquariumBiotope("ameryka południowa");
       setNewAquariumPh("7.0");
       setNewAquariumHardness("8");
@@ -914,8 +918,18 @@ export default function MyAquariumsPage() {
             value={newAquariumHardness}
             onChange={(e) => setNewAquariumHardness(e.target.value)}
             inputProps={{ min: 1, max: 30, step: 1 }}
-            sx={{ mb: 3 }}
+            sx={{ mb: 2 }}
             helperText={t("hardnessRange", { defaultValue: "Zakres: 1-30 dGH" })}
+          />
+          <TextField
+            fullWidth
+            label={t("description", { defaultValue: "Opis akwarium" })}
+            value={newAquariumDescription}
+            onChange={(e) => setNewAquariumDescription(e.target.value)}
+            multiline
+            rows={3}
+            sx={{ mb: 3 }}
+            placeholder={t("descriptionPlaceholder", { defaultValue: "Dodaj opis akwarium (opcjonalnie)" })}
           />
           <Box sx={{ display: 'flex', gap: 2, justifyContent: 'flex-end' }}>
             <Button onClick={() => setCreateModalOpen(false)}>
@@ -1011,8 +1025,18 @@ export default function MyAquariumsPage() {
             value={newAquariumHardness}
             onChange={(e) => setNewAquariumHardness(e.target.value)}
             inputProps={{ min: 1, max: 30, step: 1 }}
-            sx={{ mb: 3 }}
+            sx={{ mb: 2 }}
             helperText={t("hardnessRange", { defaultValue: "Zakres: 1-30 dGH" })}
+          />
+          <TextField
+            fullWidth
+            label={t("description", { defaultValue: "Opis akwarium" })}
+            value={newAquariumDescription}
+            onChange={(e) => setNewAquariumDescription(e.target.value)}
+            multiline
+            rows={3}
+            sx={{ mb: 3 }}
+            placeholder={t("descriptionPlaceholder", { defaultValue: "Dodaj opis akwarium (opcjonalnie)" })}
           />
           <Box sx={{ display: 'flex', gap: 2, justifyContent: 'flex-end' }}>
             <Button onClick={() => {
