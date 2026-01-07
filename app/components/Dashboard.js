@@ -292,12 +292,22 @@ export default function Dashboard() {
                 left: 'calc(15% + 50px)'
               },
               '@media (min-width: 1369px) and (max-width: 1373px)': {
-                top: '350px',
+                top: '250px',
                 width: '480px',
                 maxWidth: '500px'
               },
               '@media (min-width: 1374px) and (max-width: 1919px)': {
-                top: '270px',
+                top: '200px',
+                width: '480px',
+                maxWidth: '500px'
+              },
+              '@media (min-width: 1372px) and (max-width: 1372px)': {
+                top: '250px',
+                width: '480px',
+                maxWidth: '500px'
+              },
+              '@media (min-width: 1710px) and (max-width: 1720px)': {
+                top: '190px',
                 width: '480px',
                 maxWidth: '500px'
               },
