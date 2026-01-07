@@ -272,6 +272,12 @@ export default function Dashboard() {
               '@media (max-height: 700px)': {
                 top: { xs: '80px', sm: '90px', md: '100px' }
               },
+              '@media (min-width: 600px) and (max-width: 1198px)': {
+                top: '350px',
+                width: '380px',
+                maxWidth: '400px',
+                left: '50px'
+              },
               '@media (min-width: 1366px) and (max-width: 1367px) and (max-height: 700px)': {
                 top: '150px',
                 width: '400px',
@@ -282,11 +288,6 @@ export default function Dashboard() {
                 width: '400px',
                 maxWidth: '400px'
               },
-              '@media (min-width: 1368px) and (max-width: 1368px)': {
-                top: '30px',
-                width: '420px',
-                maxWidth: '420px'
-              },
               '@media (min-width: 1920px)': {
                 top: '170px',
                 left: 'calc(15% + 50px)'
@@ -296,18 +297,18 @@ export default function Dashboard() {
                 width: '480px',
                 maxWidth: '500px'
               },
-              '@media (min-width: 1374px) and (max-width: 1919px)': {
-                top: '200px',
+              '@media (min-width: 1374px) and (max-width: 1500px)': {
+                top: '230px',
                 width: '480px',
                 maxWidth: '500px'
               },
               '@media (min-width: 1372px) and (max-width: 1372px)': {
-                top: '250px',
+                top: '270px',
                 width: '480px',
                 maxWidth: '500px'
               },
-              '@media (min-width: 1710px) and (max-width: 1720px)': {
-                top: '190px',
+              '@media (min-width: 1650px) and (max-width: 1800px)': {
+                top: '300px',
                 width: '480px',
                 maxWidth: '500px'
               },
@@ -316,12 +317,7 @@ export default function Dashboard() {
                 width: '480px',
                 maxWidth: '500px'
               },
-              '@media (min-width: 600px) and (max-width: 1198px)': {
-                top: '350px',
-                width: '380px',
-                maxWidth: '400px',
-                left: '50px'
-              },
+              
               '@media (max-width: 599px)': {
                 top: '200px',
                 width: '360px',
@@ -341,6 +337,12 @@ export default function Dashboard() {
                 width: '500px',
                 maxWidth: '500px',
                 left: '50px'
+              },
+              '@media (min-width: 1198px) and (max-width: 1370px)': {
+                top: '200px',
+                width: '476px',
+                maxWidth: '476px',
+                left: 'calc(15% - 50px)'
               }
             }}>
           {/* Tekst */}
