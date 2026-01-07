@@ -11,7 +11,7 @@ import PersonAddIcon from '@mui/icons-material/PersonAdd';
 import { useTheme } from "../contexts/ThemeContext";
 import { useAuth } from "../contexts/AuthContext";
 
-import { getAquariums, createAquarium, updateAquarium, deleteAquarium, getFishes, getPlants } from "../lib/api";
+import { getAquariums, createAquarium, updateAquarium, deleteAquarium, getFishes, getPlants, getLogs } from "../lib/api";
 import EditIcon from '@mui/icons-material/Edit';
 import DeleteIcon from '@mui/icons-material/Delete';
 
@@ -36,10 +36,13 @@ export default function MyAquariumsPage() {
     const [newAquariumBiotope, setNewAquariumBiotope] = useState("ameryka południowa");
     const [newAquariumPh, setNewAquariumPh] = useState("7.0");
     const [newAquariumHardness, setNewAquariumHardness] = useState("8");
+    const [newAquariumDescription, setNewAquariumDescription] = useState("");
     const [isLoading, setIsLoading] = useState(true);
     const [error, setError] = useState(null);
     const [availableFishes, setAvailableFishes] = useState([]);
     const [availablePlants, setAvailablePlants] = useState([]);
+    const [activityHistory, setActivityHistory] = useState([]);
+    const [isLoadingHistory, setIsLoadingHistory] = useState(false);
     const { user, loading: authLoading } = useAuth();
 
     useEffect(() => {
@@ -124,7 +127,7 @@ export default function MyAquariumsPage() {
         biotope: newAquariumBiotope,
         ph: parseFloat(newAquariumPh),
         hardness: parseFloat(newAquariumHardness),
-        description: ""
+        description: newAquariumDescription.trim()
       };
       
       console.log('Creating aquarium with data:', newAquarium);
@@ -143,6 +146,7 @@ export default function MyAquariumsPage() {
       setNewAquariumBiotope("ameryka południowa");
       setNewAquariumPh("7.0");
       setNewAquariumHardness("8");
+      setNewAquariumDescription("");
       setCreateModalOpen(false);
     } catch (err) {
       console.error("Error creating aquarium:", err);
@@ -168,6 +172,7 @@ export default function MyAquariumsPage() {
     setNewAquariumBiotope(aquarium.biotope || "ameryka południowa");
     setNewAquariumPh(aquarium.ph?.toString() || "7.0");
     setNewAquariumHardness(aquarium.hardness?.toString() || "8");
+    setNewAquariumDescription(aquarium.description || "");
     setEditModalOpen(true);
   }
 
@@ -182,7 +187,7 @@ export default function MyAquariumsPage() {
         biotope: newAquariumBiotope,
         ph: parseFloat(newAquariumPh),
         hardness: parseFloat(newAquariumHardness),
-        description: editingAquarium.description || ""
+        description: newAquariumDescription.trim()
       };
       
       const updated = await updateAquarium(editingAquarium.id, updatedData);
@@ -195,6 +200,7 @@ export default function MyAquariumsPage() {
       setNewAquariumName("");
       setNewAquariumWaterType("freshwater");
       setNewAquariumTemperature("24");
+      setNewAquariumDescription("");
       setNewAquariumBiotope("ameryka południowa");
       setNewAquariumPh("7.0");
       setNewAquariumHardness("8");
@@ -248,19 +254,51 @@ export default function MyAquariumsPage() {
     setHistoryModalOpen(false);
   };
 
-  // TODO: Pobierz historię aktywności z API
-  const activityHistory = [
-    { id: '1', type: 'created', aquarium: 'Moje pierwsze akwarium', date: new Date('2024-01-15T10:30:00'), details: 'Akwarium zostało utworzone' },
-    { id: '2', type: 'fishAdded', aquarium: 'Moje pierwsze akwarium', date: new Date('2024-01-16T14:20:00'), details: 'Dodano rybę: Gupik' },
-    { id: '3', type: 'plantAdded', aquarium: 'Moje pierwsze akwarium', date: new Date('2024-01-17T09:15:00'), details: 'Dodano roślinę: Anubias' },
-    { id: '4', type: 'parameterChanged', aquarium: 'Moje pierwsze akwarium', date: new Date('2024-01-18T16:45:00'), details: 'Zmieniono temperaturę: 22°C → 24°C' },
-    { id: '5', type: 'created', aquarium: 'Drugie akwarium', date: new Date('2024-01-20T11:00:00'), details: 'Akwarium zostało utworzone' },
-    { id: '6', type: 'edited', aquarium: 'Moje pierwsze akwarium', date: new Date('2024-01-21T13:30:00'), details: 'Zaktualizowano parametry akwarium' },
-    { id: '7', type: 'fishRemoved', aquarium: 'Moje pierwsze akwarium', date: new Date('2024-01-22T15:20:00'), details: 'Usunięto rybę: Gupik' },
-    { id: '8', type: 'parameterChanged', aquarium: 'Drugie akwarium', date: new Date('2024-01-23T10:10:00'), details: 'Zmieniono pH: 7.0 → 7.2' },
-    { id: '9', type: 'plantAdded', aquarium: 'Drugie akwarium', date: new Date('2024-01-24T12:00:00'), details: 'Dodano roślinę: Moczarka' },
-    { id: '10', type: 'parameterChanged', aquarium: 'Moje pierwsze akwarium', date: new Date('2024-01-25T14:30:00'), details: 'Zmieniono twardość wody: 10 dGH → 12 dGH' },
-  ];
+  // Pobierz historię aktywności z API
+  useEffect(() => {
+    async function fetchActivityHistory() {
+      if (historyModalOpen) {
+        setIsLoadingHistory(true);
+        try {
+          const logs = await getLogs({
+            sort: sortOrder === 'newest' ? 'desc' : 'asc',
+            limit: 100
+          });
+          
+          // Mapuj logi z backendu na format używany w komponencie
+          const mappedLogs = logs.map(log => {
+            // Mapuj actionType z backendu na typy używane w frontendzie
+            let type = log.actionType?.toLowerCase() || 'unknown';
+            if (type === 'fish_added') type = 'fishAdded';
+            if (type === 'fish_removed') type = 'fishRemoved';
+            if (type === 'plant_added') type = 'plantAdded';
+            if (type === 'plant_removed') type = 'plantRemoved';
+            if (type === 'parameter_changed') type = 'parameterChanged';
+            if (type === 'aquarium_created' || type === 'created') type = 'created';
+            if (type === 'aquarium_deleted' || type === 'deleted') type = 'deleted';
+            if (type === 'aquarium_edited' || type === 'edited') type = 'edited';
+            
+            return {
+              id: log.id,
+              type: type,
+              aquarium: log.aquariumName || 'Unknown',
+              date: log.createdAt ? new Date(log.createdAt) : new Date(),
+              details: log.message || log.title || ''
+            };
+          });
+          
+          setActivityHistory(mappedLogs);
+        } catch (err) {
+          console.error('Error fetching activity history:', err);
+          setActivityHistory([]);
+        } finally {
+          setIsLoadingHistory(false);
+        }
+      }
+    }
+    
+    fetchActivityHistory();
+  }, [historyModalOpen, sortOrder]);
 
   const getActionLabel = (type) => {
     const labels = {
@@ -880,8 +918,18 @@ export default function MyAquariumsPage() {
             value={newAquariumHardness}
             onChange={(e) => setNewAquariumHardness(e.target.value)}
             inputProps={{ min: 1, max: 30, step: 1 }}
-            sx={{ mb: 3 }}
+            sx={{ mb: 2 }}
             helperText={t("hardnessRange", { defaultValue: "Zakres: 1-30 dGH" })}
+          />
+          <TextField
+            fullWidth
+            label={t("description", { defaultValue: "Opis akwarium" })}
+            value={newAquariumDescription}
+            onChange={(e) => setNewAquariumDescription(e.target.value)}
+            multiline
+            rows={3}
+            sx={{ mb: 3 }}
+            placeholder={t("descriptionPlaceholder", { defaultValue: "Dodaj opis akwarium (opcjonalnie)" })}
           />
           <Box sx={{ display: 'flex', gap: 2, justifyContent: 'flex-end' }}>
             <Button onClick={() => setCreateModalOpen(false)}>
@@ -977,8 +1025,18 @@ export default function MyAquariumsPage() {
             value={newAquariumHardness}
             onChange={(e) => setNewAquariumHardness(e.target.value)}
             inputProps={{ min: 1, max: 30, step: 1 }}
-            sx={{ mb: 3 }}
+            sx={{ mb: 2 }}
             helperText={t("hardnessRange", { defaultValue: "Zakres: 1-30 dGH" })}
+          />
+          <TextField
+            fullWidth
+            label={t("description", { defaultValue: "Opis akwarium" })}
+            value={newAquariumDescription}
+            onChange={(e) => setNewAquariumDescription(e.target.value)}
+            multiline
+            rows={3}
+            sx={{ mb: 3 }}
+            placeholder={t("descriptionPlaceholder", { defaultValue: "Dodaj opis akwarium (opcjonalnie)" })}
           />
           <Box sx={{ display: 'flex', gap: 2, justifyContent: 'flex-end' }}>
             <Button onClick={() => {
@@ -1451,7 +1509,11 @@ export default function MyAquariumsPage() {
           
           {/* Lista aktywności */}
           <Box sx={{ flex: 1, overflowY: 'auto', pr: 1 }}>
-            {filteredAndSortedActivities.length === 0 ? (
+            {isLoadingHistory ? (
+              <Box sx={{ display: 'flex', justifyContent: 'center', alignItems: 'center', py: 4 }}>
+                <CircularProgress />
+              </Box>
+            ) : filteredAndSortedActivities.length === 0 ? (
               <Box sx={{ textAlign: 'center', py: 4 }}>
                 <Typography variant="body1" sx={{ color: darkMode ? 'rgba(255,255,255,0.7)' : 'text.secondary' }}>
                   {t("noActivity", { defaultValue: "Brak aktywności" })}

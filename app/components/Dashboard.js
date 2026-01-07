@@ -272,6 +272,12 @@ export default function Dashboard() {
               '@media (max-height: 700px)': {
                 top: { xs: '80px', sm: '90px', md: '100px' }
               },
+              '@media (min-width: 600px) and (max-width: 1198px)': {
+                top: '350px',
+                width: '380px',
+                maxWidth: '400px',
+                left: '50px'
+              },
               '@media (min-width: 1366px) and (max-width: 1367px) and (max-height: 700px)': {
                 top: '150px',
                 width: '400px',
@@ -282,22 +288,27 @@ export default function Dashboard() {
                 width: '400px',
                 maxWidth: '400px'
               },
-              '@media (min-width: 1368px) and (max-width: 1368px)': {
-                top: '30px',
-                width: '420px',
-                maxWidth: '420px'
-              },
               '@media (min-width: 1920px)': {
                 top: '170px',
                 left: 'calc(15% + 50px)'
               },
               '@media (min-width: 1369px) and (max-width: 1373px)': {
-                top: '350px',
+                top: '250px',
                 width: '480px',
                 maxWidth: '500px'
               },
-              '@media (min-width: 1374px) and (max-width: 1919px)': {
+              '@media (min-width: 1374px) and (max-width: 1500px)': {
+                top: '230px',
+                width: '480px',
+                maxWidth: '500px'
+              },
+              '@media (min-width: 1372px) and (max-width: 1372px)': {
                 top: '270px',
+                width: '480px',
+                maxWidth: '500px'
+              },
+              '@media (min-width: 1650px) and (max-width: 1800px)': {
+                top: '300px',
                 width: '480px',
                 maxWidth: '500px'
               },
@@ -306,12 +317,7 @@ export default function Dashboard() {
                 width: '480px',
                 maxWidth: '500px'
               },
-              '@media (min-width: 600px) and (max-width: 1198px)': {
-                top: '350px',
-                width: '380px',
-                maxWidth: '400px',
-                left: '50px'
-              },
+              
               '@media (max-width: 599px)': {
                 top: '200px',
                 width: '360px',
@@ -331,6 +337,12 @@ export default function Dashboard() {
                 width: '500px',
                 maxWidth: '500px',
                 left: '50px'
+              },
+              '@media (min-width: 1198px) and (max-width: 1370px)': {
+                top: '200px',
+                width: '476px',
+                maxWidth: '476px',
+                left: 'calc(15% - 50px)'
               }
             }}>
           {/* Tekst */}
@@ -884,9 +896,11 @@ export default function Dashboard() {
                         </Box>
                         <Box sx={{ p: 1.5, bgcolor: 'rgba(255, 255, 255, 0.5)', borderRadius: 1.5 }}>
                           <Typography variant="body2" sx={{ fontWeight: 600, mb: 0.5 }}>{t("lastSync")}:</Typography>
-                          <Typography variant="body2" color="text.secondary">{t("offlineMode")}</Typography>
-                          <Typography variant="caption" color="text.disabled" sx={{ display: 'block', mt: 0.5, fontSize: '0.7rem' }}>
-                            {t("dataStoredLocally")}
+                          <Typography variant="body2" sx={{ color: '#4CAF50', fontWeight: 600 }}>
+                            {new Date().toLocaleString()}
+                          </Typography>
+                          <Typography variant="caption" color="text.secondary" sx={{ display: 'block', mt: 0.5, fontSize: '0.7rem' }}>
+                            {t("connected")} - {t("dataSourceType")}: API
                           </Typography>
                         </Box>
                       </Box>
