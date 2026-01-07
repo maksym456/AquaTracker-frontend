@@ -10,11 +10,12 @@ import DeleteIcon from '@mui/icons-material/Delete';
 import { useTheme } from "../contexts/ThemeContext";
 import { useSession } from "next-auth/react";
 
-import { getContacts } from "../lib/api";
+import { getContacts, sendInvitation, deleteContact } from "../lib/api";
 
 export default function ContactsPage() {
   const { data: session } = useSession();
   const userId = session?.user?.id;
+  const userEmail = session?.user?.email;
   const { t } = useTranslation();
   const { darkMode } = useTheme();
   const [inviteEmail, setInviteEmail] = useState("");
@@ -25,31 +26,57 @@ export default function ContactsPage() {
 
     (async () => {
       try {
-        const data = await getContacts(userId);
+        const data = await getContacts(userId, userEmail);
         setContacts(Array.isArray(data) ? data : []);
       } catch (e) {
         console.error(e);
         setContacts([]);
       }
     })();
-  }, [userId]);
+  }, [userId, userEmail]);
 
-  const handleSendInvite = () => {
-    if (inviteEmail.trim()) {
-      const newContact = {
-        id: `${Date.now()}`,
-        name: inviteEmail.split('@')[0],
-        email: inviteEmail,
-        status: 'pending'
-      };
-      setContacts([...contacts, newContact]);
+  const handleSendInvite = async () => {
+    if (!inviteEmail.trim() || !userId) return;
+    
+    try {
+      await sendInvitation(userId, inviteEmail, userEmail);
       setInviteEmail("");
       alert(`${t("inviteSent", { defaultValue: "Zaproszenie wysłane na" })}: ${inviteEmail}`);
+      
+      // Odśwież listę kontaktów
+      try {
+        const data = await getContacts(userId, userEmail);
+        setContacts(Array.isArray(data) ? data : []);
+      } catch (e) {
+        console.error('Error refreshing contacts:', e);
+      }
+    } catch (error) {
+      console.error('Error sending invitation:', error);
+      const errorMessage = error.message || t("inviteError", { defaultValue: "Nie udało się wysłać zaproszenia" });
+      alert(errorMessage);
     }
   };
 
-  const handleRemoveContact = (contactId) => {
-    setContacts(contacts.filter(c => c.id !== contactId));
+  const handleRemoveContact = async (contactId) => {
+    if (!contactId || !userId) return;
+    
+    try {
+      await deleteContact(contactId);
+      
+      // Odśwież listę kontaktów
+      try {
+        const data = await getContacts(userId, userEmail);
+        setContacts(Array.isArray(data) ? data : []);
+      } catch (e) {
+        console.error('Error refreshing contacts:', e);
+        // Fallback: usuń lokalnie jeśli odświeżenie się nie powiodło
+        setContacts(contacts.filter(c => c.id !== contactId));
+      }
+    } catch (error) {
+      console.error('Error deleting contact:', error);
+      const errorMessage = error.message || t("deleteError", { defaultValue: "Nie udało się usunąć kontaktu" });
+      alert(errorMessage);
+    }
   };
 
   return (
@@ -249,7 +276,7 @@ export default function ContactsPage() {
           }}>
             <CardContent sx={{ p: { xs: 1.5, sm: 2, md: 2.5 }, display: 'flex', flexDirection: 'column', height: '100%', overflow: 'hidden', '@media (min-width: 1366px) and (max-width: 1367px) and (max-height: 700px)': { p: 1.5 } }}>
               <Typography variant="h5" sx={{ /* ...bez zmian... */ }}>
-                {t("contactsList", { defaultValue: "Contacts List" })}: {userId ?? "-"}
+                {t("contactsList", { defaultValue: "Contacts List" })}
               </Typography>
               {contacts.length === 0 ? (
                 <Typography variant="body2" color="text.secondary" sx={{ textAlign: 'center', py: 4 }}>

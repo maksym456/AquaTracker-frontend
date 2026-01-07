@@ -144,15 +144,132 @@ async function fetchAPI(endpoint, options = {}) {
   }
 }
 
-export async function getContacts(userId) {
+// Pomocnicza funkcja do konwersji cognitoSub na userId w formacie "u_123"
+async function getUserIdFromCognitoSub(cognitoSub, userEmail = null) {
+  try {
+    if (!cognitoSub) return null;
+    
+    // Sprawdź czy to już jest w formacie "u_123"
+    if (cognitoSub.startsWith('u_')) {
+      return cognitoSub;
+    }
+    
+    // Jeśli to UUID (cognitoSub), użyj endpointu /v1/auth/me który zwraca id w formacie "u_123"
+    // Endpoint /v1/auth/me wymaga cognitoSub jako query parameter
+    try {
+      const user = await fetchAPI(`/v1/auth/me?cognitoSub=${encodeURIComponent(cognitoSub)}`);
+      if (user && user.id) {
+        return user.id; // user.id jest w formacie "u_123" z AuthController
+      }
+    } catch (error) {
+      // Jeśli użytkownik nie istnieje (404), spróbuj zsynchronizować
+      if (error.status === 404 && userEmail) {
+        console.log('User not found in database, attempting to sync...');
+        try {
+          // Spróbuj zsynchronizować użytkownika
+          const syncResponse = await fetchAPI('/v1/users/sync', {
+            method: 'POST',
+            body: {
+              cognitoSub: cognitoSub,
+              email: userEmail,
+              username: userEmail.split('@')[0] // Domyślny username z email
+            }
+          });
+          
+          // Po synchronizacji spróbuj ponownie pobrać użytkownika
+          if (syncResponse) {
+            try {
+              const syncedUser = await fetchAPI(`/v1/auth/me?cognitoSub=${encodeURIComponent(cognitoSub)}`);
+              if (syncedUser && syncedUser.id) {
+                console.log('User synced successfully, userId:', syncedUser.id);
+                return syncedUser.id;
+              }
+            } catch (retryError) {
+              console.error('Error fetching user after sync:', retryError);
+              // Jeśli nadal nie działa, zwróć null zamiast rzucać błąd
+            }
+          }
+        } catch (syncError) {
+          console.error('Error syncing user:', syncError);
+          // Nie rzucaj błędu, tylko zwróć null
+        }
+      } else {
+        // Jeśli to nie 404 lub nie ma email, loguj i zwróć null
+        console.warn('Could not get user ID:', error.status === 404 ? 'User not found' : error.message);
+      }
+      // Nie rzucaj błędu dalej, zwróć null
+      return null;
+    }
+    
+    return null;
+  } catch (error) {
+    console.error('Error getting user ID from cognitoSub:', error);
+    return null;
+  }
+}
+
+export async function getContacts(userId, userEmail = null) {
   try {
     if (typeof window === 'undefined') return [];
     if (!userId) return [];
-    const contacts = await fetchAPI(`/v1/contacts/${userId}`);
+    
+    // Konwertuj cognitoSub na userId jeśli potrzeba
+    const actualUserId = await getUserIdFromCognitoSub(userId, userEmail);
+    if (!actualUserId) {
+      console.warn('Could not convert userId to proper format');
+      return [];
+    }
+    
+    const contacts = await fetchAPI(`/v1/contacts/${actualUserId}`);
     return Array.isArray(contacts) ? contacts : [];
   } catch (error) {
     console.warn('API request failed, returning empty array:', error.message);
     return [];
+  }
+}
+
+// Wysyła zaproszenie do kontaktu
+export async function sendInvitation(senderId, recipientEmail, senderEmail = null) {
+  try {
+    if (typeof window === 'undefined') return null;
+    if (!senderId || !recipientEmail) {
+      throw new Error('senderId and recipientEmail are required');
+    }
+    
+    // Konwertuj cognitoSub na userId jeśli potrzeba
+    const actualSenderId = await getUserIdFromCognitoSub(senderId, senderEmail);
+    if (!actualSenderId) {
+      throw new Error('Could not convert senderId to proper format. User may not exist in database. Please try logging in again.');
+    }
+    
+    const invitation = await fetchAPI('/v1/contacts/invitations', {
+      method: 'POST',
+      body: {
+        senderId: actualSenderId,
+        recipientEmail: recipientEmail.trim()
+      }
+    });
+    return invitation;
+  } catch (error) {
+    console.error('Error sending invitation:', error);
+    throw error;
+  }
+}
+
+// Usuwa kontakt
+export async function deleteContact(contactId) {
+  try {
+    if (typeof window === 'undefined') return;
+    if (!contactId) {
+      throw new Error('contactId is required');
+    }
+    await fetchAPI(`/v1/contacts/${contactId}`, {
+      method: 'DELETE'
+    });
+    return true;
+  } catch (error) {
+    console.error('Error deleting contact:', error);
+    throw error;
   }
 }
 
@@ -606,7 +723,7 @@ export async function registerUser(name, email, password) {
 // Pobiera dane zalogowanego użytkownika
 export async function getCurrentUser() {
   try {
-    const user = await fetchAPI('/auth/me');
+    const user = await fetchAPI('/v1/auth/me');
     return user;
   } catch (error) {
     console.error('Error fetching current user:', error);
@@ -617,7 +734,7 @@ export async function getCurrentUser() {
 // Aktualizuje dane użytkownika
 export async function updateUser(userData) {
   try {
-    const user = await fetchAPI('/auth/me', {
+    const user = await fetchAPI('/v1/auth/me', {
       method: 'PUT',
       body: userData
     });
@@ -630,6 +747,8 @@ export async function updateUser(userData) {
 
 export default {
   getContacts,
+  sendInvitation,
+  deleteContact,
   getFishes,
   getFishById,
   searchFishes,
