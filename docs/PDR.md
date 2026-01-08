@@ -32,6 +32,7 @@ Cele projektu
 - **Miernik 1**: Średni czas potrzebny na dodanie danych poniżej 5 sekund.
 - **Miernik 2:** 30% użytkowników korzysta z funkcji kolaboracji.
 - **Miernik 3:** 10% regularnie korzysta z usługi.
+- **Miernik 4:** Pozytywne komentarze ludzi, którym serwis pomógł zadbać o swoje rybki
 ---
 
 ## 4. Wymagania i Zakres
@@ -47,9 +48,12 @@ Cele projektu
 **Co jest w zakresie (In Scope):**
 
 - Tworzenie profilu akwarium.
+- zarządzanie własnymi akwariami i zapraszanie do zarządzania tym samym akwarium innych ludzi
 - Baza danych popularnych ryb z informacją o wymaganiach.
-- Prosty algorytm sprawdzania kompatybilności ryb (agresja, wymagania temperaturowe). 
-- Podstawowe statystyki (wykresy pH i temperatury). 
+- Baza danych popularnych roślin z informacją o wymaganiach.
+- Prosty algorytm sprawdzania kompatybilności ryb (agresja, wymagania temperaturowe, ph, twardość). 
+- Podstawowe statystyki: Ilość ryb i roślin, średni wiek ryb, kompatybilność i wymagania rybek.
+- Podpowiadanie jaką kolejną rybkę można bezpiecznie dodać.
 - Rejestracja przez zewnętrzny serwis internetowy
 
 **Co jest poza zakresem (Out of Scope):**
@@ -58,18 +62,14 @@ Cele projektu
 - Sklep internetowy (zakup ryb przez aplikację). 
 - Diagnozowanie chorób ryb na podstawie zdjęć (AI). 
 - Dziennik czynności (logowanie podmian wody, karmienia, nawożenia).
-- Gamefikacja 
----
-
-## 5. Doświadczenie Użytkownika (UX) i Projekt Interfejsu (UI)
-
+- Gamifikacja 
 ---
 
 ## 6. Kwestie Techniczne (opcjonalnie)
 
-- Backend: AWS 
-- Baza danych: PostgreSQL 
-- Frontend: React
+- Backend: Java spring + AWS 
+- Baza danych: PostgreSQL na amazon Aurora
+- Frontend: Next.js + Tailwind
 ---
 
 ## 7. Otwarte Pytania i Ryzyka
@@ -79,12 +79,6 @@ Cele projektu
     - **Plan mitygacji:** Dodanie wyraźnego disclaimer'a, że aplikacja jest sugestią, a każde zwierzę jest inne 
 - **Otwarte pytanie:** W jaki sposób aplikacja ma prowadzić użytkownika przez pierwsze 4 tygodnie "dojrzewania" akwarium, zanim wpuści ryby? 
   - **Ryzyko:** Początkujący użytkownicy ("Andrzej") mogą zignorować ten proces i wpuścić ryby od razu. Gdy ryby padną, użytkownik obwini aplikację, że "nie ostrzegła" lub uzna, że hobby jest za trudne i porzuci produkt. 
-- **Otwarte pytanie:** Jak zarządzać częstotliwością powiadomień przy dużej liczbie obowiązków (karmienie, nawożenie, światło, CO2)? 
-  - **Ryzyko:** Jeśli użytkownik otrzyma 5 osobnych powiadomień dziennie, szybko je wyłączy systemowo lub odinstaluje aplikację (irytacja).
-    - **Plan mitygacji:** Funkcja "Daily Briefing" – jedno zbiorcze powiadomienie rano z listą wszystkich zadań na dany dzień, zamiast bombardowania użytkownika co godzinę. 
 - **Otwarte pytanie:** Czy od początku wspieramy jednostki imperialne (galony, stopnie Fahrenheita)? 
   - **Ryzyko:** Jeśli baza danych zostanie zaprojektowana tylko pod litry i stopnie Celsjusza, późniejsza ekspansja na rynki zagraniczne lub obsługa sprzętu z USA będzie wymagała kosztownego przepisania backendu. 
     - **Plan mitygacji:** Zaprojektowanie bazy danych z uniwersalnymi polami i przeliczaniem jednostek "w locie" po stronie frontendu (zależnie od ustawień użytkownika). 
-- **Otwarte pytanie:** Czy aplikacja powinna pozwalać na zapisywanie pomiarów bez dostępu do Internetu? 
-  - **Ryzyko:** Akwaria często stoją w miejscach ze słabym zasięgiem Wi-Fi (piwnice, korytarze, sypialnie z grubymi ścianami). Jeśli aplikacja "muli" przy próbie dodania pomiaru, "Tomek" przestanie z niej korzystać, bo zależy mu na szybkości. 
-    - **Plan mitygacji:** Architektura "Offline First" (np. z użyciem PWA lub lokalnego cache), gdzie dane są zapisywane w telefonie i synchronizowane z serwerem po odzyskaniu połączenia.
