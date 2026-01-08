@@ -6,6 +6,7 @@ import "./i18n";
 import { ThemeProvider as MuiThemeProvider } from "@mui/material/styles";
 import CssBaseline from "@mui/material/CssBaseline";
 import { ThemeProvider, useTheme } from "./contexts/ThemeContext";
+import { AuthProvider } from "./contexts/AuthContext";
 import { useTranslation } from "react-i18next";
 import { SessionProvider } from "next-auth/react";
 import { usePathname } from "next/navigation";

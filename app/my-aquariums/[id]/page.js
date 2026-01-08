@@ -1,7 +1,8 @@
 "use client";
 
 import { useState, useEffect, useRef, useMemo } from "react";
-import { Box, Button, Typography, Modal, Paper, Grid, Divider, CircularProgress, Alert } from "@mui/material";
+import { Box, Button, Typography, Modal, Paper, Grid, Divider, CircularProgress, Alert, TextField, List, ListItem, ListItemText, IconButton, Card, CardContent, FormControl, InputLabel, Select, MenuItem } from "@mui/material";
+import DeleteIcon from '@mui/icons-material/Delete';
 import { useTranslation } from "react-i18next";
 import { useRouter, useParams } from "next/navigation";
 import Link from "next/link";
@@ -9,7 +10,7 @@ import { useTheme } from "../../contexts/ThemeContext";
 import LanguageSwitcher from "../../components/LanguageSwitcher";
 import KeyboardReturnOutlinedIcon from '@mui/icons-material/KeyboardReturnOutlined';
 import BarChartIcon from '@mui/icons-material/BarChart';
-import { getAquariumById } from "../../lib/api";
+import { getAquariumById, addFishToAquarium, removeFishFromAquarium, addPlantToAquarium, removePlantFromAquarium, getFishes, getPlants } from "../../lib/api";
 
 export default function AquariumDetailPage() {
   
@@ -27,6 +28,16 @@ export default function AquariumDetailPage() {
   const [statisticsOpen, setStatisticsOpen] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState(null);
+  const [addFishModalOpen, setAddFishModalOpen] = useState(false);
+  const [addPlantModalOpen, setAddPlantModalOpen] = useState(false);
+  const [availableFishes, setAvailableFishes] = useState([]);
+  const [availablePlants, setAvailablePlants] = useState([]);
+  const [selectedFishId, setSelectedFishId] = useState("");
+  const [selectedPlantId, setSelectedPlantId] = useState("");
+  const [fishQuantity, setFishQuantity] = useState(1);
+  const [plantQuantity, setPlantQuantity] = useState(1);
+  const [isAddingFish, setIsAddingFish] = useState(false);
+  const [isAddingPlant, setIsAddingPlant] = useState(false);
   const imageContainerRef = useRef(null);
 
   useEffect(() => {
@@ -58,6 +69,167 @@ export default function AquariumDetailPage() {
     fetchAquarium();
   }, [aquariumId, router]);
 
+  // Pobierz dostępne ryby i rośliny
+  useEffect(() => {
+    async function fetchAvailableData() {
+      try {
+        const [fishes, plants] = await Promise.all([
+          getFishes(),
+          getPlants()
+        ]);
+        setAvailableFishes(fishes || []);
+        setAvailablePlants(plants || []);
+      } catch (err) {
+        console.error("Error fetching available fishes/plants:", err);
+      }
+    }
+    fetchAvailableData();
+  }, []);
+
+  async function handleAddFish() {
+    if (!selectedFishId || !aquariumId) return;
+    
+    try {
+      setIsAddingFish(true);
+      const result = await addFishToAquarium(aquariumId, selectedFishId, fishQuantity);
+      
+      // Backend zwraca zaktualizowane akwarium w odpowiedzi
+      if (result && typeof result === 'object' && result.id) {
+        // result jest już zaktualizowanym akwarium
+        setAquarium(result);
+      } else {
+        // Jeśli nie ma akwarium w odpowiedzi, pobierz je ponownie
+        const updatedAquarium = await getAquariumById(aquariumId);
+        if (updatedAquarium) {
+          setAquarium(updatedAquarium);
+        }
+      }
+      
+      // Resetuj formularz
+      setSelectedFishId("");
+      setFishQuantity(1);
+      setAddFishModalOpen(false);
+    } catch (err) {
+      console.error("Error adding fish:", err);
+      setError(err.message || "Nie udało się dodać ryby.");
+    } finally {
+      setIsAddingFish(false);
+    }
+  }
+
+  async function handleRemoveFish(fishId) {
+    if (!aquariumId || !fishId) {
+      console.error('Missing aquariumId or fishId:', { aquariumId, fishId });
+      return;
+    }
+    
+    if (!confirm(t("confirmRemoveFish", { defaultValue: "Czy na pewno chcesz usunąć tę rybę?" }))) {
+      return;
+    }
+    
+    try {
+      console.log('Removing fish:', { aquariumId, fishId });
+      await removeFishFromAquarium(aquariumId, fishId);
+      console.log('Fish removed successfully');
+      
+      // Backend zwraca zaktualizowane akwarium, ale może nie być w pełni zaktualizowane
+      // Pobierz akwarium ponownie, żeby mieć pewność, że mamy aktualne dane
+      console.log('Fetching updated aquarium to ensure we have latest data...');
+      await new Promise(resolve => setTimeout(resolve, 200)); // Opóźnienie, żeby backend zdążył zaktualizować
+      const updatedAquarium = await getAquariumById(aquariumId);
+      if (updatedAquarium) {
+        console.log('Updated aquarium fetched:', updatedAquarium);
+        console.log('Fishes array:', updatedAquarium.fishes);
+        console.log('Fishes count (positions):', updatedAquarium.fishes?.length || 0);
+        const totalCount = (updatedAquarium.fishes || []).reduce((sum, fish) => sum + (fish.count || 1), 0);
+        console.log('Fishes count (total):', totalCount);
+        
+        // Utwórz nowy obiekt z nowymi tablicami, żeby wymusić aktualizację React
+        const freshAquarium = {
+          ...updatedAquarium,
+          fishes: updatedAquarium.fishes ? [...updatedAquarium.fishes] : [],
+          plants: updatedAquarium.plants ? [...updatedAquarium.plants] : []
+        };
+        console.log('Setting aquarium state with fresh object');
+        setAquarium(freshAquarium);
+        console.log('Aquarium state updated');
+      } else {
+        console.error('Failed to fetch updated aquarium');
+      }
+    } catch (err) {
+      console.error("Error removing fish:", err);
+      setError(err.message || "Nie udało się usunąć ryby.");
+    }
+  }
+
+  async function handleAddPlant() {
+    if (!selectedPlantId || !aquariumId) return;
+    
+    try {
+      setIsAddingPlant(true);
+      const result = await addPlantToAquarium(aquariumId, selectedPlantId, plantQuantity);
+      
+      // Backend zwraca zaktualizowane akwarium w odpowiedzi
+      if (result && typeof result === 'object' && result.id) {
+        // result jest już zaktualizowanym akwarium
+        setAquarium(result);
+      } else {
+        // Jeśli nie ma akwarium w odpowiedzi, pobierz je ponownie
+        const updatedAquarium = await getAquariumById(aquariumId);
+        if (updatedAquarium) {
+          setAquarium(updatedAquarium);
+        }
+      }
+      
+      // Resetuj formularz
+      setSelectedPlantId("");
+      setPlantQuantity(1);
+      setAddPlantModalOpen(false);
+    } catch (err) {
+      console.error("Error adding plant:", err);
+      setError(err.message || "Nie udało się dodać rośliny.");
+    } finally {
+      setIsAddingPlant(false);
+    }
+  }
+
+  async function handleRemovePlant(plantId) {
+    if (!aquariumId || !plantId) {
+      console.error('Missing aquariumId or plantId:', { aquariumId, plantId });
+      return;
+    }
+    
+    if (!confirm(t("confirmRemovePlant", { defaultValue: "Czy na pewno chcesz usunąć tę roślinę?" }))) {
+      return;
+    }
+    
+    try {
+      console.log('Removing plant:', { aquariumId, plantId });
+      const result = await removePlantFromAquarium(aquariumId, plantId);
+      console.log('Plant removed successfully, result:', result);
+      
+      // Backend zwraca zaktualizowane akwarium w odpowiedzi
+      if (result && typeof result === 'object' && result.id) {
+        // result jest już zaktualizowanym akwarium
+        console.log('Using aquarium from response:', result);
+        setAquarium(result);
+      } else {
+        // Jeśli nie ma akwarium w odpowiedzi, pobierz je ponownie
+        console.log('Fetching updated aquarium...');
+        const updatedAquarium = await getAquariumById(aquariumId);
+        if (updatedAquarium) {
+          console.log('Updated aquarium:', updatedAquarium);
+          setAquarium(updatedAquarium);
+        } else {
+          console.error('Failed to fetch updated aquarium');
+        }
+      }
+    } catch (err) {
+      console.error("Error removing plant:", err);
+      setError(err.message || "Nie udało się usunąć rośliny.");
+    }
+  }
+
   useEffect(() => {
     if (!aquarium || !imageContainerRef.current) return;
 
@@ -88,48 +260,73 @@ export default function AquariumDetailPage() {
     const aquariumFishes = aquarium.fishes || aquarium.fishList || [];
     const aquariumPlants = aquarium.plants || aquarium.plantList || [];
 
-    const uniqueFishSpecies = new Set(aquariumFishes.map(fish => fish.species));
+    // Oblicz całkowitą liczbę ryb (suma wszystkich count)
+    const totalFishesCount = aquariumFishes.reduce((sum, fish) => sum + (fish.count || 1), 0);
+    const totalPlantsCount = aquariumPlants.reduce((sum, plant) => sum + (plant.count || 1), 0);
+
+    // Liczba unikalnych gatunków ryb
+    const uniqueFishSpecies = new Set(aquariumFishes.map(fish => fish.fishId));
     const fishSpeciesCount = uniqueFishSpecies.size;
 
-    const uniquePlantSpecies = new Set(aquariumPlants.map(plant => plant.species || plant.name));
+    // Liczba unikalnych gatunków roślin
+    const uniquePlantSpecies = new Set(aquariumPlants.map(plant => plant.plantId));
     const plantSpeciesCount = uniquePlantSpecies.size;
 
+    // Grupuj ryby po gatunku (używając fishId) i sumuj count
     const fishBySpecies = aquariumFishes.reduce((acc, fish) => {
-
-      acc[fish.species] = (acc[fish.species] || 0) + 1;
+      const fishId = fish.fishId;
+      if (!acc[fishId]) {
+        acc[fishId] = 0;
+      }
+      acc[fishId] += (fish.count || 1);
       return acc;
     }, {});
 
     const fishSpeciesData = Object.entries(fishBySpecies)
-      .map(([species, count]) => ({
-        species,
-        count,
+      .map(([fishId, count]) => {
+        // Znajdź nazwę ryby
+        const fishDetails = availableFishes.find(f => f.id === fishId);
+        const speciesName = fishDetails?.name || fishId;
         
-        percentage: aquariumFishes.length > 0 ? (count / aquariumFishes.length) * 100 : 0
-      }))
+        return {
+          species: speciesName,
+          count,
+          percentage: totalFishesCount > 0 ? (count / totalFishesCount) * 100 : 0
+        };
+      })
       .sort((a, b) => b.count - a.count); 
 
     const mostCommonFish = fishSpeciesData.length > 0 ? fishSpeciesData[0] : null;
 
+    // Grupuj rośliny po gatunku (używając plantId) i sumuj count
     const plantsBySpecies = aquariumPlants.reduce((acc, plant) => {
-      const species = plant.species || plant.name;
-      acc[species] = (acc[species] || 0) + 1;
+      const plantId = plant.plantId;
+      if (!acc[plantId]) {
+        acc[plantId] = 0;
+      }
+      acc[plantId] += (plant.count || 1);
       return acc;
     }, {});
 
     const plantSpeciesData = Object.entries(plantsBySpecies)
-      .map(([species, count]) => ({
-        species,
-        count,
-        percentage: aquariumPlants.length > 0 ? (count / aquariumPlants.length) * 100 : 0
-      }))
+      .map(([plantId, count]) => {
+        // Znajdź nazwę rośliny
+        const plantDetails = availablePlants.find(p => p.id === plantId);
+        const speciesName = plantDetails?.name || plantId;
+        
+        return {
+          species: speciesName,
+          count,
+          percentage: totalPlantsCount > 0 ? (count / totalPlantsCount) * 100 : 0
+        };
+      })
       .sort((a, b) => b.count - a.count);
 
     const mostCommonPlant = plantSpeciesData.length > 0 ? plantSpeciesData[0] : null;
     
     return {
-      totalFishes: aquariumFishes.length,
-      totalPlants: aquariumPlants.length,
+      totalFishes: totalFishesCount, // Suma wszystkich count, nie liczba pozycji
+      totalPlants: totalPlantsCount, // Suma wszystkich count, nie liczba pozycji
       fishSpeciesCount,
       plantSpeciesCount,
       mostCommonFish,
@@ -137,7 +334,11 @@ export default function AquariumDetailPage() {
       fishSpeciesData,
       plantSpeciesData
     };
-  }, [aquarium]);
+  }, [aquarium, availableFishes, availablePlants]);
+
+  // Oblicz całkowitą liczbę ryb i roślin dla wyświetlania w nagłówku
+  const totalFishesCount = aquarium ? (aquarium.fishes || []).reduce((sum, fish) => sum + (fish.count || 1), 0) : 0;
+  const totalPlantsCount = aquarium ? (aquarium.plants || []).reduce((sum, plant) => sum + (plant.count || 1), 0) : 0;
 
   const handleOpenStatistics = () => {
     setStatisticsOpen(true);
@@ -289,10 +490,10 @@ export default function AquariumDetailPage() {
                     aquarium.biotope}
               </Typography>
               <Typography variant="caption" sx={{ fontSize: { xs: '0.6rem', sm: '0.65rem', md: '0.75rem' }, whiteSpace: 'nowrap', color: darkMode ? 'white' : 'inherit' }}>
-                🐟 {aquarium.fishes?.length || 0}
+                🐟 {totalFishesCount}
               </Typography>
               <Typography variant="caption" sx={{ fontSize: { xs: '0.6rem', sm: '0.65rem', md: '0.75rem' }, whiteSpace: 'nowrap', color: darkMode ? 'white' : 'inherit' }}>
-                🌿 {aquarium.plants?.length || 0}
+                🌿 {totalPlantsCount}
               </Typography>
             </Box>
           </Box>
@@ -403,10 +604,10 @@ export default function AquariumDetailPage() {
                   aquarium.biotope}
             </Typography>
             <Typography variant="caption" sx={{ fontSize: '0.7rem', whiteSpace: 'nowrap', color: darkMode ? 'white' : 'inherit' }}>
-              🐟 {aquarium.fishes?.length || 0}
+                🐟 {totalFishesCount}
             </Typography>
             <Typography variant="caption" sx={{ fontSize: '0.7rem', whiteSpace: 'nowrap', color: darkMode ? 'white' : 'inherit' }}>
-              🌿 {aquarium.plants?.length || 0}
+              🌿 {totalPlantsCount}
             </Typography>
           </Box>
         </Box>
@@ -487,6 +688,137 @@ export default function AquariumDetailPage() {
         )}
       </Box>
 
+      {/* Listy ryb i roślin */}
+      {aquarium && (
+        <Box sx={{
+          position: 'fixed',
+          left: 0,
+          right: 0,
+          bottom: 60,
+          zIndex: 15,
+          maxHeight: '40vh',
+          overflowY: 'auto',
+          px: 2,
+          py: 1
+        }}>
+          <Grid container spacing={2}>
+            {/* Lista ryb */}
+            <Grid item xs={12} sm={6}>
+              <Paper sx={{
+                p: 2,
+                bgcolor: darkMode ? 'rgba(30, 30, 30, 0.9)' : 'rgba(255, 255, 255, 0.9)',
+                backdropFilter: 'blur(10px)'
+              }}>
+                <Typography variant="h6" sx={{ mb: 1, color: darkMode ? 'white' : 'inherit' }}>
+                  🐟 {t("fishes", { defaultValue: "Ryby" })} ({totalFishesCount})
+                </Typography>
+                {aquarium.fishes && aquarium.fishes.length > 0 ? (
+                  <List dense>
+                    {aquarium.fishes.map((fish, index) => {
+                      // Znajdź szczegóły ryby w dostępnych rybach
+                      const fishDetails = availableFishes.find(f => f.id === fish.fishId);
+                      const fishName = fishDetails?.name || `Ryba ${index + 1}`;
+                      const fishCount = fish.count || 1;
+                      
+                      // Użyj unikalnego klucza - fishId + index, żeby uniknąć duplikatów
+                      const uniqueKey = `${fish.fishId}-${index}`;
+                      
+                      return (
+                        <ListItem
+                          key={uniqueKey}
+                          secondaryAction={
+                            <IconButton
+                              edge="end"
+                              aria-label="delete"
+                              onClick={() => handleRemoveFish(fish.fishId)}
+                              size="small"
+                            >
+                              <DeleteIcon fontSize="small" />
+                            </IconButton>
+                          }
+                          sx={{
+                            bgcolor: darkMode ? 'rgba(255,255,255,0.05)' : 'rgba(0,0,0,0.02)',
+                            mb: 0.5,
+                            borderRadius: 1
+                          }}
+                        >
+                          <ListItemText
+                            primary={fishCount > 1 ? `${fishName} (${fishCount})` : fishName}
+                            secondary={null}
+                            primaryTypographyProps={{ fontSize: '0.875rem' }}
+                          />
+                        </ListItem>
+                      );
+                    })}
+                  </List>
+                ) : (
+                  <Typography variant="body2" sx={{ color: darkMode ? 'rgba(255,255,255,0.7)' : 'text.secondary' }}>
+                    {t("noFishes", { defaultValue: "Brak ryb w akwarium" })}
+                  </Typography>
+                )}
+              </Paper>
+            </Grid>
+
+            {/* Lista roślin */}
+            <Grid item xs={12} sm={6}>
+              <Paper sx={{
+                p: 2,
+                bgcolor: darkMode ? 'rgba(30, 30, 30, 0.9)' : 'rgba(255, 255, 255, 0.9)',
+                backdropFilter: 'blur(10px)'
+              }}>
+                <Typography variant="h6" sx={{ mb: 1, color: darkMode ? 'white' : 'inherit' }}>
+                  🌿 {t("plants", { defaultValue: "Rośliny" })} ({totalPlantsCount})
+                </Typography>
+                {aquarium.plants && aquarium.plants.length > 0 ? (
+                  <List dense>
+                    {aquarium.plants.map((plant, index) => {
+                      // Znajdź szczegóły rośliny w dostępnych roślinach
+                      const plantDetails = availablePlants.find(p => p.id === plant.plantId);
+                      const plantName = plantDetails?.name || `Roślina ${index + 1}`;
+                      const plantCount = plant.count || 1;
+                      
+                      // Użyj unikalnego klucza - plantId + index, żeby uniknąć duplikatów
+                      const uniqueKey = `${plant.plantId}-${index}`;
+                      
+                      return (
+                        <ListItem
+                          key={uniqueKey}
+                          secondaryAction={
+                            <IconButton
+                              edge="end"
+                              aria-label="delete"
+                              onClick={() => handleRemovePlant(plant.plantId)}
+                              size="small"
+                            >
+                              <DeleteIcon fontSize="small" />
+                            </IconButton>
+                          }
+                          sx={{
+                            bgcolor: darkMode ? 'rgba(255,255,255,0.05)' : 'rgba(0,0,0,0.02)',
+                            mb: 0.5,
+                            borderRadius: 1
+                          }}
+                        >
+                          <ListItemText
+                            primary={plantCount > 1 ? `${plantName} (${plantCount})` : plantName}
+                            secondary={null}
+                            primaryTypographyProps={{ fontSize: '0.875rem' }}
+                          />
+                        </ListItem>
+                      );
+                    })}
+                  </List>
+                ) : (
+                  <Typography variant="body2" sx={{ color: darkMode ? 'rgba(255,255,255,0.7)' : 'text.secondary' }}>
+                    {t("noPlants", { defaultValue: "Brak roślin w akwarium" })}
+                  </Typography>
+                )}
+              </Paper>
+            </Grid>
+          </Grid>
+        </Box>
+      )}
+
       {}
       <Box sx={{
         position: 'fixed', left: 0, right: 0, bottom: 0,
@@ -497,10 +829,10 @@ export default function AquariumDetailPage() {
         boxShadow: '0 -6px 16px rgba(0,0,0,0.2)',
         zIndex: 20
       }}>
-        <Button variant="contained" onClick={() => alert(t("addFish"))}>
+        <Button variant="contained" onClick={() => setAddFishModalOpen(true)}>
           {t("addFish")}
         </Button>
-        <Button variant="contained" onClick={() => alert(t("addPlant"))}>
+        <Button variant="contained" onClick={() => setAddPlantModalOpen(true)}>
           {t("addPlant")}
         </Button>
       </Box>
@@ -859,6 +1191,146 @@ export default function AquariumDetailPage() {
               <CircularProgress />
             </Box>
           )}
+        </Paper>
+      </Modal>
+
+      {/* Modal dodawania ryby */}
+      <Modal
+        open={addFishModalOpen}
+        onClose={() => {
+          setAddFishModalOpen(false);
+          setSelectedFishId("");
+          setFishQuantity(1);
+        }}
+        sx={{
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'center',
+          p: 2
+        }}
+      >
+        <Paper sx={{
+          width: { xs: '90%', sm: 500 },
+          maxHeight: '90vh',
+          overflow: 'auto',
+          p: 3,
+          bgcolor: darkMode ? 'rgba(30, 30, 30, 0.95)' : 'background.paper'
+        }}>
+          <Typography variant="h6" sx={{ mb: 2, fontWeight: 600, color: darkMode ? 'white' : 'inherit' }}>
+            {t("addFish", { defaultValue: "Dodaj rybę" })}
+          </Typography>
+          
+          <FormControl fullWidth sx={{ mb: 2 }}>
+            <InputLabel>{t("selectFish", { defaultValue: "Wybierz rybę" })}</InputLabel>
+            <Select
+              value={selectedFishId}
+              label={t("selectFish", { defaultValue: "Wybierz rybę" })}
+              onChange={(e) => setSelectedFishId(e.target.value)}
+            >
+              {availableFishes.map((fish) => (
+                <MenuItem key={fish.id} value={fish.id}>
+                  {fish.name}
+                </MenuItem>
+              ))}
+            </Select>
+          </FormControl>
+
+          <TextField
+            fullWidth
+            type="number"
+            label={t("quantity", { defaultValue: "Ilość" })}
+            value={fishQuantity}
+            onChange={(e) => setFishQuantity(Math.max(1, parseInt(e.target.value) || 1))}
+            inputProps={{ min: 1 }}
+            sx={{ mb: 3 }}
+          />
+
+          <Box sx={{ display: 'flex', gap: 2, justifyContent: 'flex-end' }}>
+            <Button onClick={() => {
+              setAddFishModalOpen(false);
+              setSelectedFishId("");
+              setFishQuantity(1);
+            }}>
+              {t("cancel", { defaultValue: "Anuluj" })}
+            </Button>
+            <Button
+              variant="contained"
+              onClick={handleAddFish}
+              disabled={!selectedFishId || isAddingFish}
+            >
+              {isAddingFish ? <CircularProgress size={20} /> : t("add", { defaultValue: "Dodaj" })}
+            </Button>
+          </Box>
+        </Paper>
+      </Modal>
+
+      {/* Modal dodawania rośliny */}
+      <Modal
+        open={addPlantModalOpen}
+        onClose={() => {
+          setAddPlantModalOpen(false);
+          setSelectedPlantId("");
+          setPlantQuantity(1);
+        }}
+        sx={{
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'center',
+          p: 2
+        }}
+      >
+        <Paper sx={{
+          width: { xs: '90%', sm: 500 },
+          maxHeight: '90vh',
+          overflow: 'auto',
+          p: 3,
+          bgcolor: darkMode ? 'rgba(30, 30, 30, 0.95)' : 'background.paper'
+        }}>
+          <Typography variant="h6" sx={{ mb: 2, fontWeight: 600, color: darkMode ? 'white' : 'inherit' }}>
+            {t("addPlant", { defaultValue: "Dodaj roślinę" })}
+          </Typography>
+          
+          <FormControl fullWidth sx={{ mb: 2 }}>
+            <InputLabel>{t("selectPlant", { defaultValue: "Wybierz roślinę" })}</InputLabel>
+            <Select
+              value={selectedPlantId}
+              label={t("selectPlant", { defaultValue: "Wybierz roślinę" })}
+              onChange={(e) => setSelectedPlantId(e.target.value)}
+            >
+              {availablePlants.map((plant) => (
+                <MenuItem key={plant.id} value={plant.id}>
+                  {plant.name}
+                </MenuItem>
+              ))}
+            </Select>
+          </FormControl>
+
+          <TextField
+            fullWidth
+            type="number"
+            label={t("quantity", { defaultValue: "Ilość" })}
+            value={plantQuantity}
+            onChange={(e) => setPlantQuantity(Math.max(1, parseInt(e.target.value) || 1))}
+            inputProps={{ min: 1 }}
+            sx={{ mb: 3 }}
+          />
+
+          <Box sx={{ display: 'flex', gap: 2, justifyContent: 'flex-end' }}>
+            <Button onClick={() => {
+              setAddPlantModalOpen(false);
+              setSelectedPlantId("");
+              setPlantQuantity(1);
+            }}>
+              {t("cancel", { defaultValue: "Anuluj" })}
+            </Button>
+            <Button
+              variant="contained"
+              onClick={handleAddPlant}
+              disabled={!selectedPlantId || isAddingPlant}
+            >
+              {isAddingPlant ? <CircularProgress size={20} /> : t("add", { defaultValue: "Dodaj" })}
+            </Button>
+          </Box>
         </Paper>
       </Modal>
     </Box>
