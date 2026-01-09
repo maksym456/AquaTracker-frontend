@@ -42,7 +42,7 @@ export function checkTemperamentCompatibility(fish1, fish2) {
       return {
         compatible: false,
         severity: "ERROR",
-        message: `${temp1 === "agresywne" ? name1 : name2} (agresywne) nie może być z ${temp1 === "spokojne" ? name1 : name2} (spokojne).`
+        message: `${temp1 === "agresywne" ? name1 : name2} (agresywne) nie może być z ${temp1 === "spokojne" ? name1 : name2} (spokojne). Ryba spokojna może zostać pożarta.`
       };
     }
     if (temp1 === "pół-agresywne" || temp2 === "pół-agresywne") {
@@ -52,32 +52,32 @@ export function checkTemperamentCompatibility(fish1, fish2) {
         message: `${temp1 === "agresywne" ? name1 : name2} (agresywne) nie może być z ${temp1 === "pół-agresywne" ? name1 : name2} (pół-agresywne).`
       };
     }
-    // Agresywne z agresywnymi spoza swojego gatunku wymagają dodatkowego sprawdzenia
+    // Agresywne z agresywnymi spoza swojego gatunku - konflikt może spowodować pożarcie łagodnego osobnika
     if (temp1 === "agresywne" && temp2 === "agresywne" && id1 !== id2) {
       return {
         compatible: true,
         severity: "WARNING",
-        message: `${name1} i ${name2} (oba agresywne, różne gatunki) wymagają dodatkowego sprawdzenia.`
+        message: `${name1} i ${name2} (oba agresywne, różne gatunki) - konflikt może spowodować pożarcie łagodnego osobnika.`
       };
     }
   }
 
-  // Półagresywne ze spokojnymi wymagają dodatkowego sprawdzenia
+  // Półagresywne ze spokojnymi - konflikt może spowodować pożarcie łagodnego osobnika
   if ((temp1 === "pół-agresywne" && temp2 === "spokojne") || 
       (temp1 === "spokojne" && temp2 === "pół-agresywne")) {
     return {
       compatible: true,
       severity: "WARNING",
-      message: `${temp1 === "pół-agresywne" ? name1 : name2} (pół-agresywne) z ${temp1 === "spokojne" ? name1 : name2} (spokojne) wymaga dodatkowego sprawdzenia.`
+      message: `${temp1 === "pół-agresywne" ? name1 : name2} (pół-agresywne) z ${temp1 === "spokojne" ? name1 : name2} (spokojne) - konflikt może spowodować pożarcie łagodnego osobnika.`
     };
   }
 
-  // Półagresywne ze półagresywnymi spoza swojego gatunku wymagają dodatkowego sprawdzenia
+  // Półagresywne ze półagresywnymi spoza swojego gatunku - konflikt może spowodować pożarcie łagodnego osobnika
   if (temp1 === "pół-agresywne" && temp2 === "pół-agresywne" && id1 !== id2) {
     return {
       compatible: true,
       severity: "WARNING",
-      message: `${name1} i ${name2} (oba pół-agresywne, różne gatunki) wymagają dodatkowego sprawdzenia.`
+      message: `${name1} i ${name2} (oba pół-agresywne, różne gatunki) - konflikt może spowodować pożarcie łagodnego osobnika.`
     };
   }
 
