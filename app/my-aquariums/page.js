@@ -271,6 +271,7 @@ export default function MyAquariumsPage() {
             let type = log.actionType?.toLowerCase() || 'unknown';
             if (type === 'fish_added') type = 'fishAdded';
             if (type === 'fish_removed') type = 'fishRemoved';
+            if (type === 'fish_died') type = 'fishDied';
             if (type === 'plant_added') type = 'plantAdded';
             if (type === 'plant_removed') type = 'plantRemoved';
             if (type === 'parameter_changed') type = 'parameterChanged';
@@ -307,6 +308,7 @@ export default function MyAquariumsPage() {
       deleted: t('actionDeleted'),
       fishAdded: t('actionFishAdded'),
       fishRemoved: t('actionFishRemoved'),
+      fishDied: t('actionFishDied', { defaultValue: 'Ryba zdechła' }),
       plantAdded: t('actionPlantAdded'),
       plantRemoved: t('actionPlantRemoved'),
       parameterChanged: t('actionParameterChanged'),
@@ -321,6 +323,7 @@ export default function MyAquariumsPage() {
       deleted: '#F44336',
       fishAdded: '#FF9800',
       fishRemoved: '#E91E63',
+      fishDied: '#D32F2F', // Ciemniejszy czerwony dla śmierci
       plantAdded: '#9C27B0',
       plantRemoved: '#F44336',
       parameterChanged: '#00BCD4',

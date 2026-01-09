@@ -43,17 +43,49 @@ export default function PlantDatabasePage() {
   const [currentCard, setCurrentCard] = useState(0);
   const [panelOpen, setPanelOpen] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
+  const [imageErrors, setImageErrors] = useState({});
 
   // Funkcja pomocnicza do mapowania nazw roślin na ścieżki ikon
-  // Dla początkujących: jeśli API zwróci iconName, używamy go, w przeciwnym razie używamy domyślnej ikony
+  // Dla początkujących: jeśli API zwróci iconName, używamy go, w przeciwnym razie mapujemy nazwę rośliny na plik obrazu
   const getPlantImage = (plantName, iconName) => {
-    // Jeśli API zwróciło iconName, używamy go
+    // Jeśli API zwróciło iconName, używamy go (dodajemy .png jeśli nie ma rozszerzenia)
     if (iconName) {
-      return `/plant/${iconName}`;
+      const iconPath = iconName.endsWith('.png') ? iconName : `${iconName}.png`;
+      return `/plant/${iconPath}`;
+    }
+    
+    // Mapowanie nazw roślin na nazwy plików obrazów
+    const plantImageMap = {
+      'Anubias': 'Anubias.png',
+      'Duży Heniek': 'Duży_Heniek.png',
+      'Gałązka Kulista': 'Gałązka_Kulista.png',
+      'Heniek Mały': 'Heniek_Mały.png',
+      'Kryptokoryna': 'Kryptokoryna.png',
+      'Limnofila': 'Limnofila.png',
+      'Lotos Tygrysi': 'Lotos_Tygrysi.png',
+      'Ludwigia': 'Ludwigia.png',
+      'Mech Jawajski': 'Mech_Jawajski.png',
+      'Moczarka': 'Moczarka.png',
+      'Monte Carlo': 'Monte_Carlo.png',
+      'Nurzaniec': 'Nurzaniec.png',
+      'Ponikło Maleńkie': 'Ponikło_Maleńkie.png',
+      'Rogatek': 'Rogatek.png',
+      'Rotala': 'Rotala.png',
+      'Żabienica': 'Żabienica.png',
+    };
+    
+    // Próbujemy znaleźć dopasowanie w mapie
+    if (plantName && plantImageMap[plantName]) {
+      return `/plant/${plantImageMap[plantName]}`;
+    }
+    
+    // Jeśli nie ma dopasowania, próbujemy znaleźć plik po nazwie (normalizując spacje na podkreślenia)
+    if (plantName) {
+      const normalizedName = plantName.replace(/\s+/g, '_') + '.png';
+      return `/plant/${normalizedName}`;
     }
     
     // W przeciwnym razie używamy domyślnej ikony
-    // TODO: Można dodać mapowanie nazw na ikony podobnie jak dla ryb
     return "/plant/default.png";
   };
 
@@ -77,14 +109,11 @@ export default function PlantDatabasePage() {
     const phRange = parseRange(apiPlant.ph, [6.5, 7.5]);
     const hardness = parseRange(apiPlant.hardnessDGH, [5, 15]);
 
-    // Tworzymy opis na podstawie dostępnych danych
-    const description = apiPlant.description || 
-      `Temperatura: ${apiPlant.temperature || '20-26'}°C, pH: ${apiPlant.ph || '6.5-7.5'}, Biotop: ${apiPlant.biotope || 'Ogólny'}`;
+    // Opis będzie z bazy danych, ale na razie używamy pustego stringa (backend doda to później)
+    const description = apiPlant.description || "";
 
-    // Pobieramy ścieżkę do obrazka
-    const image = apiPlant.iconName 
-      ? `/plant/${apiPlant.iconName}` 
-      : getPlantImage(apiPlant.name, apiPlant.iconName);
+    // Pobieramy ścieżkę do obrazka używając funkcji mapującej
+    const image = getPlantImage(apiPlant.name, apiPlant.iconName);
     
     return {
       id: apiPlant.id,
@@ -95,6 +124,9 @@ export default function PlantDatabasePage() {
       biotope: apiPlant.biotope || "",
       phRange: phRange,
       hardness: hardness,
+      lightRequirements: apiPlant.lightRequirements || "",
+      co2Requirements: apiPlant.co2Requirements || "",
+      difficulty: apiPlant.difficulty || "",
     };
   };
 
@@ -369,32 +401,41 @@ export default function PlantDatabasePage() {
           alignItems: 'center',
           justifyContent: 'center',
           width: '100%',
-          minHeight: { xs: '550px', md: '600px' },
+          minHeight: { xs: '600px', md: '700px' },
           gap: 2,
           py: 2,
           '@media (min-width: 1366px) and (max-width: 1919px)': {
-            minHeight: '550px',
+            minHeight: '650px',
             py: 1
           },
           '@media (min-width: 1366px) and (max-width: 1367px) and (max-height: 768px)': {
-            minHeight: '500px',
+            minHeight: '580px',
             gap: 1
+          },
+          '@media (min-width: 1366px) and (max-width: 1367px) and (max-height: 700px)': {
+            minHeight: '520px',
+            gap: 0.75,
+            py: 0.5
           }
         }}>
           {/* Wewnętrzny kontener z większą szerokością dla kart */}
           <Box sx={{
             position: 'relative',
             width: { xs: '90%', sm: '60%', md: '45%' },
-            maxWidth: { xs: '100%', sm: 400, md: 350 },
-            height: { xs: '550px', md: '600px' },
+            maxWidth: { xs: '100%', sm: 450, md: 400 },
+            height: { xs: '600px', md: '700px' },
             display: 'flex',
             alignItems: 'center',
             justifyContent: 'center',
             '@media (min-width: 1366px) and (max-width: 1919px)': {
-              height: '550px'
+              height: '650px'
             },
             '@media (min-width: 1366px) and (max-width: 1367px) and (max-height: 768px)': {
-              height: '500px',
+              height: '580px',
+              width: '42%'
+            },
+            '@media (min-width: 1366px) and (max-width: 1367px) and (max-height: 700px)': {
+              height: '520px',
               width: '42%'
             }
           }}>
@@ -433,24 +474,28 @@ export default function PlantDatabasePage() {
                       : `translate(calc(-50% + ${position.translateX}px), -50%) scale(${position.scale})`,
                     transformOrigin: 'center center',
                     bgcolor: 'rgba(20, 50, 30, 0.95)',
-            borderRadius: 4,
-            overflow: 'hidden',
-            boxShadow: '0 8px 32px rgba(0, 0, 0, 0.4)',
-                    minHeight: { xs: '500px', md: '550px' },
-                    maxHeight: { xs: '500px', md: '550px' },
-            display: 'flex',
+                    borderRadius: 4,
+                    overflow: 'hidden',
+                    boxShadow: '0 8px 32px rgba(0, 0, 0, 0.4)',
+                    minHeight: { xs: '550px', md: '650px' },
+                    maxHeight: { xs: '550px', md: '650px' },
+                    display: 'flex',
                     flexDirection: 'column',
                     zIndex: position.zIndex,
                     opacity: position.opacity,
                     transition: 'all 0.5s cubic-bezier(0.4, 0, 0.2, 1)',
                     cursor: position.zIndex === 3 ? 'default' : 'pointer',
                     '@media (min-width: 1366px) and (max-width: 1919px)': {
-                      minHeight: '500px',
-                      maxHeight: '500px'
+                      minHeight: '600px',
+                      maxHeight: '600px'
                     },
                     '@media (min-width: 1366px) and (max-width: 1367px) and (max-height: 768px)': {
-                      minHeight: '450px',
-                      maxHeight: '450px'
+                      minHeight: '530px',
+                      maxHeight: '530px'
+                    },
+                    '@media (min-width: 1366px) and (max-width: 1367px) and (max-height: 700px)': {
+                      minHeight: '470px',
+                      maxHeight: '470px'
                     },
                     '&:hover': position.zIndex === 3 ? {} : {
                       opacity: 0.85,
@@ -500,97 +545,240 @@ export default function PlantDatabasePage() {
                 )}
                 
                 {/* Obraz rośliny */}
-            <Box sx={{
-              width: '100%',
-                  height: { xs: '200px', md: '250px' },
+                <Box sx={{
+                  width: '100%',
+                  height: { xs: '180px', md: '220px' },
                   bgcolor: 'rgba(40, 100, 60, 0.8)',
-                  backgroundImage: `url("${plant.image}")`,
-              backgroundSize: 'cover',
-              backgroundPosition: 'center',
-              display: 'flex',
-              alignItems: 'center',
+                  display: 'flex',
+                  alignItems: 'center',
                   justifyContent: 'center',
+                  position: 'relative',
+                  overflow: 'hidden',
+                  flexShrink: 0,
                   '@media (min-width: 1366px) and (max-width: 1367px) and (max-height: 768px)': {
-                    height: '180px'
+                    height: '150px'
+                  },
+                  '@media (min-width: 1366px) and (max-width: 1367px) and (max-height: 700px)': {
+                    height: '140px'
                   }
-            }}>
-              {/* Placeholder jeśli brak obrazu */}
-              <Typography sx={{ color: 'white', opacity: 0.5 }}>
-                    {plant.image || 'Image'}
-              </Typography>
-            </Box>
+                }}>
+                  {!imageErrors[plant.id] ? (
+                    <img
+                      src={plant.image}
+                      alt={plant.name}
+                      loading="lazy"
+                      onError={() => {
+                        setImageErrors(prev => ({ ...prev, [plant.id]: true }));
+                      }}
+                      style={{
+                        width: '100%',
+                        height: '100%',
+                        objectFit: 'contain'
+                      }}
+                    />
+                  ) : (
+                    <Box sx={{
+                      display: 'flex',
+                      flexDirection: 'column',
+                      alignItems: 'center',
+                      justifyContent: 'center',
+                      width: '100%',
+                      height: '100%'
+                    }}>
+                      <Typography sx={{ color: 'white', opacity: 0.5, fontSize: '3rem', mb: 1 }}>
+                        🌿
+                      </Typography>
+                      <Typography sx={{ color: 'white', opacity: 0.5, fontSize: '0.875rem' }}>
+                        {t("imageNotAvailable", { defaultValue: "Obraz niedostępny" })}
+                      </Typography>
+                    </Box>
+                  )}
+                </Box>
 
             {/* Treść kafelka */}
-                <Box sx={{ p: 3, flex: 1, display: 'flex', flexDirection: 'column', overflow: 'hidden' }}>
+                <Box sx={{ 
+                  p: { xs: 2, md: 2.5 }, 
+                  flex: 1, 
+                  display: 'flex', 
+                  flexDirection: 'column', 
+                  overflow: 'hidden',
+                  minHeight: 0,
+                  '@media (min-width: 1366px) and (max-width: 1367px) and (max-height: 700px)': {
+                    p: 1.5
+                  }
+                }}>
               <Typography 
                 variant="h5" 
                 sx={{ 
                   color: 'white', 
-                      mb: 1.5, 
-                      fontWeight: 600,
-                      fontSize: { xs: '1.1rem', md: '1.25rem' },
-                      '@media (min-width: 1366px) and (max-width: 1367px) and (max-height: 768px)': {
-                        mb: 1,
-                        fontSize: '1rem'
-                      }
+                  mb: 0.75, 
+                  fontWeight: 600,
+                  fontSize: { xs: '1rem', md: '1.15rem' },
+                  flexShrink: 0,
+                  '@media (min-width: 1366px) and (max-width: 1367px) and (max-height: 768px)': {
+                    fontSize: '0.95rem',
+                    mb: 0.5
+                  },
+                  '@media (min-width: 1366px) and (max-width: 1367px) and (max-height: 700px)': {
+                    fontSize: '0.9rem',
+                    mb: 0.5
+                  }
                 }}
               >
-                    {plant.name}
-              </Typography>
-              <Typography 
-                variant="body1" 
-                sx={{ 
-                  color: 'rgba(255, 255, 255, 0.8)',
-                      lineHeight: 1.5,
-                      mb: 'auto',
-                      fontSize: { xs: '0.85rem', md: '0.95rem' },
-                      '@media (min-width: 1366px) and (max-width: 1367px) and (max-height: 768px)': {
-                        fontSize: '0.8rem',
-                        lineHeight: 1.4
-                      }
-                }}
-              >
-                    {plant.description}
+                {t(`plant.species.${plant.name}.name`, { defaultValue: plant.name })}
               </Typography>
               
-                  {/* Przycisk "Dodaj do akwarium" tylko na głównej karcie */}
-                  {position.zIndex === 3 && (
-              <Box sx={{ 
-                display: 'flex', 
-                justifyContent: 'center', 
-                      mt: 2,
-                      pt: 2
-              }}>
-                <Button
-                        onClick={(e) => {
-                          e.stopPropagation();
-                          alert(`Dodano ${plant.name} do akwarium!`);
-                        }}
-                  variant="contained"
-                  sx={{
-                    bgcolor: '#FFD700',
-                    color: '#000',
-                    borderRadius: 3,
-                    px: 4,
-                          py: { xs: 1, md: 1.5 },
-                          fontSize: { xs: '0.85rem', md: '1rem' },
-                    fontWeight: 600,
-                    boxShadow: '0 4px 12px rgba(255, 215, 0, 0.3)',
-                    transition: 'all 0.3s',
-                    '&:hover': {
-                      bgcolor: '#FFC700',
-                      boxShadow: '0 6px 16px rgba(255, 215, 0, 0.4)',
-                      transform: 'translateY(-2px)'
-                    },
-                    '&:active': {
-                      transform: 'translateY(0)'
-                    }
-                  }}
-                >
-                  {t("addToAquarium", { defaultValue: "Add to Aquarium" })}
-                </Button>
+              {/* Opis */}
+              <Typography 
+                variant="body2" 
+                sx={{ 
+                  color: 'rgba(255, 255, 255, 0.8)',
+                  lineHeight: 1.4,
+                  mb: 1,
+                  fontSize: { xs: '0.7rem', md: '0.8rem' },
+                  flexShrink: 0,
+                  '@media (min-width: 1366px) and (max-width: 1367px) and (max-height: 768px)': {
+                    fontSize: '0.65rem',
+                    mb: 0.75,
+                    lineHeight: 1.3
+                  },
+                  '@media (min-width: 1366px) and (max-width: 1367px) and (max-height: 700px)': {
+                    fontSize: '0.65rem',
+                    mb: 0.5,
+                    lineHeight: 1.3
+                  }
+                }}
+              >
+                {t(`plant.species.${plant.name}.description`, { defaultValue: plant.description })}
+              </Typography>
+
+              {/* Parametry */}
+              <Box sx={{ mb: 1, flex: 1, minHeight: 0, display: 'flex', flexDirection: 'column' }}>
+                <Divider sx={{ borderColor: 'rgba(255,255,255,0.2)', mb: 0.75 }} />
+                
+                {/* Temperatura */}
+                <Box sx={{ display: 'flex', justifyContent: 'space-between', mb: 0.5 }}>
+                  <Typography variant="body2" sx={{ color: 'rgba(255, 255, 255, 0.7)', fontSize: { xs: '0.65rem', md: '0.75rem' } }}>
+                    {t('plant.parameters.temperature')}:
+                  </Typography>
+                  <Typography variant="body2" sx={{ color: 'white', fontSize: { xs: '0.65rem', md: '0.75rem' }, fontWeight: 500 }}>
+                    {plant.tempRange[0]}-{plant.tempRange[1]} °C
+                  </Typography>
+                </Box>
+
+                {/* Biotyp */}
+                <Box sx={{ display: 'flex', justifyContent: 'space-between', mb: 0.5 }}>
+                  <Typography variant="body2" sx={{ color: 'rgba(255, 255, 255, 0.7)', fontSize: { xs: '0.65rem', md: '0.75rem' } }}>
+                    {t('plant.parameters.biotope')}:
+                  </Typography>
+                  <Typography variant="body2" sx={{ color: 'white', fontSize: { xs: '0.65rem', md: '0.75rem' }, fontWeight: 500 }}>
+                    {t(`plant.biotopes.${plant.biotope}`, { defaultValue: plant.biotope })}
+                  </Typography>
+                </Box>
+
+                {/* pH */}
+                <Box sx={{ display: 'flex', justifyContent: 'space-between', mb: 0.5 }}>
+                  <Typography variant="body2" sx={{ color: 'rgba(255, 255, 255, 0.7)', fontSize: { xs: '0.65rem', md: '0.75rem' } }}>
+                    {t('plant.parameters.ph')}:
+                  </Typography>
+                  <Typography variant="body2" sx={{ color: 'white', fontSize: { xs: '0.65rem', md: '0.75rem' }, fontWeight: 500 }}>
+                    {plant.phRange[0]}-{plant.phRange[1]}
+                  </Typography>
+                </Box>
+
+                {/* Twardość */}
+                <Box sx={{ display: 'flex', justifyContent: 'space-between', mb: 0.5 }}>
+                  <Typography variant="body2" sx={{ color: 'rgba(255, 255, 255, 0.7)', fontSize: { xs: '0.65rem', md: '0.75rem' } }}>
+                    {t('plant.parameters.hardness')}:
+                  </Typography>
+                  <Typography variant="body2" sx={{ color: 'white', fontSize: { xs: '0.65rem', md: '0.75rem' }, fontWeight: 500 }}>
+                    {plant.hardness[0]}-{plant.hardness[1]} °dGH
+                  </Typography>
+                </Box>
+
+                {/* Wymagania świetlne */}
+                {plant.lightRequirements && (
+                  <Box sx={{ display: 'flex', justifyContent: 'space-between', mb: 0.5 }}>
+                    <Typography variant="body2" sx={{ color: 'rgba(255, 255, 255, 0.7)', fontSize: { xs: '0.65rem', md: '0.75rem' } }}>
+                      {t('plant.parameters.lightRequirements')}:
+                    </Typography>
+                    <Typography variant="body2" sx={{ color: 'white', fontSize: { xs: '0.65rem', md: '0.75rem' }, fontWeight: 500 }}>
+                      {t(`plant.values.light.${plant.lightRequirements}`, { defaultValue: plant.lightRequirements })}
+                    </Typography>
+                  </Box>
+                )}
+
+                {/* Wymagania CO2 */}
+                {plant.co2Requirements && (
+                  <Box sx={{ display: 'flex', justifyContent: 'space-between', mb: 0.5 }}>
+                    <Typography variant="body2" sx={{ color: 'rgba(255, 255, 255, 0.7)', fontSize: { xs: '0.65rem', md: '0.75rem' } }}>
+                      {t('plant.parameters.co2Requirements')}:
+                    </Typography>
+                    <Typography variant="body2" sx={{ color: 'white', fontSize: { xs: '0.65rem', md: '0.75rem' }, fontWeight: 500 }}>
+                      {t(`plant.values.co2.${plant.co2Requirements}`, { defaultValue: plant.co2Requirements })}
+                    </Typography>
+                  </Box>
+                )}
+
+                {/* Trudność */}
+                {plant.difficulty && (
+                  <Box sx={{ display: 'flex', justifyContent: 'space-between', mb: 0.5 }}>
+                    <Typography variant="body2" sx={{ color: 'rgba(255, 255, 255, 0.7)', fontSize: { xs: '0.65rem', md: '0.75rem' } }}>
+                      {t('plant.parameters.difficulty')}:
+                    </Typography>
+                    <Typography variant="body2" sx={{ color: 'white', fontSize: { xs: '0.65rem', md: '0.75rem' }, fontWeight: 500 }}>
+                      {t(`plant.values.difficulty.${plant.difficulty}`, { defaultValue: plant.difficulty })}
+                    </Typography>
+                  </Box>
+                )}
+
+                <Divider sx={{ borderColor: 'rgba(255,255,255,0.2)', mt: 0.75 }} />
               </Box>
-                  )}
+              
+              {/* Przycisk "Dodaj do akwarium" tylko na głównej karcie */}
+              {position.zIndex === 3 && (
+                <Box sx={{ 
+                  display: 'flex', 
+                  justifyContent: 'center', 
+                  mt: 'auto',
+                  pt: 1,
+                  flexShrink: 0
+                }}>
+                  <Button
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      alert(`Dodano ${plant.name} do akwarium!`);
+                    }}
+                    variant="contained"
+                    sx={{
+                      bgcolor: '#FFD700',
+                      color: '#000',
+                      borderRadius: 3,
+                      px: { xs: 3, md: 4 },
+                      py: { xs: 0.75, md: 1.25 },
+                      fontSize: { xs: '0.75rem', md: '0.9rem' },
+                      fontWeight: 600,
+                      boxShadow: '0 4px 12px rgba(255, 215, 0, 0.3)',
+                      transition: 'all 0.3s',
+                      '@media (min-width: 1366px) and (max-width: 1367px) and (max-height: 700px)': {
+                        py: 0.75,
+                        fontSize: '0.7rem',
+                        px: 2.5
+                      },
+                      '&:hover': {
+                        bgcolor: '#FFC700',
+                        boxShadow: '0 6px 16px rgba(255, 215, 0, 0.4)',
+                        transform: 'translateY(-2px)'
+                      },
+                      '&:active': {
+                        transform: 'translateY(0)'
+                      }
+                    }}
+                  >
+                    {t("addToAquarium", { defaultValue: "Add to Aquarium" })}
+                  </Button>
+                </Box>
+              )}
             </Box>
               </Box>
             );

@@ -419,7 +419,9 @@ export async function getAquariumById(id) {
         // Mapowanie nazw pól (jeśli backend zwraca inne nazwy)
         temperature: aquarium.temperatureC !== undefined ? aquarium.temperatureC : aquarium.temperature,
         hardness: aquarium.hardnessDGH !== undefined ? aquarium.hardnessDGH : aquarium.hardness,
-        volume: aquarium.volumeLiters !== undefined ? aquarium.volumeLiters : aquarium.volume
+        volume: aquarium.volumeLiters !== undefined ? aquarium.volumeLiters : aquarium.volume,
+        // Zachowaj status akwarium (kompatybilność, ostrzeżenia)
+        status: aquarium.status || null
       };
       
       // Usuń stare pola, jeśli były zmapowane
@@ -524,7 +526,9 @@ export async function addFishToAquarium(aquariumId, fishId, count = 1) {
         plants: aquariumData.plants || [],
         temperature: aquariumData.temperatureC !== undefined ? aquariumData.temperatureC : aquariumData.temperature,
         hardness: aquariumData.hardnessDGH !== undefined ? aquariumData.hardnessDGH : aquariumData.hardness,
-        volume: aquariumData.volumeLiters !== undefined ? aquariumData.volumeLiters : aquariumData.volume
+        volume: aquariumData.volumeLiters !== undefined ? aquariumData.volumeLiters : aquariumData.volume,
+        // Zachowaj status akwarium (kompatybilność, ostrzeżenia)
+        status: aquariumData.status || null
       };
       
       if (aquariumData.fish && !aquariumData.fishes) {
@@ -573,7 +577,9 @@ export async function removeFishFromAquarium(aquariumId, fishId) {
         plants: aquariumData.plants || [],
         temperature: aquariumData.temperatureC !== undefined ? aquariumData.temperatureC : aquariumData.temperature,
         hardness: aquariumData.hardnessDGH !== undefined ? aquariumData.hardnessDGH : aquariumData.hardness,
-        volume: aquariumData.volumeLiters !== undefined ? aquariumData.volumeLiters : aquariumData.volume
+        volume: aquariumData.volumeLiters !== undefined ? aquariumData.volumeLiters : aquariumData.volume,
+        // Zachowaj status akwarium (kompatybilność, ostrzeżenia)
+        status: aquariumData.status || null
       };
       
       if (aquariumData.fish && !aquariumData.fishes) {
@@ -619,7 +625,9 @@ export async function addPlantToAquarium(aquariumId, plantId, count = 1) {
         plants: aquariumData.plants || [],
         temperature: aquariumData.temperatureC !== undefined ? aquariumData.temperatureC : aquariumData.temperature,
         hardness: aquariumData.hardnessDGH !== undefined ? aquariumData.hardnessDGH : aquariumData.hardness,
-        volume: aquariumData.volumeLiters !== undefined ? aquariumData.volumeLiters : aquariumData.volume
+        volume: aquariumData.volumeLiters !== undefined ? aquariumData.volumeLiters : aquariumData.volume,
+        // Zachowaj status akwarium (kompatybilność, ostrzeżenia)
+        status: aquariumData.status || null
       };
       
       if (aquariumData.fish && !aquariumData.fishes) {
@@ -662,7 +670,9 @@ export async function removePlantFromAquarium(aquariumId, plantId) {
         plants: aquariumData.plants || [],
         temperature: aquariumData.temperatureC !== undefined ? aquariumData.temperatureC : aquariumData.temperature,
         hardness: aquariumData.hardnessDGH !== undefined ? aquariumData.hardnessDGH : aquariumData.hardness,
-        volume: aquariumData.volumeLiters !== undefined ? aquariumData.volumeLiters : aquariumData.volume
+        volume: aquariumData.volumeLiters !== undefined ? aquariumData.volumeLiters : aquariumData.volume,
+        // Zachowaj status akwarium (kompatybilność, ostrzeżenia)
+        status: aquariumData.status || null
       };
       
       if (aquariumData.fish && !aquariumData.fishes) {

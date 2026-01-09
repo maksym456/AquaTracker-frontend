@@ -150,6 +150,16 @@ const resources = {
       selectPlant: "Select plant",
       add: "Add",
       quantity: "Quantity",
+      compatibilityWarning: "Compatibility Warning",
+      confirmAddIncompatible: "Are you sure you want to add this fish despite incompatibility?",
+      showOnlyCompatible: "Show only compatible fish",
+      incompatible: "Incompatible",
+      warning: "Warning",
+      aquariumStatus: "Aquarium Status",
+      error: "ERROR",
+      ok: "OK",
+      compatibilityIssues: "Compatibility Issues",
+      moreIssues: "more",
       years: "years",
       brackish: "Brackish",
       aggressiveness: "Aggressiveness",
@@ -285,6 +295,111 @@ const resources = {
           "Babka złota": {
             name: "Golden Goby",
             description: "Golden Goby is a calm fish that feels best in a group. It is active and likes to swim among plants and hiding places. It is hardy and easy to maintain, well suited for aquariums with other calm fish."
+          }
+        }
+      },
+      plant: {
+        parameters: {
+          temperature: "Temperature",
+          biotope: "Biotope",
+          ph: "pH",
+          hardness: "Hardness",
+          lightRequirements: "Light Requirements",
+          co2Requirements: "CO2 Requirements",
+          difficulty: "Difficulty"
+        },
+        values: {
+          light: {
+            "bez znaczenia": "Not important",
+            "słabe": "Weak",
+            "umiarkowane": "Moderate",
+            "mocne": "Strong"
+          },
+          co2: {
+            "brak": "None",
+            "CO2": "CO2",
+            "Fe": "Fe",
+            "CO2, Fe": "CO2, Fe",
+            "Fe, P, NO3": "Fe, P, NO3"
+          },
+          difficulty: {
+            "łatwa": "Easy",
+            "średnia": "Medium",
+            "trudna": "Hard"
+          }
+        },
+        biotopes: {
+          "Afryka": "Africa",
+          "Azja": "Asia",
+          "Europa": "Europe",
+          "Ameryka Południowa": "South America",
+          "Ameryka Północna": "North America",
+          "Australia/Oceania": "Australia/Oceania"
+        },
+        species: {
+          "Moczarka": {
+            name: "Elodea",
+            description: "Fast-growing stem plant (oxygenating), great for starting an aquarium – strongly absorbs nitrates and limits algae. Can grow planted in substrate or floating. Easy to grow, tolerates weaker light; trim and replant the tops."
+          },
+          "Nurzaniec": {
+            name: "Vallisneria",
+            description: "Rosette plant with long, ribbon-like leaves, ideal for background. Spreads quickly through runners. Likes stable conditions; don't bury the base (crown). If overgrown, shorten leaves and remove oldest ones."
+          },
+          "Anubias": {
+            name: "Anubias",
+            description: "Slow-growing rhizome plant for shade; best to tie/glue to root or stone. Don't bury rhizome in substrate (rots). Grows well in weaker light without CO₂, but in strong light easily catches algae; propagation by rhizome division."
+          },
+          "Mech Jawajski": {
+            name: "Java Moss",
+            description: "Popular moss for decorating decorations; forms dense clumps and provides shelter for shrimp and fry. Tolerates weak–moderate light and usually doesn't require CO₂. Requires regular trimming, as it easily collects detritus; can be tied with thread/fishing line."
+          },
+          "Ludwigia": {
+            name: "Ludwigia",
+            description: "Stem plant with green‑red leaves; color strongly depends on light and fertilization. Grows best in moderate–strong light, with CO₂ becomes denser. Trim tops, and replant cut cuttings in substrate."
+          },
+          "Rogatek": {
+            name: "Hornwort",
+            description: "Very fast-growing floating or loosely anchored plant (without true roots). Excellent at removing excess nutrients from water, helps fight algae and as an 'oxygenating' plant. Likes frequent trimming; can drop needles in weak light or large parameter fluctuations."
+          },
+          "Kryptokoryna": {
+            name: "Cryptocoryne",
+            description: "Rosette plant for foreground or middle ground; likes calm, stable conditions. After changes in aquarium, so-called 'crypt melt' (leaf drop) may occur – usually recovers from roots. Responds well to root fertilization (pellets/tabs) and propagates through runners."
+          },
+          "Lotos Tygrysi": {
+            name: "Tiger Lotus",
+            description: "Bulb plant with large leaves (green or red), often as a solitaire in middle/background. Strong root feeder – likes fertile substrate and root fertilization. Plant bulb partially exposed; trim leaves reaching for surface if you want to maintain underwater form (otherwise heavily shades)."
+          },
+          "Żabienica": {
+            name: "Amazon Sword",
+            description: "Large rosette plant (so-called Amazon sword), often as central decoration or background in larger tanks. Requires nutrients in substrate (tabs, soil) and regular fertilization – this is a strongly rooting plant. Can quickly overgrow small aquariums; propagates through young plants on flower stalk."
+          },
+          "Limnofila": {
+            name: "Limnophila",
+            description: "Fast-growing stem plant with feathery leaves, great for background and stabilizing fresh aquariums. Grows in moderate light, and CO₂ increases density and growth rate. Trim and replant tops to get dense clumps; very good at reducing nitrates."
+          },
+          "Rotala": {
+            name: "Rotala",
+            description: "Stem plant with small leaves; in strong light can color pink‑red. Grows best in moderate–strong light, with CO₂ and balanced fertilization. Regular trimming stimulates bushing; cuttings from tops can be easily replanted."
+          },
+          "Duży Heniek": {
+            name: "Large Heniek",
+            description: "Fine-leaved stem plant forming dense 'bushes'; suitable for middle or background, and in strong light can also be trimmed like low carpet. Likes stable fertilization; CO₂ clearly improves density. Propagation by cuttings; plant in small clumps, as freshly planted tends to float."
+          },
+          "Ponikło Maleńkie": {
+            name: "Dwarf Hairgrass",
+            description: "Grass for foreground forming 'lawn'. Spreads through runners and over time becomes compact turf. For dense carpet usually needs moderate–strong light and CO₂. Divide cuttings into small clumps; after transplanting may temporarily wither, but usually quickly recovers."
+          },
+          "Gałązka Kulista": {
+            name: "Marimo Ball",
+            description: "Spherical form of algae (marimo) – grows very slowly and doesn't require substrate. Prefers weaker light and rather cooler water; in strong light easier to get covered with film. Occasionally rotate/'roll' the ball and rinse in aquarium water to maintain shape and not collect dirt."
+          },
+          "Heniek Mały": {
+            name: "Small Heniek",
+            description: "One of the finest plants for carpet (foreground) – gives very dense, low lawn. Requires strong light, stable CO₂ and good fertilization; in weaker conditions easily detaches and withers. Divide cuttings into micro-clumps; regular trimming densifies carpet."
+          },
+          "Monte Carlo": {
+            name: "Monte Carlo",
+            description: "Popular carpet plant, usually easier than 'Small Heniek' – forms creeping stems and medium‑low lawn. Grows in moderate–strong light; CO₂ is very helpful (without CO₂ grows slower and looser). Plant cuttings in small portions; trimming and replanting densifies carpet."
           }
         }
       },
@@ -467,6 +582,16 @@ const resources = {
       selectPlant: "Wybierz roślinę",
       add: "Dodaj",
       quantity: "Ilość",
+      compatibilityWarning: "Ostrzeżenie o kompatybilności",
+      confirmAddIncompatible: "Czy na pewno chcesz dodać tę rybę mimo niekompatybilności?",
+      showOnlyCompatible: "Pokaż tylko kompatybilne ryby",
+      incompatible: "Niekompatybilne",
+      warning: "Ostrzeżenie",
+      aquariumStatus: "Status akwarium",
+      error: "BŁĄD",
+      ok: "OK",
+      compatibilityIssues: "Problemy z kompatybilnością",
+      moreIssues: "więcej",
       years: "lat",
       brackish: "Słonawa",
       aggressiveness: "Agresywność",
@@ -602,6 +727,111 @@ const resources = {
           "Babka złota": {
             name: "Babka złota",
             description: "Babka złota to spokojna ryba, która najlepiej czuje się w grupie. Jest aktywna i lubi pływać wśród roślin oraz kryjówek. Jest odporna i łatwa w utrzymaniu, dobrze nadaje się do akwarium z innymi spokojnymi rybami."
+          }
+        }
+      },
+      plant: {
+        parameters: {
+          temperature: "Temperatura",
+          biotope: "Biotyp",
+          ph: "pH",
+          hardness: "Twardość",
+          lightRequirements: "Wymagania świetlne",
+          co2Requirements: "Wymagania CO2",
+          difficulty: "Trudność"
+        },
+        values: {
+          light: {
+            "bez znaczenia": "Bez znaczenia",
+            "słabe": "Słabe",
+            "umiarkowane": "Umiarkowane",
+            "mocne": "Mocne"
+          },
+          co2: {
+            "brak": "Brak",
+            "CO2": "CO2",
+            "Fe": "Fe",
+            "CO2, Fe": "CO2, Fe",
+            "Fe, P, NO3": "Fe, P, NO3"
+          },
+          difficulty: {
+            "łatwa": "Łatwa",
+            "średnia": "Średnia",
+            "trudna": "Trudna"
+          }
+        },
+        biotopes: {
+          "Afryka": "Afryka",
+          "Azja": "Azja",
+          "Europa": "Europa",
+          "Ameryka Południowa": "Ameryka Południowa",
+          "Ameryka Północna": "Ameryka Północna",
+          "Australia/Oceania": "Australia/Oceania"
+        },
+        species: {
+          "Moczarka": {
+            name: "Moczarka",
+            description: "Szybko rosnąca roślina łodygowa (tlenowa), świetna na start akwarium – mocno pobiera azotany i ogranicza glony. Może rosnąć posadzona w podłożu lub pływająca. Łatwa w uprawie, dobrze znosi słabsze światło; przycina się i sadzi ponownie wierzchołki."
+          },
+          "Nurzaniec": {
+            name: "Nurzaniec",
+            description: "Roślina rozetowa o długich, taśmowatych liściach, idealna na tło. Szybko się rozrasta przez rozłogi. Lubi stabilne warunki; nie zakopuj nasady (korony). W razie przerostu skracaj liście i usuwaj najstarsze."
+          },
+          "Anubias": {
+            name: "Anubias",
+            description: "Wolno rosnąca roślina kłączowa do cienia; najlepiej przywiązać/przykleić do korzenia lub kamienia. Nie zakopuj kłącza w podłożu (gnije). Dobrze rośnie w słabszym świetle bez CO₂, ale przy mocnym świetle łatwo łapie glony; rozmnażanie przez podział kłącza."
+          },
+          "Mech Jawajski": {
+            name: "Mech Jawajski",
+            description: "Popularny mech do obsadzania dekoracji; tworzy gęste kępy i daje schronienie krewetkom oraz narybkowi. Toleruje słabe–średnie światło i zwykle nie wymaga CO₂. Wymaga regularnego przycinania, bo łatwo zbiera detrytus; można go wiązać nitką/żyłką."
+          },
+          "Ludwigia": {
+            name: "Ludwigia",
+            description: "Roślina łodygowa o zielono‑czerwonych liściach; kolor mocno zależy od światła i nawożenia. Najlepiej rośnie przy średnim–mocnym świetle, z CO₂ staje się gęstsza. Przycinaj wierzchołki, a odcięte sadzonki wsadzaj ponownie w podłoże."
+          },
+          "Rogatek": {
+            name: "Rogatek",
+            description: "Bardzo szybko rosnąca roślina pływająca lub luźno zakotwiczona (bez prawdziwych korzeni). Świetnie wyjada nadmiar składników z wody, pomaga w walce z glonami i jako roślina \"tlenowa\". Lubi częste przycinki; potrafi gubić igiełki przy słabym świetle lub dużych wahaniach parametrów."
+          },
+          "Kryptokoryna": {
+            name: "Kryptokoryna",
+            description: "Roślina rozetowa do pierwszego lub środkowego planu; lubi spokojne, stabilne warunki. Po zmianach w akwarium może wystąpić tzw. \"crypt melt\" (zrzucanie liści) – zwykle odbija z korzeni. Dobrze reaguje na nawożenie pod korzeń (kulki/tabsy) i rozmnaża się przez rozłogi."
+          },
+          "Lotos Tygrysi": {
+            name: "Lotos Tygrysi",
+            description: "Roślina cebulowa o dużych liściach (zielonych lub czerwonych), często jako soliter w środkowym/tylnym planie. Silny żarłok korzeniowy – lubi żyzne podłoże i nawożenie pod korzeń. Sadź cebulę częściowo odsłoniętą; przycinaj liście pędzące do tafli, jeśli chcesz utrzymać formę podwodną (inaczej mocno zacienia)."
+          },
+          "Żabienica": {
+            name: "Żabienica",
+            description: "Duża roślina rozetowa (tzw. mieczyk amazoński), często jako centralna ozdoba lub tło w większych zbiornikach. Wymaga składników w podłożu (tabsy, ziemia) i regularnego nawożenia – to roślina silnie korzeniąca się. Może szybko przerosnąć małe akwaria; rozmnaża się przez młode roślinki na pędzie kwiatostanowym."
+          },
+          "Limnofila": {
+            name: "Limnofila",
+            description: "Szybko rosnąca roślina łodygowa o pierzastych liściach, świetna na tło i do stabilizacji świeżego akwarium. Rośnie w średnim świetle, a CO₂ zwiększa gęstość i tempo wzrostu. Przycinaj i sadź ponownie wierzchołki, aby uzyskać gęste kępy; bardzo dobrze redukuje azotany."
+          },
+          "Rotala": {
+            name: "Rotala",
+            description: "Roślina łodygowa o drobnych liściach; przy mocnym świetle potrafi wybarwiać się na różowo‑czerwono. Najlepiej rośnie w średnim–mocnym świetle, z CO₂ i zbilansowanym nawożeniem. Regularne przycinanie pobudza krzewienie; sadzonki z wierzchołków można łatwo ponownie posadzić."
+          },
+          "Duży Heniek": {
+            name: "Duży Heniek",
+            description: "Drobno listna roślina łodygowa tworząca gęste \"krzaczki\"; nadaje się na środek lub tło, a przy mocnym świetle może być też przycinana jak niski dywan. Lubi stabilne nawożenie; CO₂ wyraźnie poprawia zagęszczenie. Rozmnażanie przez sadzonki; sadź w małych kępkach, bo świeżo posadzona ma tendencję do wypływania."
+          },
+          "Ponikło Maleńkie": {
+            name: "Ponikło Maleńkie",
+            description: "Trawka na pierwszy plan tworząca \"trawnik\". Rozrasta się przez rozłogi i z czasem robi zwartą darń. Do gęstego dywanu zwykle potrzebuje średniego–mocnego światła i CO₂. Sadzonki dziel na małe kępki; po przesadzeniu może przejściowo marnieć, ale zazwyczaj szybko odbija."
+          },
+          "Gałązka Kulista": {
+            name: "Gałązka Kulista",
+            description: "Kulista forma glonu (marimo) – rośnie bardzo wolno i nie wymaga podłoża. Preferuje słabsze światło i raczej chłodniejszą wodę; w mocnym świetle łatwiej porasta nalotem. Co jakiś czas obracaj/\"roluj\" kulkę i przepłukuj w wodzie z akwarium, aby zachowała kształt i nie zbierała brudu."
+          },
+          "Heniek Mały": {
+            name: "Heniek Mały",
+            description: "Jedna z najdrobniejszych roślin na dywan (pierwszy plan) – daje bardzo gęsty, niski trawnik. Wymaga mocnego światła, stabilnego CO₂ i dobrego nawożenia; w słabszych warunkach łatwo się odrywa i marnieje. Sadzonki dziel na mikrokępki; regularne przycinanie zagęszcza dywan."
+          },
+          "Monte Carlo": {
+            name: "Monte Carlo",
+            description: "Popularna roślina na dywan, zwykle łatwiejsza od \"Małego Heńka\" – tworzy pełzające pędy i średnio‑niski trawnik. Rośnie w średnim–mocnym świetle; CO₂ jest bardzo pomocne (bez CO₂ rośnie wolniej i luźniej). Sadzonki sadź w małych porcjach; przycinanie i ponowne sadzenie zagęszcza dywan."
           }
         }
       },
