@@ -5,9 +5,10 @@
   </component>
   <component name="ChangeListManager">
     <list default="true" id="3e1dcb7d-ed08-49a0-9ff9-f0c8beeee611" name="Changes" comment="rE">
+      <change afterPath="$PROJECT_DIR$/app/admin/admin.js" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/app/admin/global.css" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/app/admin/layout.js" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/docs/PDR.md" beforeDir="false" afterPath="$PROJECT_DIR$/docs/PDR.md" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/docs/docs/README.md" beforeDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -31,12 +32,12 @@
     &quot;assignee&quot;: &quot;maksym456&quot;
   }
 }</component>
-  <component name="GithubPullRequestsUISettings"><![CDATA[{
-  "selectedUrlAndAccountId": {
-    "url": "https://github.com/maksym456/AquaTracker-frontend.git",
-    "accountId": "43ceee5a-29bf-4915-8fc5-53100f0f39e3"
+  <component name="GithubPullRequestsUISettings">{
+  &quot;selectedUrlAndAccountId&quot;: {
+    &quot;url&quot;: &quot;https://github.com/maksym456/AquaTracker-frontend.git&quot;,
+    &quot;accountId&quot;: &quot;43ceee5a-29bf-4915-8fc5-53100f0f39e3&quot;
   }
-}]]></component>
+}</component>
   <component name="McpProjectServerCommands">
     <commands />
     <urls />
@@ -69,6 +70,7 @@
     "nodejs_package_manager_path": "npm",
     "npm.Next.js: server-side.executor": "Run",
     "to.speed.mode.migration.done": "true",
+    "ts.external.directory.path": "C:\\Program Files\\JetBrains\\WebStorm 2025.2.5\\plugins\\javascript-plugin\\jsLanguageServicesImpl\\external",
     "vue.rearranger.settings.migration": "true"
   }
 }]]></component>
