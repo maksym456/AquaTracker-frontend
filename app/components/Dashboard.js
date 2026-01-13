@@ -8,15 +8,86 @@ import {Alert, Box, Button, Modal, Switch, TextField, Typography} from "@mui/mat
 import {APP_VERSION} from "../version";
 import {useTheme} from "../contexts/ThemeContext";
 import Link from "next/link";
+import { syncUser, getCurrentUser } from "../lib/api";
 
 export default function Dashboard() {
-  const { t } = useTranslation();
+  const { t, i18n } = useTranslation();
     const { data: session } = useSession();
     const user = session?.user;
 
     useEffect(() => {
         if (session && !localStorage.getItem("sessionLoginTime")) {
             localStorage.setItem("sessionLoginTime", new Date().toISOString());
+        }
+    }, [session]);
+
+    // Synchronizacja użytkownika i pobieranie ustawień po zalogowaniu
+    useEffect(() => {
+        const handleUserSync = async () => {
+            if (!session?.user) return;
+            
+            const cognitoSub = session.user.id;
+            const email = session.user.email;
+            const name = session.user.name || email?.split('@')[0];
+            
+            if (!cognitoSub || !email) {
+                console.warn('Missing cognitoSub or email in session');
+                return;
+            }
+
+            try {
+                // 1. Synchronizuj użytkownika (tworzy lub aktualizuje)
+                await syncUser(cognitoSub, email, name);
+                
+                // 2. Pobierz ustawienia użytkownika
+                const userSettings = await getCurrentUser(cognitoSub);
+                
+                if (userSettings) {
+                    // Zapisz user.id do localStorage dla kompatybilności z AuthContext
+                    if (userSettings.id) {
+                        const storedUser = localStorage.getItem('user');
+                        if (storedUser) {
+                            try {
+                                const userData = JSON.parse(storedUser);
+                                userData.id = userSettings.id;
+                                localStorage.setItem('user', JSON.stringify(userData));
+                            } catch (e) {
+                                console.warn('Could not update user in localStorage:', e);
+                            }
+                        } else {
+                            // Jeśli nie ma user w localStorage, utwórz go
+                            const userData = {
+                                id: userSettings.id,
+                                email: userSettings.email || email,
+                                name: userSettings.username || name,
+                                cognitoSub: cognitoSub,
+                                loginTime: new Date().toISOString()
+                            };
+                            localStorage.setItem('user', JSON.stringify(userData));
+                            localStorage.setItem('sessionLoginTime', userData.loginTime);
+                        }
+                    }
+                    
+                    // 3. Zastosuj ustawienia języka
+                    if (userSettings.settingsLanguage && i18n.language !== userSettings.settingsLanguage) {
+                        i18n.changeLanguage(userSettings.settingsLanguage);
+                    }
+                    
+                    // 4. Zastosuj ustawienia motywu
+                    if (userSettings.settingsTheme !== undefined) {
+                        const shouldBeDark = userSettings.settingsTheme === 'dark';
+                        if (darkMode !== shouldBeDark) {
+                            toggleDarkMode();
+                        }
+                    }
+                }
+            } catch (error) {
+                console.error('Error syncing user or fetching settings:', error);
+            }
+        };
+
+        if (session?.user) {
+            handleUserSync();
         }
     }, [session]);
 

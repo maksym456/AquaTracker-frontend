@@ -124,9 +124,46 @@ export default function MyAquariumsPage() {
   }
 
   async function handleSaveAquarium() {
-    if (!newAquariumName.trim()) return;
+    console.log('handleSaveAquarium called');
+    console.log('newAquariumName:', newAquariumName);
+    console.log('user:', user);
+    
+    if (!newAquariumName.trim()) {
+      console.log('Aquarium name is empty');
+      setError("Nazwa akwarium jest wymagana.");
+      return;
+    }
     
     try {
+      setError(null);
+      console.log('Starting aquarium creation...');
+      
+      // Upewnij się, że mamy poprawny user.id
+      let ownerId = user?.id;
+      console.log('ownerId from user:', ownerId);
+      
+      if (!ownerId) {
+        // Spróbuj pobrać z localStorage
+        const storedUser = localStorage.getItem('user');
+        console.log('storedUser from localStorage:', storedUser);
+        if (storedUser) {
+          try {
+            const userData = JSON.parse(storedUser);
+            ownerId = userData.id;
+            console.log('Found ownerId in localStorage:', ownerId);
+          } catch (e) {
+            console.warn('Could not parse user from localStorage:', e);
+          }
+        }
+      }
+      
+      if (!ownerId) {
+        const errorMsg = "Nie można utworzyć akwarium - brak informacji o użytkowniku. Zaloguj się ponownie.";
+        console.error(errorMsg);
+        setError(errorMsg);
+        return;
+      }
+      
       const newAquarium = {
         name: newAquariumName,
         waterType: newAquariumWaterType,
@@ -135,17 +172,28 @@ export default function MyAquariumsPage() {
         ph: parseFloat(newAquariumPh),
         hardness: parseFloat(newAquariumHardness),
         description: newAquariumDescription.trim(),
-        ownerId: user?.id || null
+        ownerId: ownerId
       };
       
       console.log('Creating aquarium with data:', newAquarium);
       const created = await createAquarium(newAquarium);
       console.log('Created aquarium response:', created);
       
-      // Dodajemy nowe akwarium do listy
-      console.log('Current aquariums before adding:', aquariums);
-      setAquariums([...aquariums, created]);
-      console.log('Updated aquariums state');
+      if (!created) {
+        throw new Error("Brak odpowiedzi z serwera po utworzeniu akwarium.");
+      }
+      
+      // Po utworzeniu, odśwież listę akwariów z serwera
+      // aby mieć pewność, że mamy najnowsze dane
+      try {
+        const refreshedAquariums = await getAquariums(ownerId);
+        console.log('Refreshed aquariums:', refreshedAquariums);
+        setAquariums(refreshedAquariums);
+      } catch (refreshError) {
+        console.warn('Could not refresh aquariums list, adding locally:', refreshError);
+        // Fallback: dodaj lokalnie jeśli odświeżenie się nie powiodło
+        setAquariums([...aquariums, created]);
+      }
       
       // Resetujemy formularz
       setNewAquariumName("");
@@ -156,9 +204,11 @@ export default function MyAquariumsPage() {
       setNewAquariumHardness("8");
       setNewAquariumDescription("");
       setCreateModalOpen(false);
+      setError(null);
     } catch (err) {
       console.error("Error creating aquarium:", err);
-      setError(err.message || "Nie udało się utworzyć akwarium.");
+      const errorMessage = err.message || err.toString() || "Nie udało się utworzyć akwarium.";
+      setError(errorMessage);
     }
   }
 
@@ -939,11 +989,19 @@ export default function MyAquariumsPage() {
             onChange={(e) => setNewAquariumDescription(e.target.value)}
             multiline
             rows={3}
-            sx={{ mb: 3 }}
+            sx={{ mb: 2 }}
             placeholder={t("descriptionPlaceholder", { defaultValue: "Dodaj opis akwarium (opcjonalnie)" })}
           />
+          {error && (
+            <Alert severity="error" sx={{ mb: 2 }} onClose={() => setError(null)}>
+              {error}
+            </Alert>
+          )}
           <Box sx={{ display: 'flex', gap: 2, justifyContent: 'flex-end' }}>
-            <Button onClick={() => setCreateModalOpen(false)}>
+            <Button onClick={() => {
+              setCreateModalOpen(false);
+              setError(null);
+            }}>
               {t("cancel", { defaultValue: "Anuluj" })}
             </Button>
             <Button variant="contained" onClick={handleSaveAquarium} disabled={!newAquariumName.trim()}>

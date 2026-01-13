@@ -754,10 +754,32 @@ export async function registerUser(name, email, password) {
   }
 }
 
-// Pobiera dane zalogowanego użytkownika
-export async function getCurrentUser() {
+// Synchronizuje użytkownika z Cognito (tworzy lub aktualizuje)
+export async function syncUser(cognitoSub, email, username = null) {
   try {
-    const user = await fetchAPI('/v1/auth/me');
+    const response = await fetchAPI('/v1/users/sync', {
+      method: 'POST',
+      body: {
+        cognitoSub: cognitoSub,
+        email: email,
+        username: username || email.split('@')[0]
+      }
+    });
+    return response;
+  } catch (error) {
+    console.error('Error syncing user:', error);
+    throw error;
+  }
+}
+
+// Pobiera dane zalogowanego użytkownika wraz z ustawieniami
+export async function getCurrentUser(cognitoSub = null) {
+  try {
+    let endpoint = '/v1/auth/me';
+    if (cognitoSub) {
+      endpoint += `?cognitoSub=${encodeURIComponent(cognitoSub)}`;
+    }
+    const user = await fetchAPI(endpoint);
     return user;
   } catch (error) {
     console.error('Error fetching current user:', error);
