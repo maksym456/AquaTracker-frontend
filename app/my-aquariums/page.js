@@ -54,14 +54,21 @@ export default function MyAquariumsPage() {
             return;
         }
 
-        // Backend zwraca wszystkie akwaria, więc możemy pobrać je nawet bez user
+        // Pobierz akwaria tylko jeśli użytkownik jest zalogowany
+        if (!user || !user.id) {
+            console.log('No user logged in, skipping aquarium fetch');
+            setIsLoading(false);
+            setAquariums([]);
+            return;
+        }
+
         (async () => {
             try {
                 setIsLoading(true);
                 setError(null);
-                console.log('Fetching aquariums...');
+                console.log('Fetching aquariums for user:', user.id);
 
-                const data = await getAquariums();
+                const data = await getAquariums(user.id);
                 console.log('Received data from getAquariums:', data);
                 console.log('Data type:', typeof data);
                 console.log('Is array:', Array.isArray(data));
@@ -127,7 +134,8 @@ export default function MyAquariumsPage() {
         biotope: newAquariumBiotope,
         ph: parseFloat(newAquariumPh),
         hardness: parseFloat(newAquariumHardness),
-        description: newAquariumDescription.trim()
+        description: newAquariumDescription.trim(),
+        ownerId: user?.id || null
       };
       
       console.log('Creating aquarium with data:', newAquarium);

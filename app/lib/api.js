@@ -387,13 +387,37 @@ export async function searchPlants(filters = {}) {
 // FUNKCJE API DLA AKWARIÓW
 // ============================================
 
-// Pobiera wszystkie akwaria użytkownika (backend zwraca akwaria zalogowanego użytkownika na podstawie tokenu JWT)
-export async function getAquariums() {
+// Pobiera wszystkie akwaria użytkownika
+export async function getAquariums(userId = null) {
   try {
     if (typeof window === 'undefined') return [];
-    const aquariums = await fetchAPI('/v1/aquariums');
-    console.log('Fetched aquariums:', aquariums);
-    return Array.isArray(aquariums) ? aquariums : [];
+    
+    // Jeśli podano userId, użyj endpointu specyficznego dla użytkownika
+    // W przeciwnym razie spróbuj pobrać userId z localStorage
+    let targetUserId = userId;
+    if (!targetUserId) {
+      const storedUser = localStorage.getItem('user');
+      if (storedUser) {
+        try {
+          const userData = JSON.parse(storedUser);
+          targetUserId = userData.id;
+        } catch (e) {
+          console.warn('Could not parse user data from localStorage');
+        }
+      }
+    }
+    
+    // Jeśli mamy userId, użyj endpointu /user/{userId}
+    // Backend obsługuje konwersję userId przez IdMapper (akceptuje UUID z prefiksem "u_" lub bez)
+    if (targetUserId) {
+      const aquariums = await fetchAPI(`/v1/aquariums/user/${targetUserId}`);
+      console.log('Fetched aquariums for user:', targetUserId, aquariums);
+      return Array.isArray(aquariums) ? aquariums : [];
+    }
+    
+    // Fallback: jeśli nie ma userId, zwróć pustą tablicę
+    console.warn('No userId provided, returning empty array');
+    return [];
   } catch (error) {
     console.error('API request failed:', error);
     console.error('Error details:', error.message);

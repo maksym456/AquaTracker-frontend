@@ -2,6 +2,7 @@
 
 import { useState, useEffect, useRef, useMemo } from "react";
 import { Box, Button, Typography, Modal, Paper, Grid, Divider, CircularProgress, Alert, TextField, List, ListItem, ListItemText, IconButton, Card, CardContent, FormControl, InputLabel, Select, MenuItem, Snackbar } from "@mui/material";
+import { keyframes } from "@emotion/react";
 import DeleteIcon from '@mui/icons-material/Delete';
 import { useTranslation } from "react-i18next";
 import { useRouter, useParams } from "next/navigation";
@@ -11,7 +12,7 @@ import LanguageSwitcher from "../../components/LanguageSwitcher";
 import KeyboardReturnOutlinedIcon from '@mui/icons-material/KeyboardReturnOutlined';
 import BarChartIcon from '@mui/icons-material/BarChart';
 import { getAquariumById, addFishToAquarium, removeFishFromAquarium, addPlantToAquarium, removePlantFromAquarium, getFishes, getPlants } from "../../lib/api";
-import { checkFishCompatibilityWithAquarium, filterCompatibleFishes } from "../../lib/fishCompatibility";
+import { checkFishCompatibilityWithAquarium, filterCompatibleFishes, getRecommendedFishes } from "../../lib/fishCompatibility";
 
 export default function AquariumDetailPage() {
   
@@ -1198,22 +1199,36 @@ export default function AquariumDetailPage() {
         }}>
           {!compatibilityPanelExpanded ? (
             // Zwijany widok - tylko ikona z wykrzyknikiem
-            <IconButton
-              onClick={() => setCompatibilityPanelExpanded(true)}
-              sx={{
-                bgcolor: aquarium.status.level === 'ERROR' ? '#f44336' : '#ff9800',
-                color: 'white',
-                width: 48,
-                height: 48,
-                '&:hover': {
-                  bgcolor: aquarium.status.level === 'ERROR' ? '#d32f2f' : '#f57c00',
-                },
-                boxShadow: 4,
-                borderRadius: '50%'
-              }}
-            >
-              <Typography sx={{ fontSize: '1.5rem' }}>!</Typography>
-            </IconButton>
+            (() => {
+              const pulse = keyframes`
+                0%, 100% {
+                  transform: scale(1);
+                }
+                50% {
+                  transform: scale(1.15);
+                }
+              `;
+              
+              return (
+                <IconButton
+                  onClick={() => setCompatibilityPanelExpanded(true)}
+                  sx={{
+                    bgcolor: aquarium.status.level === 'ERROR' ? '#f44336' : '#ff9800',
+                    color: 'white',
+                    width: 48,
+                    height: 48,
+                    '&:hover': {
+                      bgcolor: aquarium.status.level === 'ERROR' ? '#d32f2f' : '#f57c00',
+                    },
+                    boxShadow: 4,
+                    borderRadius: '50%',
+                    animation: `${pulse} 2s ease-in-out infinite`,
+                  }}
+                >
+                  <Typography sx={{ fontSize: '1.5rem' }}>!</Typography>
+                </IconButton>
+              );
+            })()
           ) : (
             // Rozwinięty widok - pełny panel
             <Paper sx={{
@@ -2253,6 +2268,130 @@ export default function AquariumDetailPage() {
               </label>
             </Box>
           )}
+
+          {/* Panel z rekomendowanymi gatunkami */}
+          {aquarium?.fishes && aquarium.fishes.length > 0 && (() => {
+            const recommendations = getRecommendedFishes(availableFishes, aquarium, aquarium.fishes);
+            const hasRecommendations = recommendations.perfect.length > 0 || recommendations.good.length > 0 || recommendations.withWarning.length > 0;
+            
+            if (!hasRecommendations) return null;
+
+            return (
+              <Box sx={{ mb: 3 }}>
+                <Typography variant="subtitle1" sx={{ mb: 2, fontWeight: 600, color: darkMode ? 'white' : 'inherit' }}>
+                  {t("recommendedSpecies", { defaultValue: "Rekomendowane gatunki" })}
+                </Typography>
+
+                {recommendations.perfect.length > 0 && (
+                  <Box sx={{ mb: 2 }}>
+                    <Typography variant="caption" sx={{ color: 'success.main', fontWeight: 600, display: 'block', mb: 1 }}>
+                      ✓ {t("perfectMatch", { defaultValue: "Idealnie pasujące" })} (90-100%)
+                    </Typography>
+                    <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1 }}>
+                      {recommendations.perfect.map((rec) => (
+                        <Card
+                          key={rec.fish.id}
+                          sx={{
+                            cursor: 'pointer',
+                            bgcolor: darkMode ? 'rgba(76, 175, 80, 0.1)' : 'rgba(76, 175, 80, 0.05)',
+                            border: '1px solid',
+                            borderColor: 'success.main',
+                            '&:hover': {
+                              bgcolor: darkMode ? 'rgba(76, 175, 80, 0.2)' : 'rgba(76, 175, 80, 0.1)'
+                            }
+                          }}
+                          onClick={() => setSelectedFishId(rec.fish.id.toString())}
+                        >
+                          <CardContent sx={{ p: 1.5, '&:last-child': { pb: 1.5 } }}>
+                            <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                              <Typography variant="body2" sx={{ fontWeight: 500, color: darkMode ? 'white' : 'inherit' }}>
+                                {translateSpeciesName(rec.fish.name, 'fish')}
+                              </Typography>
+                              <Typography variant="caption" sx={{ color: 'success.main', fontWeight: 600 }}>
+                                {rec.matchScore}%
+                              </Typography>
+                            </Box>
+                          </CardContent>
+                        </Card>
+                      ))}
+                    </Box>
+                  </Box>
+                )}
+
+                {recommendations.good.length > 0 && (
+                  <Box sx={{ mb: 2 }}>
+                    <Typography variant="caption" sx={{ color: 'info.main', fontWeight: 600, display: 'block', mb: 1 }}>
+                      ✓ {t("goodMatch", { defaultValue: "Dobrze pasujące" })} (70-89%)
+                    </Typography>
+                    <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1 }}>
+                      {recommendations.good.map((rec) => (
+                        <Card
+                          key={rec.fish.id}
+                          sx={{
+                            cursor: 'pointer',
+                            bgcolor: darkMode ? 'rgba(33, 150, 243, 0.1)' : 'rgba(33, 150, 243, 0.05)',
+                            border: '1px solid',
+                            borderColor: 'info.main',
+                            '&:hover': {
+                              bgcolor: darkMode ? 'rgba(33, 150, 243, 0.2)' : 'rgba(33, 150, 243, 0.1)'
+                            }
+                          }}
+                          onClick={() => setSelectedFishId(rec.fish.id.toString())}
+                        >
+                          <CardContent sx={{ p: 1.5, '&:last-child': { pb: 1.5 } }}>
+                            <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                              <Typography variant="body2" sx={{ fontWeight: 500, color: darkMode ? 'white' : 'inherit' }}>
+                                {translateSpeciesName(rec.fish.name, 'fish')}
+                              </Typography>
+                              <Typography variant="caption" sx={{ color: 'info.main', fontWeight: 600 }}>
+                                {rec.matchScore}%
+                              </Typography>
+                            </Box>
+                          </CardContent>
+                        </Card>
+                      ))}
+                    </Box>
+                  </Box>
+                )}
+
+                {recommendations.withWarning.length > 0 && (
+                  <Box sx={{ mb: 2 }}>
+                    <Typography variant="caption" sx={{ color: 'warning.main', fontWeight: 600, display: 'block', mb: 1 }}>
+                      ⚡ {t("matchWithWarning", { defaultValue: "Pasujące z ostrzeżeniem" })}
+                    </Typography>
+                    <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1 }}>
+                      {recommendations.withWarning.map((rec) => (
+                        <Card
+                          key={rec.fish.id}
+                          sx={{
+                            cursor: 'pointer',
+                            bgcolor: darkMode ? 'rgba(255, 152, 0, 0.1)' : 'rgba(255, 152, 0, 0.05)',
+                            border: '1px solid',
+                            borderColor: 'warning.main',
+                            '&:hover': {
+                              bgcolor: darkMode ? 'rgba(255, 152, 0, 0.2)' : 'rgba(255, 152, 0, 0.1)'
+                            }
+                          }}
+                          onClick={() => setSelectedFishId(rec.fish.id.toString())}
+                        >
+                          <CardContent sx={{ p: 1.5, '&:last-child': { pb: 1.5 } }}>
+                            <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                              <Typography variant="body2" sx={{ fontWeight: 500, color: darkMode ? 'white' : 'inherit' }}>
+                                {translateSpeciesName(rec.fish.name, 'fish')}
+                              </Typography>
+                              <Typography variant="caption" sx={{ color: 'warning.main', fontWeight: 600 }}>
+                                {rec.matchScore}%
+                              </Typography>
+                            </Box>
+                          </CardContent>
+                        </Card>
+                      ))}
+                    </Box>
+                  </Box>
+                )}
+              </Box>
+            );
+          })()}
 
           <Box sx={{ display: 'flex', gap: 2, justifyContent: 'flex-end' }}>
             <Button onClick={() => {
