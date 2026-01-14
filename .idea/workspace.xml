@@ -5,15 +5,10 @@
   </component>
   <component name="ChangeListManager">
     <list default="true" id="3e1dcb7d-ed08-49a0-9ff9-f0c8beeee611" name="Changes" comment="admin panel">
-      <change afterPath="$PROJECT_DIR$/tests/add-fish.spec.ts" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/tests/admin-panel.spec.ts" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/tests/aquarium.spec.ts" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/tests/dashboard.spec.ts" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/tests/real-time-actions.spec.ts" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/tests/responsive.spec.ts" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/shelf/Uncommitted_changes_before_Update_at_4_01_2026_16_49_[Changes]/shelved.patch" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/shelf/Uncommitted_changes_before_Update_at_4_01_2026_16_49__Changes_.xml" beforeDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/package-lock.json" beforeDir="false" afterPath="$PROJECT_DIR$/package-lock.json" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/package.json" beforeDir="false" afterPath="$PROJECT_DIR$/package.json" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/app/lib/api.js" beforeDir="false" afterPath="$PROJECT_DIR$/app/lib/api.js" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -44,12 +39,12 @@
     &quot;assignee&quot;: &quot;maksym456&quot;
   }
 }</component>
-  <component name="GithubPullRequestsUISettings">{
-  &quot;selectedUrlAndAccountId&quot;: {
-    &quot;url&quot;: &quot;https://github.com/maksym456/AquaTracker-frontend.git&quot;,
-    &quot;accountId&quot;: &quot;43ceee5a-29bf-4915-8fc5-53100f0f39e3&quot;
+  <component name="GithubPullRequestsUISettings"><![CDATA[{
+  "selectedUrlAndAccountId": {
+    "url": "https://github.com/maksym456/AquaTracker-frontend",
+    "accountId": "83cf5ea8-ca32-484c-a363-2457ec674c83"
   }
-}</component>
+}]]></component>
   <component name="KubernetesApiPersistence">{}</component>
   <component name="KubernetesApiProvider">{
   &quot;isMigrated&quot;: true
@@ -170,7 +165,7 @@
       <breakpoints>
         <line-breakpoint enabled="true" type="javascript">
           <url>file://$PROJECT_DIR$/app/lib/api.js</url>
-          <line>689</line>
+          <line>383</line>
           <option name="timeStamp" value="1" />
         </line-breakpoint>
       </breakpoints>
