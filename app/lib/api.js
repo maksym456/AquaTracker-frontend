@@ -93,16 +93,102 @@ async function fetchAPI(endpoint, options = {}) {
   }
 }
 
-export async function getContacts(userId) {
+export async function getContacts(userId, userEmail = null) {
   try {
     if (typeof window === 'undefined') return [];
     if (!userId) return [];
+    // userEmail jest ignorowane - backend używa tylko userId
     const contacts = await fetchAPI(`/v1/contacts/${userId}`);
     return Array.isArray(contacts) ? contacts : [];
   } catch (error) {
     console.warn('API request failed, returning empty array:', error.message);
     return [];
   }
+}
+
+// Wysyła zaproszenie do kontaktu
+// @param {string} userId - UUID użytkownika wysyłającego zaproszenie
+// @param {string} inviteEmail - email odbiorcy zaproszenia
+// @param {string} userEmail - ignorowane (dla kompatybilności)
+// @returns {Promise<Object>} - odpowiedź z serwera
+export async function sendInvitation(userId, inviteEmail, userEmail = null) {
+  try {
+    if (!userId || !inviteEmail) {
+      throw new Error('userId and inviteEmail are required');
+    }
+    const response = await fetchAPI(`/v1/contacts/${userId}`, {
+      method: 'POST',
+      body: { email: inviteEmail }
+    });
+    return response;
+  } catch (error) {
+    console.error('Error sending invitation:', error);
+    throw error;
+  }
+}
+
+// Akceptuje zaproszenie do kontaktu
+// @param {string} userId - UUID użytkownika akceptującego zaproszenie
+// @param {string} contactId - ID kontaktu do zaakceptowania
+// @param {string} userEmail - ignorowane (dla kompatybilności)
+// @returns {Promise<Object>} - odpowiedź z serwera
+export async function acceptInvitation(userId, contactId, userEmail = null) {
+  try {
+    if (!userId || !contactId) {
+      throw new Error('userId and contactId are required');
+    }
+    const response = await fetchAPI(`/v1/contacts/${userId}/accept/${contactId}`, {
+      method: 'POST'
+    });
+    return response;
+  } catch (error) {
+    console.error('Error accepting invitation:', error);
+    throw error;
+  }
+}
+
+// Usuwa kontakt lub odrzuca zaproszenie
+// @param {string} userId - UUID użytkownika
+// @param {string} contactId - ID kontaktu do usunięcia
+// @param {string} status - status kontaktu ('pending', 'sent', 'friend') - określa endpoint
+// @param {string} userEmail - ignorowane (dla kompatybilności)
+// @returns {Promise<boolean>} - true jeśli sukces
+export async function deleteContact(userId, contactId, status, userEmail = null) {
+  try {
+    if (!userId || !contactId) {
+      throw new Error('userId and contactId are required');
+    }
+    
+    // Jeśli status to 'friend', użyj endpointu /friend/{contactId}
+    // W przeciwnym razie użyj endpointu /invitation/{contactId}
+    const endpoint = status === 'friend' 
+      ? `/v1/contacts/${userId}/friend/${contactId}`
+      : `/v1/contacts/${userId}/invitation/${contactId}`;
+    
+    await fetchAPI(endpoint, {
+      method: 'DELETE'
+    });
+    return true;
+  } catch (error) {
+    console.error('Error deleting contact:', error);
+    throw error;
+  }
+}
+
+// Odrzuca zaproszenie (alias dla deleteContact z statusem 'pending' lub 'sent')
+// @param {string} userId - UUID użytkownika
+// @param {string} contactId - ID kontaktu do odrzucenia
+// @returns {Promise<boolean>} - true jeśli sukces
+export async function rejectInvitation(userId, contactId) {
+  return deleteContact(userId, contactId, 'pending');
+}
+
+// Usuwa znajomego (alias dla deleteContact z statusem 'friend')
+// @param {string} userId - UUID użytkownika
+// @param {string} contactId - ID kontaktu do usunięcia
+// @returns {Promise<boolean>} - true jeśli sukces
+export async function removeFriend(userId, contactId) {
+  return deleteContact(userId, contactId, 'friend');
 }
 
 export async function getFishes() {
@@ -439,21 +525,39 @@ export async function registerUser(name, email, password) {
   }
 }
 
-// Pobiera dane zalogowanego użytkownika
-export async function getCurrentUser() {
+// Pobiera dane użytkownika po cognitoSub
+// @param {string} cognitoSub - UUID z Cognito (wymagane)
+export async function getCurrentUser(cognitoSub) {
+  // Walidacja na początku - jeśli brak cognitoSub, zwróć null BEZ wywołania API
+  if (!cognitoSub) {
+    console.warn('getCurrentUser: cognitoSub is required, returning null without API call');
+    return null;
+  }
+  
   try {
-    const user = await fetchAPI('/auth/me');
+    const user = await fetchAPI(`/v1/users/cognito/${cognitoSub}`);
     return user;
   } catch (error) {
-    console.error('Error fetching current user:', error);
+    // Jeśli użytkownik nie istnieje (404), zwróć null zamiast rzucać błąd
+    if (error.status === 404) {
+      console.log('User not found for cognitoSub:', cognitoSub);
+      return null;
+    }
+    // Nie loguj błędu jako error, tylko jako warning, żeby nie zaśmiecać konsoli
+    console.warn('Error fetching current user:', error.message);
     return null;
   }
 }
 
 // Aktualizuje dane użytkownika
-export async function updateUser(userData) {
+// @param {object} userData - dane użytkownika do aktualizacji
+// @param {string} userId - UUID użytkownika (wymagane)
+export async function updateUser(userData, userId) {
   try {
-    const user = await fetchAPI('/auth/me', {
+    if (!userId) {
+      throw new Error('userId is required to update user');
+    }
+    const user = await fetchAPI(`/v1/users/${userId}`, {
       method: 'PUT',
       body: userData
     });
@@ -486,8 +590,53 @@ export async function syncUser(cognitoSub, email, username = null) {
   }
 }
 
+// Pobiera logi aktywności
+// @param {object} filters - obiekt z filtrami
+// @param {string} filters.actionType - typ akcji (opcjonalne)
+// @param {string} filters.aquariumId - ID akwarium (opcjonalne)
+// @param {string} filters.sort - sortowanie ('asc' lub 'desc', domyślnie 'desc')
+// @param {number} filters.limit - limit wyników (opcjonalne)
+// @param {number} filters.offset - offset wyników (opcjonalne)
+// @returns {Promise<Array>} - tablica z logami
+export async function getLogs(filters = {}) {
+  try {
+    if (typeof window === 'undefined') return [];
+    
+    const queryParams = new URLSearchParams();
+    
+    if (filters.actionType) {
+      queryParams.append('actionType', filters.actionType);
+    }
+    if (filters.aquariumId) {
+      queryParams.append('aquariumId', filters.aquariumId);
+    }
+    if (filters.sort) {
+      queryParams.append('sort', filters.sort);
+    }
+    if (filters.limit) {
+      queryParams.append('limit', filters.limit.toString());
+    }
+    if (filters.offset) {
+      queryParams.append('offset', filters.offset.toString());
+    }
+    
+    const endpoint = `/v1/logs${queryParams.toString() ? `?${queryParams.toString()}` : ''}`;
+    const logs = await fetchAPI(endpoint);
+    
+    return Array.isArray(logs) ? logs : [];
+  } catch (error) {
+    console.warn('Error fetching logs:', error.message);
+    return [];
+  }
+}
+
 export default {
   getContacts,
+  sendInvitation,
+  acceptInvitation,
+  deleteContact,
+  rejectInvitation,
+  removeFriend,
   getFishes,
   getFishById,
   searchFishes,
@@ -508,4 +657,5 @@ export default {
   getCurrentUser,
   updateUser,
   syncUser,
+  getLogs,
 };

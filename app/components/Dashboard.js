@@ -8,7 +8,7 @@ import {Alert, Box, Button, Modal, Switch, TextField, Typography} from "@mui/mat
 import {APP_VERSION} from "../version";
 import {useTheme} from "../contexts/ThemeContext";
 import Link from "next/link";
-import { syncUser, getCurrentUser } from "../lib/api";
+import { syncUser } from "../lib/api";
 
 export default function Dashboard() {
   const { t, i18n } = useTranslation();
@@ -36,11 +36,12 @@ export default function Dashboard() {
             }
 
             try {
-                // 1. Synchronizuj użytkownika (tworzy lub aktualizuje)
-                await syncUser(cognitoSub, email, name);
+                // 1. Synchronizuj użytkownika (tworzy lub aktualizuje) - zwraca dane użytkownika
+                const syncedUser = await syncUser(cognitoSub, email, name);
                 
-                // 2. Pobierz ustawienia użytkownika
-                const userSettings = await getCurrentUser(cognitoSub);
+                // 2. Użyj danych z syncUser (zawiera wszystkie potrzebne informacje)
+                // syncUser zawsze zwraca dane użytkownika po synchronizacji, więc nie potrzebujemy getCurrentUser
+                const userSettings = syncedUser;
                 
                 if (userSettings) {
                     // Zapisz user.id do localStorage dla kompatybilności z AuthContext
