@@ -9,10 +9,13 @@ import {APP_VERSION} from "../version";
 import {useTheme} from "../contexts/ThemeContext";
 import Link from "next/link";
 
+
+
 export default function Dashboard() {
   const { t } = useTranslation();
     const { data: session } = useSession();
     const user = session?.user;
+
 
     useEffect(() => {
         if (session && !localStorage.getItem("sessionLoginTime")) {
@@ -211,6 +214,37 @@ export default function Dashboard() {
             ml: 'auto'
           }}>
             <LanguageSwitcher />
+
+              <Link href="/admin.js" style={{ textDecoration: 'none' }}>
+                  <Box
+                      sx={{
+                          bgcolor: darkMode ? 'rgba(211, 47, 47, 0.6)' : 'rgba(211, 47, 47, 0.5)',
+                          p: 1,
+                          borderRadius: 1.5,
+                          boxShadow: 2,
+                          transition: "all 0.3s",
+                          backdropFilter: 'blur(8px)',
+                          "&:hover": {
+                              boxShadow: 4,
+                              transform: "translateY(-2px)",
+                              bgcolor: darkMode ? 'rgba(211, 47, 47, 0.8)' : 'rgba(211, 47, 47, 0.7)'
+                          },
+                          cursor: 'pointer',
+                          minHeight: { xs: '40px', md: '48px' },
+                          minWidth: { xs: '40px', md: '48px' },
+                          display: 'flex',
+                          flexDirection: 'column',
+                          alignItems: 'center',
+                          justifyContent: 'center',
+                      }}
+                  >
+                      <Typography sx={{ fontSize: { xs: 18, md: 20 }, mb: 0.2, textAlign: 'center' }}>🛡️</Typography>
+                      <Typography variant="body2" sx={{ fontWeight: 600, color: "white", textAlign: 'center', fontSize: { xs: '0.5rem', md: '0.6rem' } }}>
+                          ADMIN
+                      </Typography>
+                  </Box>
+              </Link>
+
             {/* Settings button */}
             <Box
                 onClick={handleOpenSettings}
@@ -279,7 +313,7 @@ export default function Dashboard() {
           gap: { xs: 2, md: 3 },
           '@media (max-height: 750px)': { gap: 1.5 }
         }}>
-          
+
           <Box sx={{
             backgroundColor: darkMode ? 'rgba(0, 0, 0, 0.4)' : 'rgba(0, 0, 0, 0.01)',
             padding: { xs: 3, md: 4 },
