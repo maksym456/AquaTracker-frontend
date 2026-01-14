@@ -382,7 +382,7 @@ export default function AquariumDetailPage() {
       setIsAddingFish(true);
       const result = await addFishToAquarium(aquariumId, selectedFishId, fishQuantity);
       
-      // Backend zwraca zaktualizowane akwarium w odpowiedzi
+      // addFishToAquarium zwraca już zaktualizowane akwarium (result.aquarium z API)
       if (result && typeof result === 'object' && result.id) {
         // result jest już zaktualizowanym akwarium
         setAquarium(result);
