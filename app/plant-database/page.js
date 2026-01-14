@@ -4,10 +4,12 @@
 // useState - do przechowywania stanu komponentu (np. dane, loading, błędy)
 // useEffect - do wykonywania akcji przy załadowaniu komponentu (np. pobieranie danych z API)
 import { useState, useEffect } from "react";
-import { Box, Typography, IconButton, Button, useTheme, useMediaQuery, List, ListItemButton, ListItemText, Divider, TextField, CircularProgress, Alert } from "@mui/material";
+import { Box, Typography, IconButton, Button, useTheme, useMediaQuery, List, ListItemButton, ListItemText, Divider, TextField, CircularProgress, Alert, Modal, Paper } from "@mui/material";
 import { useTranslation } from "react-i18next";
 import { useTheme as useCustomTheme } from "../contexts/ThemeContext";
+import { useAuth } from "../contexts/AuthContext";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 import LanguageSwitcher from "../components/LanguageSwitcher";
 import KeyboardReturnOutlinedIcon from '@mui/icons-material/KeyboardReturnOutlined';
 import ArrowBackIosIcon from '@mui/icons-material/ArrowBackIos';
@@ -17,7 +19,7 @@ import ChevronLeftIcon from '@mui/icons-material/ChevronLeft';
 
 // Importujemy funkcję do pobierania roślin z API
 // Dla początkujących: import pozwala nam używać funkcji z innych plików
-import { getPlants } from "../lib/api";
+import { getPlants, getAquariums, addPlantToAquarium } from "../lib/api";
 
 export default function PlantDatabasePage() {
   const { t } = useTranslation();
@@ -44,6 +46,18 @@ export default function PlantDatabasePage() {
   const [panelOpen, setPanelOpen] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
   const [imageErrors, setImageErrors] = useState({});
+  
+  // Stany dla modalu wyboru akwarium
+  const [aquariumSelectModalOpen, setAquariumSelectModalOpen] = useState(false);
+  const [selectedPlantForAquarium, setSelectedPlantForAquarium] = useState(null);
+  const [userAquariums, setUserAquariums] = useState([]);
+  const [isLoadingAquariums, setIsLoadingAquariums] = useState(false);
+  const [isAddingPlant, setIsAddingPlant] = useState(false);
+  const [addPlantError, setAddPlantError] = useState(null);
+  const [addPlantSuccess, setAddPlantSuccess] = useState(false);
+  
+  const { user } = useAuth();
+  const router = useRouter();
 
   // Funkcja pomocnicza do mapowania nazw roślin na ścieżki ikon
   // Dla początkujących: jeśli API zwróci iconName, używamy go, w przeciwnym razie mapujemy nazwę rośliny na plik obrazu
@@ -193,6 +207,57 @@ export default function PlantDatabasePage() {
   const handlePrev = () => {
     if (plantCards.length > 0) {
       setCurrentCard((prev) => (prev - 1 + plantCards.length) % plantCards.length);
+    }
+  };
+  
+  // Funkcja do otwierania modalu wyboru akwarium
+  const handleAddToAquariumClick = async (plant) => {
+    if (!user || !user.id) {
+      setAddPlantError(t("pleaseLogin", { defaultValue: "Musisz być zalogowany, aby dodać roślinę do akwarium." }));
+      return;
+    }
+    
+    setSelectedPlantForAquarium(plant);
+    setAquariumSelectModalOpen(true);
+    setAddPlantError(null);
+    setAddPlantSuccess(false);
+    
+    // Pobierz akwaria użytkownika
+    setIsLoadingAquariums(true);
+    try {
+      const aquariums = await getAquariums(user.id);
+      setUserAquariums(aquariums || []);
+    } catch (err) {
+      console.error("Error fetching aquariums:", err);
+      setAddPlantError(t("errorLoadingAquariums", { defaultValue: "Nie udało się załadować akwariów." }));
+    } finally {
+      setIsLoadingAquariums(false);
+    }
+  };
+  
+  // Funkcja do dodawania rośliny do wybranego akwarium
+  const handleSelectAquarium = async (aquariumId) => {
+    if (!selectedPlantForAquarium || !aquariumId) return;
+    
+    setIsAddingPlant(true);
+    setAddPlantError(null);
+    setAddPlantSuccess(false);
+    
+    try {
+      await addPlantToAquarium(aquariumId, selectedPlantForAquarium.id, 1);
+      setAddPlantSuccess(true);
+      
+      // Zamknij modal po 1.5 sekundy
+      setTimeout(() => {
+        setAquariumSelectModalOpen(false);
+        setSelectedPlantForAquarium(null);
+        setAddPlantSuccess(false);
+      }, 1500);
+    } catch (err) {
+      console.error("Error adding plant to aquarium:", err);
+      setAddPlantError(err.message || t("errorAddingPlant", { defaultValue: "Nie udało się dodać rośliny do akwarium." }));
+    } finally {
+      setIsAddingPlant(false);
     }
   };
   
@@ -747,7 +812,7 @@ export default function PlantDatabasePage() {
                   <Button
                     onClick={(e) => {
                       e.stopPropagation();
-                      alert(`Dodano ${plant.name} do akwarium!`);
+                      handleAddToAquariumClick(plant);
                     }}
                     variant="contained"
                     sx={{
@@ -784,6 +849,123 @@ export default function PlantDatabasePage() {
             );
           })}
           </Box>
+
+          {/* Modal wyboru akwarium */}
+          <Modal
+            open={aquariumSelectModalOpen}
+            onClose={() => {
+              setAquariumSelectModalOpen(false);
+              setSelectedPlantForAquarium(null);
+              setAddPlantError(null);
+              setAddPlantSuccess(false);
+            }}
+            sx={{
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              p: 2
+            }}
+          >
+            <Paper sx={{
+              width: { xs: '90%', sm: 500 },
+              maxHeight: '80vh',
+              overflow: 'auto',
+              p: 3,
+              bgcolor: darkMode ? '#1e1e1e' : 'background.paper'
+            }}>
+              <Typography variant="h6" sx={{ mb: 2, fontWeight: 600 }}>
+                {t("selectAquarium", { defaultValue: "Wybierz akwarium" })}
+              </Typography>
+              
+              {selectedPlantForAquarium && (
+                <Typography variant="body2" sx={{ mb: 2, color: darkMode ? 'rgba(255,255,255,0.7)' : 'text.secondary' }}>
+                  {t("addingPlantToAquarium", { defaultValue: "Dodawanie" })}: <strong>{selectedPlantForAquarium.name}</strong>
+                </Typography>
+              )}
+              
+              {addPlantSuccess && (
+                <Alert severity="success" sx={{ mb: 2 }}>
+                  {t("plantAddedSuccessfully", { defaultValue: "Roślina została dodana do akwarium!" })}
+                </Alert>
+              )}
+              
+              {addPlantError && (
+                <Alert severity="error" sx={{ mb: 2 }} onClose={() => setAddPlantError(null)}>
+                  {addPlantError}
+                </Alert>
+              )}
+              
+              {isLoadingAquariums ? (
+                <Box sx={{ display: 'flex', justifyContent: 'center', py: 4 }}>
+                  <CircularProgress />
+                </Box>
+              ) : userAquariums.length === 0 ? (
+                <Box sx={{ py: 4, textAlign: 'center' }}>
+                  <Typography variant="body1" sx={{ mb: 2, color: darkMode ? 'rgba(255,255,255,0.7)' : 'text.secondary' }}>
+                    {t("noAquariums", { defaultValue: "Nie masz jeszcze żadnych akwariów." })}
+                  </Typography>
+                  <Button
+                    variant="contained"
+                    onClick={() => {
+                      setAquariumSelectModalOpen(false);
+                      router.push('/my-aquariums');
+                    }}
+                  >
+                    {t("createAquarium", { defaultValue: "Utwórz akwarium" })}
+                  </Button>
+                </Box>
+              ) : (
+                <List>
+                  {userAquariums.map((aquarium) => (
+                    <ListItemButton
+                      key={aquarium.id}
+                      onClick={() => handleSelectAquarium(aquarium.id)}
+                      disabled={isAddingPlant}
+                      sx={{
+                        mb: 1,
+                        borderRadius: 1,
+                        border: '1px solid',
+                        borderColor: darkMode ? 'rgba(255,255,255,0.1)' : 'rgba(0,0,0,0.1)',
+                        '&:hover': {
+                          bgcolor: darkMode ? 'rgba(255,255,255,0.05)' : 'rgba(0,0,0,0.05)'
+                        }
+                      }}
+                    >
+                      <ListItemText
+                        primary={aquarium.name}
+                        secondary={
+                          <>
+                            <Typography variant="caption" component="span" sx={{ display: 'block' }}>
+                              {t("waterType", { defaultValue: "Typ wody" })}: {aquarium.waterType === 'freshwater' ? t("freshwater", { defaultValue: "Słodkowodne" }) : t("saltwater", { defaultValue: "Słonowodne" })}
+                            </Typography>
+                            <Typography variant="caption" component="span" sx={{ display: 'block' }}>
+                              {t("temperature", { defaultValue: "Temperatura" })}: {aquarium.temperature}°C
+                            </Typography>
+                          </>
+                        }
+                      />
+                      {isAddingPlant && (
+                        <CircularProgress size={20} sx={{ ml: 2 }} />
+                      )}
+                    </ListItemButton>
+                  ))}
+                </List>
+              )}
+              
+              <Box sx={{ display: 'flex', justifyContent: 'flex-end', mt: 2 }}>
+                <Button
+                  onClick={() => {
+                    setAquariumSelectModalOpen(false);
+                    setSelectedPlantForAquarium(null);
+                    setAddPlantError(null);
+                    setAddPlantSuccess(false);
+                  }}
+                >
+                  {t("cancel", { defaultValue: "Anuluj" })}
+                </Button>
+              </Box>
+            </Paper>
+          </Modal>
 
           {/* Wskaźnik aktualnego kafelka - ukryty na mobile */}
           <Box sx={{

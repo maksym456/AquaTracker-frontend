@@ -4,16 +4,9 @@
     <option name="autoReloadType" value="SELECTIVE" />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="3e1dcb7d-ed08-49a0-9ff9-f0c8beeee611" name="Changes" comment="admin panel">
-      <change afterPath="$PROJECT_DIR$/tests/add-fish.spec.ts" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/tests/admin-panel.spec.ts" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/tests/aquarium.spec.ts" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/tests/dashboard.spec.ts" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/tests/real-time-actions.spec.ts" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/tests/responsive.spec.ts" afterDir="false" />
+    <list default="true" id="3e1dcb7d-ed08-49a0-9ff9-f0c8beeee611" name="Changes" comment="Naprawa Contacts pod względem API.">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/package-lock.json" beforeDir="false" afterPath="$PROJECT_DIR$/package-lock.json" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/package.json" beforeDir="false" afterPath="$PROJECT_DIR$/package.json" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/app/my-aquariums/page.js" beforeDir="false" afterPath="$PROJECT_DIR$/app/my-aquariums/page.js" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -44,12 +37,12 @@
     &quot;assignee&quot;: &quot;maksym456&quot;
   }
 }</component>
-  <component name="GithubPullRequestsUISettings">{
-  &quot;selectedUrlAndAccountId&quot;: {
-    &quot;url&quot;: &quot;https://github.com/maksym456/AquaTracker-frontend.git&quot;,
-    &quot;accountId&quot;: &quot;43ceee5a-29bf-4915-8fc5-53100f0f39e3&quot;
+  <component name="GithubPullRequestsUISettings"><![CDATA[{
+  "selectedUrlAndAccountId": {
+    "url": "https://github.com/maksym456/AquaTracker-frontend",
+    "accountId": "83cf5ea8-ca32-484c-a363-2457ec674c83"
   }
-}</component>
+}]]></component>
   <component name="KubernetesApiPersistence">{}</component>
   <component name="KubernetesApiProvider">{
   &quot;isMigrated&quot;: true
@@ -144,7 +137,39 @@
       <option name="project" value="LOCAL" />
       <updated>1768155507306</updated>
     </task>
-    <option name="localTasksCounter" value="3" />
+    <task id="LOCAL-00003" summary="Dostosowanie UUID do backendu.">
+      <option name="closed" value="true" />
+      <created>1768409482642</created>
+      <option name="number" value="00003" />
+      <option name="presentableId" value="LOCAL-00003" />
+      <option name="project" value="LOCAL" />
+      <updated>1768409482642</updated>
+    </task>
+    <task id="LOCAL-00004" summary="Poprawki dla wyskakujących błędów (Issues) na frontendzie. Poprawa kompatybilności zgodnej z najnowszym API.">
+      <option name="closed" value="true" />
+      <created>1768411446937</created>
+      <option name="number" value="00004" />
+      <option name="presentableId" value="LOCAL-00004" />
+      <option name="project" value="LOCAL" />
+      <updated>1768411446937</updated>
+    </task>
+    <task id="LOCAL-00005" summary="Dodanie linii &quot;peer&quot;: true na package-lock.json">
+      <option name="closed" value="true" />
+      <created>1768411644536</created>
+      <option name="number" value="00005" />
+      <option name="presentableId" value="LOCAL-00005" />
+      <option name="project" value="LOCAL" />
+      <updated>1768411644536</updated>
+    </task>
+    <task id="LOCAL-00006" summary="Naprawa Contacts pod względem API.">
+      <option name="closed" value="true" />
+      <created>1768412499721</created>
+      <option name="number" value="00006" />
+      <option name="presentableId" value="LOCAL-00006" />
+      <option name="project" value="LOCAL" />
+      <updated>1768412499721</updated>
+    </task>
+    <option name="localTasksCounter" value="7" />
     <servers />
   </component>
   <component name="TypeScriptGeneratedFilesManager">
@@ -163,14 +188,18 @@
   </component>
   <component name="VcsManagerConfiguration">
     <MESSAGE value="admin panel" />
-    <option name="LAST_COMMIT_MESSAGE" value="admin panel" />
+    <MESSAGE value="Dostosowanie UUID do backendu." />
+    <MESSAGE value="Poprawki dla wyskakujących błędów (Issues) na frontendzie. Poprawa kompatybilności zgodnej z najnowszym API." />
+    <MESSAGE value="Dodanie linii &quot;peer&quot;: true na package-lock.json" />
+    <MESSAGE value="Naprawa Contacts pod względem API." />
+    <option name="LAST_COMMIT_MESSAGE" value="Naprawa Contacts pod względem API." />
   </component>
   <component name="XDebuggerManager">
     <breakpoint-manager>
       <breakpoints>
         <line-breakpoint enabled="true" type="javascript">
           <url>file://$PROJECT_DIR$/app/lib/api.js</url>
-          <line>689</line>
+          <line>469</line>
           <option name="timeStamp" value="1" />
         </line-breakpoint>
       </breakpoints>

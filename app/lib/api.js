@@ -62,64 +62,13 @@ async function fetchAPI(endpoint, options = {}) {
       
       if (!response.ok) {
         const errorText = await response.text();
-        
-        // Spróbuj sparsować JSON z błędem z backendu
-        let errorMessage = `API Error: ${response.status} ${response.statusText}`;
-        try {
-          const errorJson = JSON.parse(errorText);
-          if (errorJson.message) {
-            errorMessage = errorJson.message;
-          } else if (errorJson.error) {
-            errorMessage = errorJson.error;
-          }
-        } catch (e) {
-          // Jeśli nie jest JSON, użyj oryginalnego tekstu
-          if (errorText && errorText.trim()) {
-            errorMessage = errorText;
-          }
-        }
-        
-        // Loguj tylko raz, na poziomie debugowania
-        if (process.env.NODE_ENV === 'development') {
-          console.warn(`API Error (${response.status}):`, errorMessage);
-        }
-        
-        const error = new Error(errorMessage);
-        error.status = response.status;
-        error.statusText = response.statusText;
-        error.originalResponse = errorText;
-        throw error;
+        console.error(`API Error Response:`, errorText);
+        throw new Error(`API Error: ${response.status} ${response.statusText}`);
       }
 
-      // Sprawdź, czy odpowiedź ma zawartość (DELETE może zwracać 204 No Content)
-      const contentType = response.headers.get('content-type');
-      const contentLength = response.headers.get('content-length');
-      
-      // Jeśli odpowiedź jest pusta (204 No Content) lub nie ma content-type JSON, zwróć null
-      if (response.status === 204 || 
-          contentLength === '0' || 
-          !contentType || 
-          !contentType.includes('application/json')) {
-        return null;
-      }
-
-      // Spróbuj sparsować JSON, ale obsłuż przypadek pustej odpowiedzi
-      try {
-        const text = await response.text();
-        if (!text || text.trim() === '') {
-          return null;
-        }
-        const data = JSON.parse(text);
-        console.log(`API Response Data:`, data);
-        return data;
-      } catch (jsonError) {
-        // Jeśli nie można sparsować JSON, zwróć null (dla DELETE 204)
-        if (response.status === 204) {
-          return null;
-        }
-        console.warn('Failed to parse JSON response:', jsonError);
-        throw new Error(`Failed to parse response: ${jsonError.message}`);
-      }
+      const data = await response.json();
+      console.log(`API Response Data:`, data);
+      return data;
       
     } catch (fetchError) {
       if (timeoutId) {
@@ -144,83 +93,12 @@ async function fetchAPI(endpoint, options = {}) {
   }
 }
 
-// Pomocnicza funkcja do konwersji cognitoSub na userId w formacie "u_123"
-async function getUserIdFromCognitoSub(cognitoSub, userEmail = null) {
-  try {
-    if (!cognitoSub) return null;
-    
-    // Sprawdź czy to już jest w formacie "u_123"
-    if (cognitoSub.startsWith('u_')) {
-      return cognitoSub;
-    }
-    
-    // Jeśli to UUID (cognitoSub), użyj endpointu /v1/auth/me który zwraca id w formacie "u_123"
-    // Endpoint /v1/auth/me wymaga cognitoSub jako query parameter
-    try {
-      const user = await fetchAPI(`/v1/auth/me?cognitoSub=${encodeURIComponent(cognitoSub)}`);
-      if (user && user.id) {
-        return user.id; // user.id jest w formacie "u_123" z AuthController
-      }
-    } catch (error) {
-      // Jeśli użytkownik nie istnieje (404), spróbuj zsynchronizować
-      if (error.status === 404 && userEmail) {
-        console.log('User not found in database, attempting to sync...');
-        try {
-          // Spróbuj zsynchronizować użytkownika
-          const syncResponse = await fetchAPI('/v1/users/sync', {
-            method: 'POST',
-            body: {
-              cognitoSub: cognitoSub,
-              email: userEmail,
-              username: userEmail.split('@')[0] // Domyślny username z email
-            }
-          });
-          
-          // Po synchronizacji spróbuj ponownie pobrać użytkownika
-          if (syncResponse) {
-            try {
-              const syncedUser = await fetchAPI(`/v1/auth/me?cognitoSub=${encodeURIComponent(cognitoSub)}`);
-              if (syncedUser && syncedUser.id) {
-                console.log('User synced successfully, userId:', syncedUser.id);
-                return syncedUser.id;
-              }
-            } catch (retryError) {
-              console.error('Error fetching user after sync:', retryError);
-              // Jeśli nadal nie działa, zwróć null zamiast rzucać błąd
-            }
-          }
-        } catch (syncError) {
-          console.error('Error syncing user:', syncError);
-          // Nie rzucaj błędu, tylko zwróć null
-        }
-      } else {
-        // Jeśli to nie 404 lub nie ma email, loguj i zwróć null
-        console.warn('Could not get user ID:', error.status === 404 ? 'User not found' : error.message);
-      }
-      // Nie rzucaj błędu dalej, zwróć null
-      return null;
-    }
-    
-    return null;
-  } catch (error) {
-    console.error('Error getting user ID from cognitoSub:', error);
-    return null;
-  }
-}
-
 export async function getContacts(userId, userEmail = null) {
   try {
     if (typeof window === 'undefined') return [];
     if (!userId) return [];
-    
-    // Konwertuj cognitoSub na userId jeśli potrzeba
-    const actualUserId = await getUserIdFromCognitoSub(userId, userEmail);
-    if (!actualUserId) {
-      console.warn('Could not convert userId to proper format');
-      return [];
-    }
-    
-    const contacts = await fetchAPI(`/v1/contacts/${actualUserId}`);
+    // userEmail jest ignorowane - backend używa tylko userId
+    const contacts = await fetchAPI(`/v1/contacts/${userId}`);
     return Array.isArray(contacts) ? contacts : [];
   } catch (error) {
     console.warn('API request failed, returning empty array:', error.message);
@@ -229,41 +107,65 @@ export async function getContacts(userId, userEmail = null) {
 }
 
 // Wysyła zaproszenie do kontaktu
-export async function sendInvitation(senderId, recipientEmail, senderEmail = null) {
+// @param {string} userId - UUID użytkownika wysyłającego zaproszenie
+// @param {string} inviteEmail - email odbiorcy zaproszenia
+// @param {string} userEmail - ignorowane (dla kompatybilności)
+// @returns {Promise<Object>} - odpowiedź z serwera
+export async function sendInvitation(userId, inviteEmail, userEmail = null) {
   try {
-    if (typeof window === 'undefined') return null;
-    if (!senderId || !recipientEmail) {
-      throw new Error('senderId and recipientEmail are required');
+    if (!userId || !inviteEmail) {
+      throw new Error('userId and inviteEmail are required');
     }
-    
-    // Konwertuj cognitoSub na userId jeśli potrzeba
-    const actualSenderId = await getUserIdFromCognitoSub(senderId, senderEmail);
-    if (!actualSenderId) {
-      throw new Error('Could not convert senderId to proper format. User may not exist in database. Please try logging in again.');
-    }
-    
-    const invitation = await fetchAPI('/v1/contacts/invitations', {
+    const response = await fetchAPI(`/v1/contacts/${userId}`, {
       method: 'POST',
-      body: {
-        senderId: actualSenderId,
-        recipientEmail: recipientEmail.trim()
-      }
+      body: { email: inviteEmail }
     });
-    return invitation;
+    return response;
   } catch (error) {
     console.error('Error sending invitation:', error);
     throw error;
   }
 }
 
-// Usuwa kontakt
-export async function deleteContact(contactId) {
+// Akceptuje zaproszenie do kontaktu
+// @param {string} userId - UUID użytkownika akceptującego zaproszenie
+// @param {string} contactId - ID kontaktu do zaakceptowania
+// @param {string} userEmail - ignorowane (dla kompatybilności)
+// @returns {Promise<Object>} - odpowiedź z serwera
+export async function acceptInvitation(userId, contactId, userEmail = null) {
   try {
-    if (typeof window === 'undefined') return;
-    if (!contactId) {
-      throw new Error('contactId is required');
+    if (!userId || !contactId) {
+      throw new Error('userId and contactId are required');
     }
-    await fetchAPI(`/v1/contacts/${contactId}`, {
+    const response = await fetchAPI(`/v1/contacts/${userId}/accept/${contactId}`, {
+      method: 'POST'
+    });
+    return response;
+  } catch (error) {
+    console.error('Error accepting invitation:', error);
+    throw error;
+  }
+}
+
+// Usuwa kontakt lub odrzuca zaproszenie
+// @param {string} userId - UUID użytkownika
+// @param {string} contactId - ID kontaktu do usunięcia
+// @param {string} status - status kontaktu ('pending', 'sent', 'friend') - określa endpoint
+// @param {string} userEmail - ignorowane (dla kompatybilności)
+// @returns {Promise<boolean>} - true jeśli sukces
+export async function deleteContact(userId, contactId, status, userEmail = null) {
+  try {
+    if (!userId || !contactId) {
+      throw new Error('userId and contactId are required');
+    }
+    
+    // Jeśli status to 'friend', użyj endpointu /friend/{contactId}
+    // W przeciwnym razie użyj endpointu /invitation/{contactId}
+    const endpoint = status === 'friend' 
+      ? `/v1/contacts/${userId}/friend/${contactId}`
+      : `/v1/contacts/${userId}/invitation/${contactId}`;
+    
+    await fetchAPI(endpoint, {
       method: 'DELETE'
     });
     return true;
@@ -271,6 +173,22 @@ export async function deleteContact(contactId) {
     console.error('Error deleting contact:', error);
     throw error;
   }
+}
+
+// Odrzuca zaproszenie (alias dla deleteContact z statusem 'pending' lub 'sent')
+// @param {string} userId - UUID użytkownika
+// @param {string} contactId - ID kontaktu do odrzucenia
+// @returns {Promise<boolean>} - true jeśli sukces
+export async function rejectInvitation(userId, contactId) {
+  return deleteContact(userId, contactId, 'pending');
+}
+
+// Usuwa znajomego (alias dla deleteContact z statusem 'friend')
+// @param {string} userId - UUID użytkownika
+// @param {string} contactId - ID kontaktu do usunięcia
+// @returns {Promise<boolean>} - true jeśli sukces
+export async function removeFriend(userId, contactId) {
+  return deleteContact(userId, contactId, 'friend');
 }
 
 export async function getFishes() {
@@ -387,11 +305,19 @@ export async function searchPlants(filters = {}) {
 // FUNKCJE API DLA AKWARIÓW
 // ============================================
 
-// Pobiera wszystkie akwaria użytkownika (backend zwraca akwaria zalogowanego użytkownika na podstawie tokenu JWT)
-export async function getAquariums() {
+// Pobiera wszystkie akwaria użytkownika
+// @param {string} userId - UUID użytkownika (opcjonalne, jeśli podane, używa endpointu /user/{userId})
+export async function getAquariums(userId = null) {
   try {
     if (typeof window === 'undefined') return [];
-    const aquariums = await fetchAPI('/v1/aquariums');
+    
+    // Jeśli podano userId, użyj endpointu specyficznego dla użytkownika
+    let endpoint = '/v1/aquariums';
+    if (userId) {
+      endpoint = `/v1/aquariums/user/${userId}`;
+    }
+    
+    const aquariums = await fetchAPI(endpoint);
     console.log('Fetched aquariums:', aquariums);
     return Array.isArray(aquariums) ? aquariums : [];
   } catch (error) {
@@ -406,42 +332,6 @@ export async function getAquariums() {
 export async function getAquariumById(id) {
   try {
     const aquarium = await fetchAPI(`/v1/aquariums/${id}`);
-    console.log('🔵 getAquariumById: received data from API:', aquarium);
-    
-    if (aquarium) {
-      // Mapowanie danych z backendu do formatu oczekiwanego przez frontend
-      const mapped = {
-        ...aquarium,
-        // Backend zwraca fish, frontend oczekuje fishes
-        fishes: aquarium.fish || aquarium.fishes || [],
-        // Backend zwraca plants (może być już OK)
-        plants: aquarium.plants || [],
-        // Mapowanie nazw pól (jeśli backend zwraca inne nazwy)
-        temperature: aquarium.temperatureC !== undefined ? aquarium.temperatureC : aquarium.temperature,
-        hardness: aquarium.hardnessDGH !== undefined ? aquarium.hardnessDGH : aquarium.hardness,
-        volume: aquarium.volumeLiters !== undefined ? aquarium.volumeLiters : aquarium.volume,
-        // Zachowaj status akwarium (kompatybilność, ostrzeżenia)
-        status: aquarium.status || null
-      };
-      
-      // Usuń stare pola, jeśli były zmapowane
-      if (aquarium.fish && !aquarium.fishes) {
-        delete mapped.fish;
-      }
-      if (aquarium.temperatureC !== undefined && aquarium.temperature === undefined) {
-        delete mapped.temperatureC;
-      }
-      if (aquarium.hardnessDGH !== undefined && aquarium.hardness === undefined) {
-        delete mapped.hardnessDGH;
-      }
-      if (aquarium.volumeLiters !== undefined && aquarium.volume === undefined) {
-        delete mapped.volumeLiters;
-      }
-      
-      console.log('🔵 getAquariumById: mapped data, fishes:', mapped.fishes?.length || 0, 'items');
-      return mapped;
-    }
-    
     return aquarium;
   } catch (error) {
     console.error(`Error fetching aquarium with id ${id}:`, error);
@@ -450,11 +340,15 @@ export async function getAquariumById(id) {
 }
 
 // Tworzy nowe akwarium
-export async function createAquarium(aquariumData) {
+// @param {object} aquariumData - dane akwarium
+// @param {string} userId - UUID użytkownika (opcjonalne, jeśli podane, dodaje ownerId do body)
+export async function createAquarium(aquariumData, userId = null) {
   try {
+    // Jeśli podano userId, dodaj go do body jako ownerId
+    const body = userId ? { ...aquariumData, ownerId: userId } : aquariumData;
     const aquarium = await fetchAPI('/v1/aquariums', {
       method: 'POST',
-      body: aquariumData
+      body: body
     });
     return aquarium;
   } catch (error) {
@@ -485,25 +379,8 @@ export async function deleteAquarium(id) {
     });
     return true;
   } catch (error) {
-    // Spróbuj sparsować komunikat błędu z backendu
-    let errorMessage = error.message || "Nie udało się usunąć akwarium.";
-    
-    // Jeśli błąd zawiera informację o foreign key constraint, pokaż bardziej zrozumiały komunikat
-    if (errorMessage.includes('foreign key constraint') || 
-        errorMessage.includes('log_entries') || 
-        errorMessage.includes('still referenced')) {
-      errorMessage = "Nie można usunąć akwarium, ponieważ ma powiązane wpisy w historii. Skontaktuj się z administratorem.";
-    }
-    
-    // Loguj tylko raz, jeśli to development
-    if (process.env.NODE_ENV === 'development') {
-      console.warn(`Error deleting aquarium ${id}:`, errorMessage);
-    }
-    
-    // Utwórz nowy błąd z lepszym komunikatem
-    const improvedError = new Error(errorMessage);
-    improvedError.originalError = error;
-    throw improvedError;
+    console.error(`Error deleting aquarium with id ${id}:`, error);
+    throw error;
   }
 }
 
@@ -516,38 +393,10 @@ export async function addFishToAquarium(aquariumId, fishId, count = 1) {
     });
     // Backend zwraca {aquarium: ..., logEntry: ...}
     // Zwracamy zaktualizowane akwarium, jeśli jest w odpowiedzi
-    const aquariumData = result?.aquarium || result;
-    
-    if (aquariumData) {
-      // Mapowanie danych jak w getAquariumById
-      const mapped = {
-        ...aquariumData,
-        fishes: aquariumData.fish || aquariumData.fishes || [],
-        plants: aquariumData.plants || [],
-        temperature: aquariumData.temperatureC !== undefined ? aquariumData.temperatureC : aquariumData.temperature,
-        hardness: aquariumData.hardnessDGH !== undefined ? aquariumData.hardnessDGH : aquariumData.hardness,
-        volume: aquariumData.volumeLiters !== undefined ? aquariumData.volumeLiters : aquariumData.volume,
-        // Zachowaj status akwarium (kompatybilność, ostrzeżenia)
-        status: aquariumData.status || null
-      };
-      
-      if (aquariumData.fish && !aquariumData.fishes) {
-        delete mapped.fish;
-      }
-      if (aquariumData.temperatureC !== undefined && aquariumData.temperature === undefined) {
-        delete mapped.temperatureC;
-      }
-      if (aquariumData.hardnessDGH !== undefined && aquariumData.hardness === undefined) {
-        delete mapped.hardnessDGH;
-      }
-      if (aquariumData.volumeLiters !== undefined && aquariumData.volume === undefined) {
-        delete mapped.volumeLiters;
-      }
-      
-      return mapped;
+    if (result && result.aquarium) {
+      return result.aquarium;
     }
-    
-    return aquariumData;
+    return result;
   } catch (error) {
     console.error(`Error adding fish to aquarium ${aquariumId}:`, error);
     throw error;
@@ -557,52 +406,52 @@ export async function addFishToAquarium(aquariumId, fishId, count = 1) {
 // Usuwa rybę z akwarium
 export async function removeFishFromAquarium(aquariumId, fishId) {
   try {
-    console.log('🔴 removeFishFromAquarium called with:', { aquariumId, fishId });
+    console.log('removeFishFromAquarium called with:', { aquariumId, fishId });
     const endpoint = `/v1/aquariums/${aquariumId}/fish/${fishId}`;
+    console.log('Calling DELETE endpoint:', endpoint);
     
     const result = await fetchAPI(endpoint, {
       method: 'DELETE'
     });
     
-    console.log('🔴 removeFishFromAquarium response:', result);
+    console.log('removeFishFromAquarium response:', result);
+    console.log('removeFishFromAquarium response type:', typeof result);
+    console.log('removeFishFromAquarium response keys:', result ? Object.keys(result) : 'null');
+    console.log('removeFishFromAquarium result.aquarium:', result?.aquarium);
+    console.log('removeFishFromAquarium result.logEntry:', result?.logEntry);
+    console.log('removeFishFromAquarium result.LogEntry:', result?.LogEntry);
     
     // Backend zwraca {aquarium: ..., logEntry: ...}
-    const aquariumData = result?.aquarium || result?.Aquarium || (result?.id ? result : null);
-    
-    if (aquariumData) {
-      // Mapowanie danych jak w getAquariumById
-      const mapped = {
-        ...aquariumData,
-        fishes: aquariumData.fish || aquariumData.fishes || [],
-        plants: aquariumData.plants || [],
-        temperature: aquariumData.temperatureC !== undefined ? aquariumData.temperatureC : aquariumData.temperature,
-        hardness: aquariumData.hardnessDGH !== undefined ? aquariumData.hardnessDGH : aquariumData.hardness,
-        volume: aquariumData.volumeLiters !== undefined ? aquariumData.volumeLiters : aquariumData.volume,
-        // Zachowaj status akwarium (kompatybilność, ostrzeżenia)
-        status: aquariumData.status || null
-      };
-      
-      if (aquariumData.fish && !aquariumData.fishes) {
-        delete mapped.fish;
-      }
-      if (aquariumData.temperatureC !== undefined && aquariumData.temperature === undefined) {
-        delete mapped.temperatureC;
-      }
-      if (aquariumData.hardnessDGH !== undefined && aquariumData.hardness === undefined) {
-        delete mapped.hardnessDGH;
-      }
-      if (aquariumData.volumeLiters !== undefined && aquariumData.volume === undefined) {
-        delete mapped.volumeLiters;
-      }
-      
-      console.log('🔴 removeFishFromAquarium: mapped data, fishes:', mapped.fishes?.length || 0, 'items');
-      return mapped;
+    // Sprawdzamy wszystkie możliwe warianty
+    if (result && result.aquarium) {
+      console.log('Returning result.aquarium (lowercase)');
+      return result.aquarium;
     }
-    
-    console.log('🔴 removeFishFromAquarium: no aquarium in response');
+    if (result && result.Aquarium) {
+      console.log('Returning result.Aquarium (uppercase)');
+      return result.Aquarium;
+    }
+    // Jeśli result ma id i fishes, to może jest już akwarium (nie obiekt z aquarium i logEntry)
+    // To może się zdarzyć, jeśli backend zwraca bezpośrednio akwarium
+    if (result && result.id && Array.isArray(result.fishes)) {
+      console.log('Result is already aquarium (has id and fishes array), returning as is');
+      return result;
+    }
+    // Jeśli result ma LogEntry (z wielkiej litery) i aquarium, to może backend zwraca inny format
+    if (result && result.LogEntry && result.aquarium) {
+      console.log('Returning result.aquarium (with LogEntry uppercase)');
+      return result.aquarium;
+    }
+    console.log('No aquarium found in response, returning result or true');
     return result || true;
   } catch (error) {
     console.error(`Error removing fish from aquarium ${aquariumId}:`, error);
+    console.error('Error details:', {
+      message: error.message,
+      stack: error.stack,
+      aquariumId,
+      fishId
+    });
     throw error;
   }
 }
@@ -615,38 +464,11 @@ export async function addPlantToAquarium(aquariumId, plantId, count = 1) {
       body: { plantId, count }
     });
     // Backend zwraca {aquarium: ..., logEntry: ...}
-    const aquariumData = result?.aquarium || result;
-    
-    if (aquariumData) {
-      // Mapowanie danych jak w getAquariumById
-      const mapped = {
-        ...aquariumData,
-        fishes: aquariumData.fish || aquariumData.fishes || [],
-        plants: aquariumData.plants || [],
-        temperature: aquariumData.temperatureC !== undefined ? aquariumData.temperatureC : aquariumData.temperature,
-        hardness: aquariumData.hardnessDGH !== undefined ? aquariumData.hardnessDGH : aquariumData.hardness,
-        volume: aquariumData.volumeLiters !== undefined ? aquariumData.volumeLiters : aquariumData.volume,
-        // Zachowaj status akwarium (kompatybilność, ostrzeżenia)
-        status: aquariumData.status || null
-      };
-      
-      if (aquariumData.fish && !aquariumData.fishes) {
-        delete mapped.fish;
-      }
-      if (aquariumData.temperatureC !== undefined && aquariumData.temperature === undefined) {
-        delete mapped.temperatureC;
-      }
-      if (aquariumData.hardnessDGH !== undefined && aquariumData.hardness === undefined) {
-        delete mapped.hardnessDGH;
-      }
-      if (aquariumData.volumeLiters !== undefined && aquariumData.volume === undefined) {
-        delete mapped.volumeLiters;
-      }
-      
-      return mapped;
+    // Zwracamy zaktualizowane akwarium, jeśli jest w odpowiedzi
+    if (result && result.aquarium) {
+      return result.aquarium;
     }
-    
-    return aquariumData;
+    return result;
   } catch (error) {
     console.error(`Error adding plant to aquarium ${aquariumId}:`, error);
     throw error;
@@ -660,37 +482,10 @@ export async function removePlantFromAquarium(aquariumId, plantId) {
       method: 'DELETE'
     });
     // Backend zwraca {aquarium: ..., logEntry: ...}
-    const aquariumData = result?.aquarium || (result?.id ? result : null);
-    
-    if (aquariumData) {
-      // Mapowanie danych jak w getAquariumById
-      const mapped = {
-        ...aquariumData,
-        fishes: aquariumData.fish || aquariumData.fishes || [],
-        plants: aquariumData.plants || [],
-        temperature: aquariumData.temperatureC !== undefined ? aquariumData.temperatureC : aquariumData.temperature,
-        hardness: aquariumData.hardnessDGH !== undefined ? aquariumData.hardnessDGH : aquariumData.hardness,
-        volume: aquariumData.volumeLiters !== undefined ? aquariumData.volumeLiters : aquariumData.volume,
-        // Zachowaj status akwarium (kompatybilność, ostrzeżenia)
-        status: aquariumData.status || null
-      };
-      
-      if (aquariumData.fish && !aquariumData.fishes) {
-        delete mapped.fish;
-      }
-      if (aquariumData.temperatureC !== undefined && aquariumData.temperature === undefined) {
-        delete mapped.temperatureC;
-      }
-      if (aquariumData.hardnessDGH !== undefined && aquariumData.hardness === undefined) {
-        delete mapped.hardnessDGH;
-      }
-      if (aquariumData.volumeLiters !== undefined && aquariumData.volume === undefined) {
-        delete mapped.volumeLiters;
-      }
-      
-      return mapped;
+    // Zwracamy zaktualizowane akwarium, jeśli jest w odpowiedzi
+    if (result && result.aquarium) {
+      return result.aquarium;
     }
-    
     return result || true;
   } catch (error) {
     console.error(`Error removing plant from aquarium ${aquariumId}:`, error);
@@ -730,21 +525,39 @@ export async function registerUser(name, email, password) {
   }
 }
 
-// Pobiera dane zalogowanego użytkownika
-export async function getCurrentUser() {
+// Pobiera dane użytkownika po cognitoSub
+// @param {string} cognitoSub - UUID z Cognito (wymagane)
+export async function getCurrentUser(cognitoSub) {
+  // Walidacja na początku - jeśli brak cognitoSub, zwróć null BEZ wywołania API
+  if (!cognitoSub) {
+    console.warn('getCurrentUser: cognitoSub is required, returning null without API call');
+    return null;
+  }
+  
   try {
-    const user = await fetchAPI('/v1/auth/me');
+    const user = await fetchAPI(`/v1/users/cognito/${cognitoSub}`);
     return user;
   } catch (error) {
-    console.error('Error fetching current user:', error);
+    // Jeśli użytkownik nie istnieje (404), zwróć null zamiast rzucać błąd
+    if (error.status === 404) {
+      console.log('User not found for cognitoSub:', cognitoSub);
+      return null;
+    }
+    // Nie loguj błędu jako error, tylko jako warning, żeby nie zaśmiecać konsoli
+    console.warn('Error fetching current user:', error.message);
     return null;
   }
 }
 
 // Aktualizuje dane użytkownika
-export async function updateUser(userData) {
+// @param {object} userData - dane użytkownika do aktualizacji
+// @param {string} userId - UUID użytkownika (wymagane)
+export async function updateUser(userData, userId) {
   try {
-    const user = await fetchAPI('/v1/auth/me', {
+    if (!userId) {
+      throw new Error('userId is required to update user');
+    }
+    const user = await fetchAPI(`/v1/users/${userId}`, {
       method: 'PUT',
       body: userData
     });
@@ -755,10 +568,161 @@ export async function updateUser(userData) {
   }
 }
 
+// Synchronizuje użytkownika z backendem (Cognito)
+// @param {string} cognitoSub - UUID z Cognito
+// @param {string} email - email użytkownika
+// @param {string} username - nazwa użytkownika (opcjonalne)
+// @returns {Promise<Object>} - zsynchronizowany użytkownik z UUID
+export async function syncUser(cognitoSub, email, username = null) {
+  try {
+    const user = await fetchAPI('/v1/users/sync', {
+      method: 'POST',
+      body: {
+        cognitoSub: cognitoSub,
+        email: email,
+        username: username || email.split("@")[0]
+      }
+    });
+    return user;
+  } catch (error) {
+    console.error('Error syncing user:', error);
+    throw error;
+  }
+}
+
+// Pobiera logi aktywności
+// @param {object} filters - obiekt z filtrami
+// @param {string} filters.actionType - typ akcji (opcjonalne)
+// @param {string} filters.aquariumId - ID akwarium (opcjonalne)
+// @param {string} filters.sort - sortowanie ('asc' lub 'desc', domyślnie 'desc')
+// @param {number} filters.limit - limit wyników (opcjonalne)
+// @param {number} filters.offset - offset wyników (opcjonalne)
+// @returns {Promise<Array>} - tablica z logami
+export async function getLogs(filters = {}) {
+  try {
+    if (typeof window === 'undefined') return [];
+    
+    const queryParams = new URLSearchParams();
+    
+    if (filters.actionType) {
+      queryParams.append('actionType', filters.actionType);
+    }
+    if (filters.aquariumId) {
+      queryParams.append('aquariumId', filters.aquariumId);
+    }
+    if (filters.sort) {
+      queryParams.append('sort', filters.sort);
+    }
+    if (filters.limit) {
+      queryParams.append('limit', filters.limit.toString());
+    }
+    if (filters.offset) {
+      queryParams.append('offset', filters.offset.toString());
+    }
+    
+    const endpoint = `/v1/logs${queryParams.toString() ? `?${queryParams.toString()}` : ''}`;
+    const logs = await fetchAPI(endpoint);
+    
+    return Array.isArray(logs) ? logs : [];
+  } catch (error) {
+    console.warn('Error fetching logs:', error.message);
+    return [];
+  }
+}
+
+// ============================================
+// FUNKCJE API DLA WSPÓŁDZIELENIA AKWARIUM
+// ============================================
+
+// Udostępnia akwarium użytkownikowi
+// @param {string|number} aquariumId - ID akwarium (może być Long lub format aq_xxx)
+// @param {string} userId - UUID użytkownika, z którym dzielimy akwarium
+// @param {string} sharedBy - UUID użytkownika, który udostępnia (właściciel)
+// @param {string} permissionLevel - poziom uprawnień ('read', 'write', 'admin', domyślnie 'read')
+// @returns {Promise<Object>} - odpowiedź z serwera
+export async function shareAquarium(aquariumId, userId, sharedBy, permissionLevel = "read") {
+  try {
+    if (!aquariumId || !userId || !sharedBy) {
+      throw new Error('aquariumId, userId, and sharedBy are required');
+    }
+    
+    // Konwertuj ID akwarium do formatu aq_xxx jeśli jest to Long
+    let formattedAquariumId = aquariumId;
+    if (typeof aquariumId === 'number' || (typeof aquariumId === 'string' && !aquariumId.includes('_'))) {
+      formattedAquariumId = `aq_${aquariumId}`;
+    }
+    
+    const response = await fetchAPI(`/v1/aquariums/${formattedAquariumId}/shares`, {
+      method: 'POST',
+      body: {
+        userId: userId,
+        sharedBy: sharedBy,
+        permissionLevel: permissionLevel
+      }
+    });
+    return response;
+  } catch (error) {
+    console.error('Error sharing aquarium:', error);
+    throw error;
+  }
+}
+
+// Pobiera listę udostępnień akwarium
+// @param {string|number} aquariumId - ID akwarium (może być Long lub format aq_xxx)
+// @returns {Promise<Array>} - lista udostępnień
+export async function getAquariumShares(aquariumId) {
+  try {
+    if (!aquariumId) {
+      throw new Error('aquariumId is required');
+    }
+    
+    // Konwertuj ID akwarium do formatu aq_xxx jeśli jest to Long
+    let formattedAquariumId = aquariumId;
+    if (typeof aquariumId === 'number' || (typeof aquariumId === 'string' && !aquariumId.includes('_'))) {
+      formattedAquariumId = `aq_${aquariumId}`;
+    }
+    
+    const shares = await fetchAPI(`/v1/aquariums/${formattedAquariumId}/shares`);
+    return Array.isArray(shares) ? shares : [];
+  } catch (error) {
+    console.error('Error fetching aquarium shares:', error);
+    return [];
+  }
+}
+
+// Usuwa udostępnienie akwarium
+// @param {string|number} aquariumId - ID akwarium (może być Long lub format aq_xxx)
+// @param {string} shareId - ID udostępnienia (format share_xxx)
+// @returns {Promise<boolean>} - true jeśli sukces
+export async function unshareAquarium(aquariumId, shareId) {
+  try {
+    if (!aquariumId || !shareId) {
+      throw new Error('aquariumId and shareId are required');
+    }
+    
+    // Konwertuj ID akwarium do formatu aq_xxx jeśli jest to Long
+    let formattedAquariumId = aquariumId;
+    if (typeof aquariumId === 'number' || (typeof aquariumId === 'string' && !aquariumId.includes('_'))) {
+      formattedAquariumId = `aq_${aquariumId}`;
+    }
+    
+    await fetchAPI(`/v1/aquariums/${formattedAquariumId}/shares/${shareId}`, {
+      method: 'DELETE'
+    });
+    return true;
+  } catch (error) {
+    console.error('Error unsharing aquarium:', error);
+    throw error;
+  }
+}
+
 export default {
   getContacts,
   sendInvitation,
+  acceptInvitation,
   deleteContact,
+  rejectInvitation,
+  removeFriend,
   getFishes,
   getFishById,
   searchFishes,
@@ -778,35 +742,9 @@ export default {
   registerUser,
   getCurrentUser,
   updateUser,
+  syncUser,
   getLogs,
+  shareAquarium,
+  getAquariumShares,
+  unshareAquarium,
 };
-
-// Pobiera logi aktywności
-export async function getLogs(filters = {}) {
-  try {
-    const queryParams = new URLSearchParams();
-    
-    if (filters.actionType) {
-      queryParams.append('actionType', filters.actionType);
-    }
-    if (filters.aquariumId) {
-      queryParams.append('aquariumId', filters.aquariumId);
-    }
-    if (filters.sort) {
-      queryParams.append('sort', filters.sort);
-    }
-    if (filters.limit) {
-      queryParams.append('limit', filters.limit.toString());
-    }
-    if (filters.offset) {
-      queryParams.append('offset', filters.offset.toString());
-    }
-
-    const endpoint = `/v1/logs${queryParams.toString() ? '?' + queryParams.toString() : ''}`;
-    const logs = await fetchAPI(endpoint);
-    return Array.isArray(logs) ? logs : [];
-  } catch (error) {
-    console.error('Error fetching logs:', error);
-    return [];
-  }
-}

@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useEffect, useMemo } from "react";
-import { Box, Button, Typography, Modal, TextField, Grid, Card, CardContent, Select, MenuItem, FormControl, InputLabel, Paper, Divider, CircularProgress, List, ListItem, ListItemText, Chip, Alert } from "@mui/material";
+import { Box, Button, Typography, Modal, TextField, Grid, Card, CardContent, Select, MenuItem, FormControl, InputLabel, Paper, Divider, CircularProgress, List, ListItem, ListItemText, Chip, Alert, Avatar } from "@mui/material";
 import { useTranslation } from "react-i18next";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
@@ -11,7 +11,7 @@ import PersonAddIcon from '@mui/icons-material/PersonAdd';
 import { useTheme } from "../contexts/ThemeContext";
 import { useAuth } from "../contexts/AuthContext";
 
-import { getAquariums, createAquarium, updateAquarium, deleteAquarium, getFishes, getPlants, getLogs } from "../lib/api";
+import { getAquariums, createAquarium, updateAquarium, deleteAquarium, getFishes, getPlants, getLogs, getContacts, shareAquarium } from "../lib/api";
 import EditIcon from '@mui/icons-material/Edit';
 import DeleteIcon from '@mui/icons-material/Delete';
 
@@ -43,6 +43,10 @@ export default function MyAquariumsPage() {
     const [availablePlants, setAvailablePlants] = useState([]);
     const [activityHistory, setActivityHistory] = useState([]);
     const [isLoadingHistory, setIsLoadingHistory] = useState(false);
+    const [shareModalOpen, setShareModalOpen] = useState(false);
+    const [selectedAquariumForShare, setSelectedAquariumForShare] = useState(null);
+    const [friends, setFriends] = useState([]);
+    const [isLoadingFriends, setIsLoadingFriends] = useState(false);
     const { user, loading: authLoading } = useAuth();
 
     useEffect(() => {
@@ -54,14 +58,21 @@ export default function MyAquariumsPage() {
             return;
         }
 
-        // Backend zwraca wszystkie akwaria, więc możemy pobrać je nawet bez user
+        // Pobierz akwaria tylko jeśli użytkownik jest zalogowany
+        if (!user || !user.id) {
+            console.log('No user logged in, skipping aquarium fetch');
+            setIsLoading(false);
+            setAquariums([]);
+            return;
+        }
+
         (async () => {
             try {
                 setIsLoading(true);
                 setError(null);
-                console.log('Fetching aquariums...');
+                console.log('Fetching aquariums for user:', user.id);
 
-                const data = await getAquariums();
+                const data = await getAquariums(user.id);
                 console.log('Received data from getAquariums:', data);
                 console.log('Data type:', typeof data);
                 console.log('Is array:', Array.isArray(data));
@@ -112,14 +123,72 @@ export default function MyAquariumsPage() {
     fetchAvailableData();
   }, []);
 
+  // Pobierz znajomych gdy otwiera się modal współdzielenia
+  useEffect(() => {
+    async function fetchFriends() {
+      if (shareModalOpen && user?.id) {
+        setIsLoadingFriends(true);
+        try {
+          const contacts = await getContacts(user.id);
+          // Filtruj tylko znajomych (status === 'friend')
+          const friendsList = contacts.filter(c => c.status === 'friend');
+          setFriends(friendsList);
+        } catch (err) {
+          console.error("Error fetching friends:", err);
+          setFriends([]);
+        } finally {
+          setIsLoadingFriends(false);
+        }
+      }
+    }
+    fetchFriends();
+  }, [shareModalOpen, user?.id]);
+
   function handleCreateAquarium() {
     setCreateModalOpen(true);
   }
 
   async function handleSaveAquarium() {
-    if (!newAquariumName.trim()) return;
+    console.log('handleSaveAquarium called');
+    console.log('newAquariumName:', newAquariumName);
+    console.log('user:', user);
+    
+    if (!newAquariumName.trim()) {
+      console.log('Aquarium name is empty');
+      setError("Nazwa akwarium jest wymagana.");
+      return;
+    }
     
     try {
+      setError(null);
+      console.log('Starting aquarium creation...');
+      
+      // Upewnij się, że mamy poprawny user.id
+      let ownerId = user?.id;
+      console.log('ownerId from user:', ownerId);
+      
+      if (!ownerId) {
+        // Spróbuj pobrać z localStorage
+        const storedUser = localStorage.getItem('user');
+        console.log('storedUser from localStorage:', storedUser);
+        if (storedUser) {
+          try {
+            const userData = JSON.parse(storedUser);
+            ownerId = userData.id;
+            console.log('Found ownerId in localStorage:', ownerId);
+          } catch (e) {
+            console.warn('Could not parse user from localStorage:', e);
+          }
+        }
+      }
+      
+      if (!ownerId) {
+        const errorMsg = "Nie można utworzyć akwarium - brak informacji o użytkowniku. Zaloguj się ponownie.";
+        console.error(errorMsg);
+        setError(errorMsg);
+        return;
+      }
+      
       const newAquarium = {
         name: newAquariumName,
         waterType: newAquariumWaterType,
@@ -127,17 +196,29 @@ export default function MyAquariumsPage() {
         biotope: newAquariumBiotope,
         ph: parseFloat(newAquariumPh),
         hardness: parseFloat(newAquariumHardness),
-        description: newAquariumDescription.trim()
+        description: newAquariumDescription.trim(),
+        ownerId: ownerId
       };
       
       console.log('Creating aquarium with data:', newAquarium);
       const created = await createAquarium(newAquarium);
       console.log('Created aquarium response:', created);
       
-      // Dodajemy nowe akwarium do listy
-      console.log('Current aquariums before adding:', aquariums);
-      setAquariums([...aquariums, created]);
-      console.log('Updated aquariums state');
+      if (!created) {
+        throw new Error("Brak odpowiedzi z serwera po utworzeniu akwarium.");
+      }
+      
+      // Po utworzeniu, odśwież listę akwariów z serwera
+      // aby mieć pewność, że mamy najnowsze dane
+      try {
+        const refreshedAquariums = await getAquariums(ownerId);
+        console.log('Refreshed aquariums:', refreshedAquariums);
+        setAquariums(refreshedAquariums);
+      } catch (refreshError) {
+        console.warn('Could not refresh aquariums list, adding locally:', refreshError);
+        // Fallback: dodaj lokalnie jeśli odświeżenie się nie powiodło
+        setAquariums([...aquariums, created]);
+      }
       
       // Resetujemy formularz
       setNewAquariumName("");
@@ -148,9 +229,11 @@ export default function MyAquariumsPage() {
       setNewAquariumHardness("8");
       setNewAquariumDescription("");
       setCreateModalOpen(false);
+      setError(null);
     } catch (err) {
       console.error("Error creating aquarium:", err);
-      setError(err.message || "Nie udało się utworzyć akwarium.");
+      const errorMessage = err.message || err.toString() || "Nie udało się utworzyć akwarium.";
+      setError(errorMessage);
     }
   }
 
@@ -215,6 +298,42 @@ export default function MyAquariumsPage() {
     e.stopPropagation();
     setAquariumToDelete(aquarium);
     setDeleteConfirmOpen(true);
+  }
+
+  function handleShareAquarium(e, aquarium) {
+    e.stopPropagation();
+    setSelectedAquariumForShare(aquarium);
+    setShareModalOpen(true);
+  }
+
+  async function handleShareWithFriend(friend) {
+    // Używamy friendId (UUID) zamiast id (ID kontaktu)
+    const friendUserId = friend.friendId || friend.id;
+    
+    if (!selectedAquariumForShare || !user?.id || !friendUserId) {
+      setError("Brak wymaganych danych do udostępnienia akwarium.");
+      return;
+    }
+
+    try {
+      setError(null);
+      // Backend oczekuje aquariumId w formacie aq_xxx, ale może też przyjąć zwykły ID
+      // Sprawdzamy format ID akwarium
+      const aquariumId = selectedAquariumForShare.id;
+      
+      await shareAquarium(aquariumId, friendUserId, user.id, "read");
+      
+      // Zamknij modal i wyczyść stan
+      setShareModalOpen(false);
+      setSelectedAquariumForShare(null);
+      
+      // Pokaż komunikat sukcesu
+      alert(`${t("aquariumShared", { defaultValue: "Akwarium zostało udostępnione" })} ${friend.name || friend.email}`);
+    } catch (err) {
+      console.error("Error sharing aquarium:", err);
+      const errorMessage = err.message || t("shareError", { defaultValue: "Nie udało się udostępnić akwarium." });
+      setError(errorMessage);
+    }
   }
 
   async function handleConfirmDelete() {
@@ -701,6 +820,21 @@ export default function MyAquariumsPage() {
                         </Button>
                         <Button
                           size="small"
+                          onClick={(e) => handleShareAquarium(e, aquarium)}
+                          sx={{
+                            minWidth: 'auto',
+                            width: 28,
+                            height: 28,
+                            p: 0,
+                            bgcolor: 'rgba(255, 255, 255, 0.9)',
+                            '&:hover': { bgcolor: 'rgba(255, 255, 255, 1)' }
+                          }}
+                          title={t("shareAquarium", { defaultValue: "Udostępnij akwarium" })}
+                        >
+                          <PersonAddIcon sx={{ fontSize: 16, color: '#1976d2' }} />
+                        </Button>
+                        <Button
+                          size="small"
                           onClick={(e) => handleDeleteAquarium(e, aquarium)}
                           sx={{
                             minWidth: 'auto',
@@ -931,11 +1065,19 @@ export default function MyAquariumsPage() {
             onChange={(e) => setNewAquariumDescription(e.target.value)}
             multiline
             rows={3}
-            sx={{ mb: 3 }}
+            sx={{ mb: 2 }}
             placeholder={t("descriptionPlaceholder", { defaultValue: "Dodaj opis akwarium (opcjonalnie)" })}
           />
+          {error && (
+            <Alert severity="error" sx={{ mb: 2 }} onClose={() => setError(null)}>
+              {error}
+            </Alert>
+          )}
           <Box sx={{ display: 'flex', gap: 2, justifyContent: 'flex-end' }}>
-            <Button onClick={() => setCreateModalOpen(false)}>
+            <Button onClick={() => {
+              setCreateModalOpen(false);
+              setError(null);
+            }}>
               {t("cancel", { defaultValue: "Anuluj" })}
             </Button>
             <Button variant="contained" onClick={handleSaveAquarium} disabled={!newAquariumName.trim()}>
@@ -1579,6 +1721,125 @@ export default function MyAquariumsPage() {
           <Box sx={{ display: 'flex', justifyContent: 'flex-end', mt: 3, pt: 2, borderTop: `1px solid ${darkMode ? 'rgba(255,255,255,0.1)' : 'rgba(0, 0, 0, 0.1)'}` }}>
             <Button variant="contained" onClick={handleCloseHistory}>
               {t("close", { defaultValue: "Zamknij" })}
+            </Button>
+          </Box>
+        </Paper>
+      </Modal>
+
+      {/* Modal współdzielenia akwarium */}
+      <Modal
+        open={shareModalOpen}
+        onClose={() => {
+          setShareModalOpen(false);
+          setSelectedAquariumForShare(null);
+          setError(null);
+        }}
+        sx={{
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'center',
+          p: 2
+        }}
+      >
+        <Paper sx={{
+          width: { xs: '90%', sm: 500 },
+          maxHeight: '80vh',
+          bgcolor: darkMode ? 'rgba(30, 30, 30, 0.95)' : 'background.paper',
+          borderRadius: 2,
+          p: 3,
+          display: 'flex',
+          flexDirection: 'column',
+          overflow: 'hidden'
+        }}>
+          <Typography variant="h6" sx={{ mb: 2, fontWeight: 600, color: darkMode ? 'white' : 'inherit' }}>
+            {t("shareAquarium", { defaultValue: "Udostępnij akwarium" })}
+          </Typography>
+          {selectedAquariumForShare && (
+            <Typography variant="body2" sx={{ mb: 3, color: darkMode ? 'rgba(255,255,255,0.7)' : 'text.secondary' }}>
+              {t("shareAquariumWith", { defaultValue: "Wybierz znajomego, z którym chcesz udostępnić akwarium" })} "{selectedAquariumForShare.name}"
+            </Typography>
+          )}
+          
+          {error && (
+            <Alert severity="error" sx={{ mb: 2 }} onClose={() => setError(null)}>
+              {error}
+            </Alert>
+          )}
+
+          {isLoadingFriends ? (
+            <Box sx={{ display: 'flex', justifyContent: 'center', alignItems: 'center', py: 4 }}>
+              <CircularProgress />
+            </Box>
+          ) : friends.length === 0 ? (
+            <Box sx={{ textAlign: 'center', py: 4 }}>
+              <Typography variant="body2" sx={{ color: darkMode ? 'rgba(255,255,255,0.7)' : 'text.secondary', mb: 2 }}>
+                {t("noFriends", { defaultValue: "Nie masz jeszcze żadnych znajomych." })}
+              </Typography>
+              <Button
+                variant="outlined"
+                onClick={() => {
+                  setShareModalOpen(false);
+                  router.push('/contacts');
+                }}
+              >
+                {t("goToContacts", { defaultValue: "Przejdź do kontaktów" })}
+              </Button>
+            </Box>
+          ) : (
+            <Box sx={{ flex: 1, overflowY: 'auto', minHeight: 0 }}>
+              <List>
+                {friends.map((friend) => (
+                  <ListItem
+                    key={friend.id}
+                    sx={{
+                      mb: 1,
+                      bgcolor: darkMode ? 'rgba(255, 255, 255, 0.05)' : 'rgba(0, 0, 0, 0.02)',
+                      borderRadius: 1.5,
+                      border: '1px solid',
+                      borderColor: darkMode ? 'rgba(255,255,255,0.1)' : 'rgba(0, 0, 0, 0.08)',
+                      cursor: 'pointer',
+                      transition: 'all 0.2s ease',
+                      '&:hover': {
+                        bgcolor: darkMode ? 'rgba(255, 255, 255, 0.1)' : 'rgba(0, 0, 0, 0.05)',
+                        borderColor: darkMode ? 'rgba(255,255,255,0.2)' : 'rgba(0, 0, 0, 0.15)',
+                        transform: 'translateX(4px)',
+                        boxShadow: '0 2px 8px rgba(0, 0, 0, 0.08)'
+                      }
+                    }}
+                    onClick={() => handleShareWithFriend(friend)}
+                  >
+                    <Avatar sx={{ bgcolor: '#1976d2', mr: 2, width: 40, height: 40 }}>
+                      {friend.name?.charAt(0).toUpperCase() || friend.email?.charAt(0).toUpperCase()}
+                    </Avatar>
+                    <ListItemText
+                      primary={friend.name || friend.email}
+                      primaryTypographyProps={{ 
+                        fontSize: '1rem',
+                        fontWeight: 500,
+                        color: darkMode ? 'white' : 'inherit'
+                      }}
+                      secondary={friend.email}
+                      secondaryTypographyProps={{
+                        fontSize: '0.875rem',
+                        color: darkMode ? 'rgba(255,255,255,0.7)' : 'text.secondary'
+                      }}
+                    />
+                    <PersonAddIcon sx={{ color: '#1976d2', ml: 2 }} />
+                  </ListItem>
+                ))}
+              </List>
+            </Box>
+          )}
+
+          <Box sx={{ display: 'flex', justifyContent: 'flex-end', mt: 3, pt: 2, borderTop: `1px solid ${darkMode ? 'rgba(255,255,255,0.1)' : 'rgba(0, 0, 0, 0.1)'}` }}>
+            <Button 
+              onClick={() => {
+                setShareModalOpen(false);
+                setSelectedAquariumForShare(null);
+                setError(null);
+              }}
+            >
+              {t("cancel", { defaultValue: "Anuluj" })}
             </Button>
           </Box>
         </Paper>

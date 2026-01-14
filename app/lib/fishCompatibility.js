@@ -163,3 +163,156 @@ export function filterCompatibleFishes(availableFishes, aquariumFishes) {
   return { compatible, incompatible, warnings };
 }
 
+/**
+ * Parsuje zakres z stringa (np. "22-26" -> [22, 26])
+ */
+function parseRange(rangeString, defaultValue = [0, 100]) {
+  if (!rangeString) return defaultValue;
+  if (typeof rangeString === 'string' && rangeString.includes('-')) {
+    const parts = rangeString.split('-').map(p => parseFloat(p.trim()));
+    if (parts.length === 2 && !isNaN(parts[0]) && !isNaN(parts[1])) {
+      return parts;
+    }
+  }
+  return defaultValue;
+}
+
+/**
+ * Mapuje typ wody z formatu akwarium na format ryby
+ */
+function normalizeWaterType(aquariumWaterType, fishWaterType) {
+  const aquariumMap = {
+    'freshwater': 'Słodkowodna',
+    'saltwater': 'Słonowodna',
+    'brackish': 'Słonawowodna'
+  };
+  
+  const normalizedAquarium = aquariumMap[aquariumWaterType] || aquariumWaterType;
+  return normalizedAquarium === fishWaterType;
+}
+
+/**
+ * Oblicza procent dopasowania zakresu (np. temperatura akwarium vs zakres ryby)
+ * Zwraca wartość 0-1, gdzie 1 = idealne dopasowanie
+ */
+function calculateRangeMatch(aquariumValue, fishMin, fishMax) {
+  if (fishMin === undefined || fishMax === undefined) return 0.5;
+  
+  if (aquariumValue >= fishMin && aquariumValue <= fishMax) {
+    return 1.0;
+  }
+  
+  const range = fishMax - fishMin;
+  if (range === 0) return aquariumValue === fishMin ? 1.0 : 0;
+  
+  const distance = aquariumValue < fishMin 
+    ? (fishMin - aquariumValue) / range
+    : (aquariumValue - fishMax) / range;
+  
+  return Math.max(0, 1 - distance * 2);
+}
+
+/**
+ * Oblicza match score dla ryby na podstawie parametrów akwarium
+ * Zwraca obiekt z score (0-100) i szczegółami dopasowania
+ */
+export function calculateMatchScore(fish, aquarium) {
+  if (!fish || !aquarium) {
+    return { score: 0, details: {} };
+  }
+
+  let score = 0;
+  const maxScore = 100;
+  const details = {};
+
+  const waterTypeWeight = 30;
+  const temperatureWeight = 25;
+  const phWeight = 20;
+  const hardnessWeight = 10;
+  const biotopeWeight = 5;
+  const temperamentWeight = 10;
+
+  const fishTempRange = parseRange(fish.temperature, [20, 26]);
+  const fishPhRange = parseRange(fish.ph, [6.5, 7.5]);
+  const fishHardnessRange = parseRange(fish.hardnessDGH, [5, 15]);
+
+  const aquariumTemp = parseFloat(aquarium.temperature) || 24;
+  const aquariumPh = parseFloat(aquarium.ph) || 7.0;
+  const aquariumHardness = parseFloat(aquarium.hardness) || 10;
+
+  const waterTypeMatch = normalizeWaterType(aquarium.waterType, fish.waterType);
+  details.waterType = waterTypeMatch;
+  score += waterTypeMatch ? waterTypeWeight : 0;
+
+  const tempMatch = calculateRangeMatch(aquariumTemp, fishTempRange[0], fishTempRange[1]);
+  details.temperature = tempMatch;
+  score += tempMatch * temperatureWeight;
+
+  const phMatch = calculateRangeMatch(aquariumPh, fishPhRange[0], fishPhRange[1]);
+  details.ph = phMatch;
+  score += phMatch * phWeight;
+
+  const hardnessMatch = calculateRangeMatch(aquariumHardness, fishHardnessRange[0], fishHardnessRange[1]);
+  details.hardness = hardnessMatch;
+  score += hardnessMatch * hardnessWeight;
+
+  const biotopeMatch = aquarium.biotope && fish.biotype 
+    ? aquarium.biotope.toLowerCase() === fish.biotype.toLowerCase()
+    : false;
+  details.biotope = biotopeMatch;
+  score += biotopeMatch ? biotopeWeight : 0;
+
+  return {
+    score: Math.round(score),
+    details
+  };
+}
+
+/**
+ * Zwraca rekomendowane ryby posortowane według match score
+ * Kategoryzuje na: idealnie pasujące, dobrze pasujące, pasujące z ostrzeżeniem
+ */
+export function getRecommendedFishes(availableFishes, aquarium, aquariumFishes) {
+  if (!availableFishes || !aquarium || !aquariumFishes || aquariumFishes.length === 0) {
+    return {
+      perfect: [],
+      good: [],
+      withWarning: []
+    };
+  }
+
+  const recommended = [];
+
+  for (const fish of availableFishes) {
+    const compatibilityIssues = checkFishCompatibilityWithAquarium(fish, aquariumFishes, availableFishes);
+    const hasErrors = compatibilityIssues.some(issue => issue.severity === "ERROR");
+    
+    if (hasErrors) {
+      continue;
+    }
+
+    const matchScore = calculateMatchScore(fish, aquarium);
+    const hasWarnings = compatibilityIssues.some(issue => issue.severity === "WARNING");
+
+    recommended.push({
+      fish,
+      matchScore: matchScore.score,
+      matchDetails: matchScore.details,
+      compatibilityIssues,
+      hasWarnings
+    });
+  }
+
+  recommended.sort((a, b) => b.matchScore - a.matchScore);
+
+  const perfect = recommended.filter(r => r.matchScore >= 90 && !r.hasWarnings).slice(0, 10);
+  const good = recommended.filter(r => r.matchScore >= 70 && r.matchScore < 90 && !r.hasWarnings).slice(0, 10);
+  const withWarning = recommended.filter(r => r.hasWarnings).slice(0, 10);
+
+  return {
+    perfect,
+    good,
+    withWarning
+  };
+}
+

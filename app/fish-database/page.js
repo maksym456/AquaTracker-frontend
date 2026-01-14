@@ -1,16 +1,18 @@
 "use client";
 import { useState, useEffect } from "react";
-import { Box, Typography, IconButton, Button, useTheme, useMediaQuery, List, ListItemButton, ListItemText, Divider, TextField, FormControl, InputLabel, Select, MenuItem, CircularProgress, Alert } from "@mui/material";
+import { Box, Typography, IconButton, Button, useTheme, useMediaQuery, List, ListItemButton, ListItemText, Divider, TextField, FormControl, InputLabel, Select, MenuItem, CircularProgress, Alert, Modal, Paper } from "@mui/material";
 import { useTranslation } from "react-i18next";
 import { useTheme as useCustomTheme } from "../contexts/ThemeContext";
+import { useAuth } from "../contexts/AuthContext";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 import LanguageSwitcher from "../components/LanguageSwitcher";
 import KeyboardReturnOutlinedIcon from '@mui/icons-material/KeyboardReturnOutlined';
 import ArrowBackIosIcon from '@mui/icons-material/ArrowBackIos';
 import ArrowForwardIosIcon from '@mui/icons-material/ArrowForwardIos';
 import ChevronRightIcon from '@mui/icons-material/ChevronRight';
 import ChevronLeftIcon from '@mui/icons-material/ChevronLeft';
-import { getFishes } from "../lib/api";
+import { getFishes, getAquariums, addFishToAquarium } from "../lib/api";
 
 export default function FishDatabasePage() {
   const { t } = useTranslation();
@@ -101,6 +103,18 @@ export default function FishDatabasePage() {
   const [waterFilter, setWaterFilter] = useState("all"); // all | freshwater | brackish | saltwater
   const [sortAggressiveness, setSortAggressiveness] = useState("none"); // none | asc | desc
   const [failedImages, setFailedImages] = useState(new Set()); // Track failed image loads
+  
+  // Stany dla modalu wyboru akwarium
+  const [aquariumSelectModalOpen, setAquariumSelectModalOpen] = useState(false);
+  const [selectedFishForAquarium, setSelectedFishForAquarium] = useState(null);
+  const [userAquariums, setUserAquariums] = useState([]);
+  const [isLoadingAquariums, setIsLoadingAquariums] = useState(false);
+  const [isAddingFish, setIsAddingFish] = useState(false);
+  const [addFishError, setAddFishError] = useState(null);
+  const [addFishSuccess, setAddFishSuccess] = useState(false);
+  
+  const { user } = useAuth();
+  const router = useRouter();
 
   // Funkcja pomocnicza do konwersji formatu API v1 na format używany w UI
   // Dla początkujących: API zwraca dane w jednym formacie, a UI potrzebuje w innym
@@ -227,6 +241,57 @@ export default function FishDatabasePage() {
   
   const handlePrev = () => {
     setCurrentCard((prev) => (prev - 1 + fishCards.length) % fishCards.length);
+  };
+  
+  // Funkcja do otwierania modalu wyboru akwarium
+  const handleAddToAquariumClick = async (fish) => {
+    if (!user || !user.id) {
+      setAddFishError(t("pleaseLogin", { defaultValue: "Musisz być zalogowany, aby dodać rybę do akwarium." }));
+      return;
+    }
+    
+    setSelectedFishForAquarium(fish);
+    setAquariumSelectModalOpen(true);
+    setAddFishError(null);
+    setAddFishSuccess(false);
+    
+    // Pobierz akwaria użytkownika
+    setIsLoadingAquariums(true);
+    try {
+      const aquariums = await getAquariums(user.id);
+      setUserAquariums(aquariums || []);
+    } catch (err) {
+      console.error("Error fetching aquariums:", err);
+      setAddFishError(t("errorLoadingAquariums", { defaultValue: "Nie udało się załadować akwariów." }));
+    } finally {
+      setIsLoadingAquariums(false);
+    }
+  };
+  
+  // Funkcja do dodawania ryby do wybranego akwarium
+  const handleSelectAquarium = async (aquariumId) => {
+    if (!selectedFishForAquarium || !aquariumId) return;
+    
+    setIsAddingFish(true);
+    setAddFishError(null);
+    setAddFishSuccess(false);
+    
+    try {
+      await addFishToAquarium(aquariumId, selectedFishForAquarium.id, 1);
+      setAddFishSuccess(true);
+      
+      // Zamknij modal po 1.5 sekundy
+      setTimeout(() => {
+        setAquariumSelectModalOpen(false);
+        setSelectedFishForAquarium(null);
+        setAddFishSuccess(false);
+      }, 1500);
+    } catch (err) {
+      console.error("Error adding fish to aquarium:", err);
+      setAddFishError(err.message || t("errorAddingFish", { defaultValue: "Nie udało się dodać ryby do akwarium." }));
+    } finally {
+      setIsAddingFish(false);
+    }
   };
   
   // Funkcja do obliczania pozycji karty w karuzeli
@@ -908,7 +973,7 @@ export default function FishDatabasePage() {
                       <Button
                         onClick={(e) => {
                           e.stopPropagation();
-                          alert(`Dodano ${fish.name} do akwarium!`);
+                          handleAddToAquariumClick(fish);
                         }}
                         variant="contained"
                         sx={{
@@ -945,6 +1010,123 @@ export default function FishDatabasePage() {
             );
           })}
           </Box>
+
+          {/* Modal wyboru akwarium */}
+          <Modal
+            open={aquariumSelectModalOpen}
+            onClose={() => {
+              setAquariumSelectModalOpen(false);
+              setSelectedFishForAquarium(null);
+              setAddFishError(null);
+              setAddFishSuccess(false);
+            }}
+            sx={{
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              p: 2
+            }}
+          >
+            <Paper sx={{
+              width: { xs: '90%', sm: 500 },
+              maxHeight: '80vh',
+              overflow: 'auto',
+              p: 3,
+              bgcolor: darkMode ? '#1e1e1e' : 'background.paper'
+            }}>
+              <Typography variant="h6" sx={{ mb: 2, fontWeight: 600 }}>
+                {t("selectAquarium", { defaultValue: "Wybierz akwarium" })}
+              </Typography>
+              
+              {selectedFishForAquarium && (
+                <Typography variant="body2" sx={{ mb: 2, color: darkMode ? 'rgba(255,255,255,0.7)' : 'text.secondary' }}>
+                  {t("addingFishToAquarium", { defaultValue: "Dodawanie" })}: <strong>{selectedFishForAquarium.name}</strong>
+                </Typography>
+              )}
+              
+              {addFishSuccess && (
+                <Alert severity="success" sx={{ mb: 2 }}>
+                  {t("fishAddedSuccessfully", { defaultValue: "Ryba została dodana do akwarium!" })}
+                </Alert>
+              )}
+              
+              {addFishError && (
+                <Alert severity="error" sx={{ mb: 2 }} onClose={() => setAddFishError(null)}>
+                  {addFishError}
+                </Alert>
+              )}
+              
+              {isLoadingAquariums ? (
+                <Box sx={{ display: 'flex', justifyContent: 'center', py: 4 }}>
+                  <CircularProgress />
+                </Box>
+              ) : userAquariums.length === 0 ? (
+                <Box sx={{ py: 4, textAlign: 'center' }}>
+                  <Typography variant="body1" sx={{ mb: 2, color: darkMode ? 'rgba(255,255,255,0.7)' : 'text.secondary' }}>
+                    {t("noAquariums", { defaultValue: "Nie masz jeszcze żadnych akwariów." })}
+                  </Typography>
+                  <Button
+                    variant="contained"
+                    onClick={() => {
+                      setAquariumSelectModalOpen(false);
+                      router.push('/my-aquariums');
+                    }}
+                  >
+                    {t("createAquarium", { defaultValue: "Utwórz akwarium" })}
+                  </Button>
+                </Box>
+              ) : (
+                <List>
+                  {userAquariums.map((aquarium) => (
+                    <ListItemButton
+                      key={aquarium.id}
+                      onClick={() => handleSelectAquarium(aquarium.id)}
+                      disabled={isAddingFish}
+                      sx={{
+                        mb: 1,
+                        borderRadius: 1,
+                        border: '1px solid',
+                        borderColor: darkMode ? 'rgba(255,255,255,0.1)' : 'rgba(0,0,0,0.1)',
+                        '&:hover': {
+                          bgcolor: darkMode ? 'rgba(255,255,255,0.05)' : 'rgba(0,0,0,0.05)'
+                        }
+                      }}
+                    >
+                      <ListItemText
+                        primary={aquarium.name}
+                        secondary={
+                          <>
+                            <Typography variant="caption" component="span" sx={{ display: 'block' }}>
+                              {t("waterType", { defaultValue: "Typ wody" })}: {aquarium.waterType === 'freshwater' ? t("freshwater", { defaultValue: "Słodkowodne" }) : t("saltwater", { defaultValue: "Słonowodne" })}
+                            </Typography>
+                            <Typography variant="caption" component="span" sx={{ display: 'block' }}>
+                              {t("temperature", { defaultValue: "Temperatura" })}: {aquarium.temperature}°C
+                            </Typography>
+                          </>
+                        }
+                      />
+                      {isAddingFish && (
+                        <CircularProgress size={20} sx={{ ml: 2 }} />
+                      )}
+                    </ListItemButton>
+                  ))}
+                </List>
+              )}
+              
+              <Box sx={{ display: 'flex', justifyContent: 'flex-end', mt: 2 }}>
+                <Button
+                  onClick={() => {
+                    setAquariumSelectModalOpen(false);
+                    setSelectedFishForAquarium(null);
+                    setAddFishError(null);
+                    setAddFishSuccess(false);
+                  }}
+                >
+                  {t("cancel", { defaultValue: "Anuluj" })}
+                </Button>
+              </Box>
+            </Paper>
+          </Modal>
 
           {/* Wskaźnik aktualnego kafelka - ukryty na mobile */}
           <Box sx={{
