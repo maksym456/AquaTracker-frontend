@@ -307,7 +307,10 @@ export default function MyAquariumsPage() {
   }
 
   async function handleShareWithFriend(friend) {
-    if (!selectedAquariumForShare || !user?.id || !friend?.id) {
+    // Używamy friendId (UUID) zamiast id (ID kontaktu)
+    const friendUserId = friend.friendId || friend.id;
+    
+    if (!selectedAquariumForShare || !user?.id || !friendUserId) {
       setError("Brak wymaganych danych do udostępnienia akwarium.");
       return;
     }
@@ -318,7 +321,7 @@ export default function MyAquariumsPage() {
       // Sprawdzamy format ID akwarium
       const aquariumId = selectedAquariumForShare.id;
       
-      await shareAquarium(aquariumId, friend.id, user.id, "read");
+      await shareAquarium(aquariumId, friendUserId, user.id, "read");
       
       // Zamknij modal i wyczyść stan
       setShareModalOpen(false);

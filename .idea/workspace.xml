@@ -4,8 +4,9 @@
     <option name="autoReloadType" value="SELECTIVE" />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="3e1dcb7d-ed08-49a0-9ff9-f0c8beeee611" name="Changes" comment="Dodanie linii &quot;peer&quot;: true na package-lock.json">
-      <change beforePath="$PROJECT_DIR$/app/contacts/page.js" beforeDir="false" afterPath="$PROJECT_DIR$/app/contacts/page.js" afterDir="false" />
+    <list default="true" id="3e1dcb7d-ed08-49a0-9ff9-f0c8beeee611" name="Changes" comment="Naprawa Contacts pod względem API.">
+      <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/app/my-aquariums/page.js" beforeDir="false" afterPath="$PROJECT_DIR$/app/my-aquariums/page.js" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -160,7 +161,15 @@
       <option name="project" value="LOCAL" />
       <updated>1768411644536</updated>
     </task>
-    <option name="localTasksCounter" value="6" />
+    <task id="LOCAL-00006" summary="Naprawa Contacts pod względem API.">
+      <option name="closed" value="true" />
+      <created>1768412499721</created>
+      <option name="number" value="00006" />
+      <option name="presentableId" value="LOCAL-00006" />
+      <option name="project" value="LOCAL" />
+      <updated>1768412499721</updated>
+    </task>
+    <option name="localTasksCounter" value="7" />
     <servers />
   </component>
   <component name="TypeScriptGeneratedFilesManager">
@@ -182,7 +191,8 @@
     <MESSAGE value="Dostosowanie UUID do backendu." />
     <MESSAGE value="Poprawki dla wyskakujących błędów (Issues) na frontendzie. Poprawa kompatybilności zgodnej z najnowszym API." />
     <MESSAGE value="Dodanie linii &quot;peer&quot;: true na package-lock.json" />
-    <option name="LAST_COMMIT_MESSAGE" value="Dodanie linii &quot;peer&quot;: true na package-lock.json" />
+    <MESSAGE value="Naprawa Contacts pod względem API." />
+    <option name="LAST_COMMIT_MESSAGE" value="Naprawa Contacts pod względem API." />
   </component>
   <component name="XDebuggerManager">
     <breakpoint-manager>
