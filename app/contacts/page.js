@@ -1,16 +1,17 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { Box, Typography, TextField, Button, Card, CardContent, List, ListItem, ListItemText, Avatar, IconButton } from "@mui/material";
+import { Box, Typography, TextField, Button, Card, CardContent, List, ListItem, ListItemText, Avatar, IconButton, Chip } from "@mui/material";
 import { useTranslation } from "react-i18next";
 import Link from "next/link";
 import LanguageSwitcher from "../components/LanguageSwitcher";
 import KeyboardReturnOutlinedIcon from '@mui/icons-material/KeyboardReturnOutlined';
 import DeleteIcon from '@mui/icons-material/Delete';
+import CheckCircleIcon from '@mui/icons-material/CheckCircle';
 import { useTheme } from "../contexts/ThemeContext";
 import { useSession } from "next-auth/react";
 
-import { getContacts, sendInvitation, deleteContact } from "../lib/api";
+import { getContacts, sendInvitation, deleteContact, acceptInvitation } from "../lib/api";
 
 export default function ContactsPage() {
   const { data: session } = useSession();
@@ -57,11 +58,31 @@ export default function ContactsPage() {
     }
   };
 
-  const handleRemoveContact = async (contactId) => {
+  const handleAcceptInvitation = async (contactId) => {
     if (!contactId || !userId) return;
     
     try {
-      await deleteContact(contactId);
+      await acceptInvitation(userId, contactId, userEmail);
+      
+      // Odśwież listę kontaktów
+      try {
+        const data = await getContacts(userId, userEmail);
+        setContacts(Array.isArray(data) ? data : []);
+      } catch (e) {
+        console.error('Error refreshing contacts:', e);
+      }
+    } catch (error) {
+      console.error('Error accepting invitation:', error);
+      const errorMessage = error.message || t("acceptError", { defaultValue: "Nie udało się zaakceptować zaproszenia" });
+      alert(errorMessage);
+    }
+  };
+
+  const handleRemoveContact = async (contactId, status) => {
+    if (!contactId || !userId) return;
+    
+    try {
+      await deleteContact(userId, contactId, status, userEmail);
       
       // Odśwież listę kontaktów
       try {
@@ -275,80 +296,272 @@ export default function ContactsPage() {
             }
           }}>
             <CardContent sx={{ p: { xs: 1.5, sm: 2, md: 2.5 }, display: 'flex', flexDirection: 'column', height: '100%', overflow: 'hidden', '@media (min-width: 1366px) and (max-width: 1367px) and (max-height: 700px)': { p: 1.5 } }}>
-              <Typography variant="h5" sx={{ /* ...bez zmian... */ }}>
+              <Typography variant="h5" sx={{ fontWeight: 600, mb: { xs: 1.5, sm: 2 }, fontSize: { xs: '1rem', sm: '1.15rem' }, '@media (min-width: 1366px) and (max-width: 1367px) and (max-height: 700px)': { fontSize: '0.95rem', mb: 1 } }}>
                 {t("contactsList", { defaultValue: "Contacts List" })}
               </Typography>
               {contacts.length === 0 ? (
                 <Typography variant="body2" color="text.secondary" sx={{ textAlign: 'center', py: 4 }}>
-                  {t("noContacts", { defaultValue: "Brak znajomych" })}
+                  {t("noContacts", { defaultValue: "No contacts yet" })}
                 </Typography>
               ) : (
-                <List sx={{ flex: 1, overflow: 'auto', minHeight: 0, pr: 1 }}>
-                  {contacts.map((contact) => (
-                    <ListItem
-                      key={contact.id}
-                      sx={{
-                        bgcolor: contact.status === 'pending' ? 'rgba(255, 193, 7, 0.08)' : 'rgba(0, 0, 0, 0.02)',
-                        borderRadius: 2,
-                        mb: { xs: 0.75, sm: 1 },
-                        border: '1px solid',
-                        borderColor: contact.status === 'pending' ? 'rgba(255, 193, 7, 0.2)' : 'rgba(0, 0, 0, 0.08)',
-                        transition: 'all 0.2s ease',
-                        py: { xs: 0.75, sm: 1 },
-                        '@media (min-width: 1366px) and (max-width: 1367px) and (max-height: 700px)': {
-                          mb: 0.5,
-                          py: 0.5
-                        },
-                        '&:hover': {
-                          bgcolor: contact.status === 'pending' ? 'rgba(255, 193, 7, 0.15)' : 'rgba(0, 0, 0, 0.04)',
-                          borderColor: contact.status === 'pending' ? 'rgba(255, 193, 7, 0.3)' : 'rgba(0, 0, 0, 0.12)',
-                          transform: 'translateX(4px)',
-                          boxShadow: '0 2px 8px rgba(0, 0, 0, 0.08)'
-                        }
-                      }}
-                      secondaryAction={
-                        <IconButton
-                          edge="end"
-                          onClick={() => handleRemoveContact(contact.id)}
-                          size="small"
-                          sx={{ 
-                            color: 'error.main',
-                            transition: 'all 0.2s ease',
-                            '&:hover': {
-                              bgcolor: 'rgba(211, 47, 47, 0.1)',
-                              transform: 'scale(1.1)'
-                            }
-                          }}
-                        >
-                          <DeleteIcon fontSize="small" />
-                        </IconButton>
-                      }
-                    >
-                      <Avatar sx={{ bgcolor: contact.status === 'pending' ? '#FFC107' : '#1976d2', mr: 2, width: { xs: 32, sm: 40 }, height: { xs: 32, sm: 40 } }}>
-                        {contact.name.charAt(0).toUpperCase()}
-                      </Avatar>
-                      <ListItemText
-                        primary={contact.name}
-                        primaryTypographyProps={{ fontSize: { xs: '0.9rem', sm: '1rem' } }}
-                        secondary={
-                          <>
-                            <Box component="span" sx={{ display: 'block', mb: contact.status === 'pending' ? 0.5 : 0, fontSize: { xs: '0.75rem', sm: '0.875rem' } }}>
-                              {contact.email}
-                            </Box>
-                            {contact.status === 'pending' && (
-                              <Box component="span" sx={{ display: 'block', color: '#FF9800', fontWeight: 600, fontSize: { xs: '0.7rem', sm: '0.75rem' } }}>
-                                {t("pending", { defaultValue: "Oczekuje na akceptację" })}
+                <Box sx={{ flex: 1, overflow: 'auto', minHeight: 0, pr: 1 }}>
+                  {/* Pending invitations - oczekujące na akceptację */}
+                  {contacts.filter(c => c.status === 'pending').length > 0 && (
+                    <Box sx={{ mb: 2 }}>
+                      <Typography variant="subtitle2" sx={{ mb: 1, fontWeight: 600, color: 'text.secondary', fontSize: { xs: '0.75rem', sm: '0.875rem' } }}>
+                        {t("pendingInvitations", { defaultValue: "Pending Invitations" })}
+                      </Typography>
+                      <List>
+                        {contacts.filter(c => c.status === 'pending').map((contact) => (
+                          <ListItem
+                            key={contact.id}
+                            sx={{
+                              bgcolor: 'rgba(255, 193, 7, 0.08)',
+                              borderRadius: 2,
+                              mb: { xs: 0.75, sm: 1 },
+                              border: '1px solid',
+                              borderColor: 'rgba(255, 193, 7, 0.2)',
+                              transition: 'all 0.2s ease',
+                              py: { xs: 0.75, sm: 1 },
+                              '@media (min-width: 1366px) and (max-width: 1367px) and (max-height: 700px)': {
+                                mb: 0.5,
+                                py: 0.5
+                              },
+                              '&:hover': {
+                                bgcolor: 'rgba(255, 193, 7, 0.15)',
+                                borderColor: 'rgba(255, 193, 7, 0.3)',
+                                transform: 'translateX(4px)',
+                                boxShadow: '0 2px 8px rgba(0, 0, 0, 0.08)'
+                              }
+                            }}
+                            secondaryAction={
+                              <Box sx={{ display: 'flex', gap: 0.5 }}>
+                                <IconButton
+                                  edge="end"
+                                  onClick={() => handleAcceptInvitation(contact.id)}
+                                  size="small"
+                                  sx={{ 
+                                    color: 'success.main',
+                                    transition: 'all 0.2s ease',
+                                    '&:hover': {
+                                      bgcolor: 'rgba(76, 175, 80, 0.1)',
+                                      transform: 'scale(1.1)'
+                                    }
+                                  }}
+                                >
+                                  <CheckCircleIcon fontSize="small" />
+                                </IconButton>
+                                <IconButton
+                                  edge="end"
+                                  onClick={() => handleRemoveContact(contact.id, contact.status)}
+                                  size="small"
+                                  sx={{ 
+                                    color: 'error.main',
+                                    transition: 'all 0.2s ease',
+                                    '&:hover': {
+                                      bgcolor: 'rgba(211, 47, 47, 0.1)',
+                                      transform: 'scale(1.1)'
+                                    }
+                                  }}
+                                >
+                                  <DeleteIcon fontSize="small" />
+                                </IconButton>
                               </Box>
-                            )}
-                          </>
-                        }
-                        secondaryTypographyProps={{
-                          component: 'div'
-                        }}
-                      />
-                    </ListItem>
-                  ))}
-                </List>
+                            }
+                          >
+                            <Avatar sx={{ bgcolor: '#FFC107', mr: 2, width: { xs: 32, sm: 40 }, height: { xs: 32, sm: 40 } }}>
+                              {contact.name.charAt(0).toUpperCase()}
+                            </Avatar>
+                            <ListItemText
+                              primary={contact.name}
+                              primaryTypographyProps={{ fontSize: { xs: '0.9rem', sm: '1rem' } }}
+                              secondary={
+                                <>
+                                  <Box component="span" sx={{ display: 'block', mb: 0.5, fontSize: { xs: '0.75rem', sm: '0.875rem' } }}>
+                                    {contact.email}
+                                  </Box>
+                                  <Chip 
+                                    label={t("pending", { defaultValue: "Pending" })} 
+                                    size="small" 
+                                    sx={{ 
+                                      height: 20, 
+                                      fontSize: '0.65rem',
+                                      bgcolor: '#FF9800',
+                                      color: 'white'
+                                    }} 
+                                  />
+                                </>
+                              }
+                              secondaryTypographyProps={{
+                                component: 'div'
+                              }}
+                            />
+                          </ListItem>
+                        ))}
+                      </List>
+                    </Box>
+                  )}
+
+                  {/* Sent invitations - wysłane zaproszenia */}
+                  {contacts.filter(c => c.status === 'sent').length > 0 && (
+                    <Box sx={{ mb: 2 }}>
+                      <Typography variant="subtitle2" sx={{ mb: 1, fontWeight: 600, color: 'text.secondary', fontSize: { xs: '0.75rem', sm: '0.875rem' } }}>
+                        {t("sentInvitations", { defaultValue: "Sent Invitations" })}
+                      </Typography>
+                      <List>
+                        {contacts.filter(c => c.status === 'sent').map((contact) => (
+                          <ListItem
+                            key={contact.id}
+                            sx={{
+                              bgcolor: 'rgba(33, 150, 243, 0.08)',
+                              borderRadius: 2,
+                              mb: { xs: 0.75, sm: 1 },
+                              border: '1px solid',
+                              borderColor: 'rgba(33, 150, 243, 0.2)',
+                              transition: 'all 0.2s ease',
+                              py: { xs: 0.75, sm: 1 },
+                              '@media (min-width: 1366px) and (max-width: 1367px) and (max-height: 700px)': {
+                                mb: 0.5,
+                                py: 0.5
+                              },
+                              '&:hover': {
+                                bgcolor: 'rgba(33, 150, 243, 0.15)',
+                                borderColor: 'rgba(33, 150, 243, 0.3)',
+                                transform: 'translateX(4px)',
+                                boxShadow: '0 2px 8px rgba(0, 0, 0, 0.08)'
+                              }
+                            }}
+                            secondaryAction={
+                              <IconButton
+                                edge="end"
+                                onClick={() => handleRemoveContact(contact.id, contact.status)}
+                                size="small"
+                                sx={{ 
+                                  color: 'error.main',
+                                  transition: 'all 0.2s ease',
+                                  '&:hover': {
+                                    bgcolor: 'rgba(211, 47, 47, 0.1)',
+                                    transform: 'scale(1.1)'
+                                  }
+                                }}
+                              >
+                                <DeleteIcon fontSize="small" />
+                              </IconButton>
+                            }
+                          >
+                            <Avatar sx={{ bgcolor: '#2196F3', mr: 2, width: { xs: 32, sm: 40 }, height: { xs: 32, sm: 40 } }}>
+                              {contact.name.charAt(0).toUpperCase()}
+                            </Avatar>
+                            <ListItemText
+                              primary={contact.name}
+                              primaryTypographyProps={{ fontSize: { xs: '0.9rem', sm: '1rem' } }}
+                              secondary={
+                                <>
+                                  <Box component="span" sx={{ display: 'block', mb: 0.5, fontSize: { xs: '0.75rem', sm: '0.875rem' } }}>
+                                    {contact.email}
+                                  </Box>
+                                  <Chip 
+                                    label={t("sent", { defaultValue: "Sent" })} 
+                                    size="small" 
+                                    sx={{ 
+                                      height: 20, 
+                                      fontSize: '0.65rem',
+                                      bgcolor: '#2196F3',
+                                      color: 'white'
+                                    }} 
+                                  />
+                                </>
+                              }
+                              secondaryTypographyProps={{
+                                component: 'div'
+                              }}
+                            />
+                          </ListItem>
+                        ))}
+                      </List>
+                    </Box>
+                  )}
+
+                  {/* Friends - znajomi */}
+                  {contacts.filter(c => c.status === 'friend').length > 0 && (
+                    <Box>
+                      <Typography variant="subtitle2" sx={{ mb: 1, fontWeight: 600, color: 'text.secondary', fontSize: { xs: '0.75rem', sm: '0.875rem' } }}>
+                        {t("friends", { defaultValue: "Friends" })}
+                      </Typography>
+                      <List>
+                        {contacts.filter(c => c.status === 'friend').map((contact) => (
+                          <ListItem
+                            key={contact.id}
+                            sx={{
+                              bgcolor: 'rgba(0, 0, 0, 0.02)',
+                              borderRadius: 2,
+                              mb: { xs: 0.75, sm: 1 },
+                              border: '1px solid',
+                              borderColor: 'rgba(0, 0, 0, 0.08)',
+                              transition: 'all 0.2s ease',
+                              py: { xs: 0.75, sm: 1 },
+                              '@media (min-width: 1366px) and (max-width: 1367px) and (max-height: 700px)': {
+                                mb: 0.5,
+                                py: 0.5
+                              },
+                              '&:hover': {
+                                bgcolor: 'rgba(0, 0, 0, 0.04)',
+                                borderColor: 'rgba(0, 0, 0, 0.12)',
+                                transform: 'translateX(4px)',
+                                boxShadow: '0 2px 8px rgba(0, 0, 0, 0.08)'
+                              }
+                            }}
+                            secondaryAction={
+                              <IconButton
+                                edge="end"
+                                onClick={() => handleRemoveContact(contact.id, contact.status)}
+                                size="small"
+                                sx={{ 
+                                  color: 'error.main',
+                                  transition: 'all 0.2s ease',
+                                  '&:hover': {
+                                    bgcolor: 'rgba(211, 47, 47, 0.1)',
+                                    transform: 'scale(1.1)'
+                                  }
+                                }}
+                              >
+                                <DeleteIcon fontSize="small" />
+                              </IconButton>
+                            }
+                          >
+                            <Avatar sx={{ bgcolor: '#1976d2', mr: 2, width: { xs: 32, sm: 40 }, height: { xs: 32, sm: 40 } }}>
+                              {contact.name.charAt(0).toUpperCase()}
+                            </Avatar>
+                            <ListItemText
+                              primary={contact.name}
+                              primaryTypographyProps={{ fontSize: { xs: '0.9rem', sm: '1rem' } }}
+                              secondary={
+                                <>
+                                  <Box component="span" sx={{ display: 'block', mb: 0.5, fontSize: { xs: '0.75rem', sm: '0.875rem' } }}>
+                                    {contact.email}
+                                  </Box>
+                                  <Chip 
+                                    label={t("friend", { defaultValue: "Friend" })} 
+                                    size="small" 
+                                    sx={{ 
+                                      height: 20, 
+                                      fontSize: '0.65rem',
+                                      bgcolor: '#4CAF50',
+                                      color: 'white'
+                                    }} 
+                                  />
+                                </>
+                              }
+                              secondaryTypographyProps={{
+                                component: 'div'
+                              }}
+                            />
+                          </ListItem>
+                        ))}
+                      </List>
+                    </Box>
+                  )}
+                </Box>
               )}
             </CardContent>
           </Card>

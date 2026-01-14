@@ -242,11 +242,10 @@ export async function sendInvitation(senderId, recipientEmail, senderEmail = nul
       throw new Error('Could not convert senderId to proper format. User may not exist in database. Please try logging in again.');
     }
     
-    const invitation = await fetchAPI('/v1/contacts/invitations', {
+    const invitation = await fetchAPI(`/v1/contacts/${actualSenderId}`, {
       method: 'POST',
       body: {
-        senderId: actualSenderId,
-        recipientEmail: recipientEmail.trim()
+        email: recipientEmail.trim()
       }
     });
     return invitation;
@@ -256,16 +255,56 @@ export async function sendInvitation(senderId, recipientEmail, senderEmail = nul
   }
 }
 
-// Usuwa kontakt
-export async function deleteContact(contactId) {
+// Akceptuje zaproszenie
+export async function acceptInvitation(userId, contactId, userEmail = null) {
+  try {
+    if (typeof window === 'undefined') return null;
+    if (!userId || !contactId) {
+      throw new Error('userId and contactId are required');
+    }
+    
+    // Konwertuj cognitoSub na userId jeśli potrzeba
+    const actualUserId = await getUserIdFromCognitoSub(userId, userEmail);
+    if (!actualUserId) {
+      throw new Error('Could not convert userId to proper format. User may not exist in database. Please try logging in again.');
+    }
+    
+    const result = await fetchAPI(`/v1/contacts/${actualUserId}/accept/${contactId}`, {
+      method: 'POST'
+    });
+    return result;
+  } catch (error) {
+    console.error('Error accepting invitation:', error);
+    throw error;
+  }
+}
+
+// Usuwa kontakt (zaproszenie lub znajomego)
+export async function deleteContact(userId, contactId, status, userEmail = null) {
   try {
     if (typeof window === 'undefined') return;
-    if (!contactId) {
-      throw new Error('contactId is required');
+    if (!userId || !contactId) {
+      throw new Error('userId and contactId are required');
     }
-    await fetchAPI(`/v1/contacts/${contactId}`, {
-      method: 'DELETE'
-    });
+    
+    // Konwertuj cognitoSub na userId jeśli potrzeba
+    const actualUserId = await getUserIdFromCognitoSub(userId, userEmail);
+    if (!actualUserId) {
+      throw new Error('Could not convert userId to proper format. User may not exist in database. Please try logging in again.');
+    }
+    
+    // Użyj odpowiedniego endpointu w zależności od statusu
+    if (status === 'friend') {
+      await fetchAPI(`/v1/contacts/${actualUserId}/friend/${contactId}`, {
+        method: 'DELETE'
+      });
+    } else if (status === 'pending' || status === 'sent') {
+      await fetchAPI(`/v1/contacts/${actualUserId}/invitation/${contactId}`, {
+        method: 'DELETE'
+      });
+    } else {
+      throw new Error(`Unknown contact status: ${status}`);
+    }
     return true;
   } catch (error) {
     console.error('Error deleting contact:', error);
