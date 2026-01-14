@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { Box, Typography, TextField, Button, Card, CardContent, List, ListItem, ListItemText, Avatar, IconButton, Chip } from "@mui/material";
+import { Box, Typography, TextField, Button, Card, CardContent, List, ListItem, ListItemText, Avatar, IconButton, Chip, CircularProgress, Alert } from "@mui/material";
 import { useTranslation } from "react-i18next";
 import Link from "next/link";
 import LanguageSwitcher from "../components/LanguageSwitcher";
@@ -11,19 +11,75 @@ import CheckCircleIcon from '@mui/icons-material/CheckCircle';
 import { useTheme } from "../contexts/ThemeContext";
 import { useSession } from "next-auth/react";
 
-import { getContacts, sendInvitation, deleteContact, acceptInvitation } from "../lib/api";
+import { getContacts, sendInvitation, deleteContact, acceptInvitation, syncUser, getCurrentUser } from "../lib/api";
 
 export default function ContactsPage() {
   const { data: session } = useSession();
-  const userId = session?.user?.id;
+  const cognitoSub = session?.user?.id; // To jest cognitoSub, nie UUID z bazy
   const userEmail = session?.user?.email;
+  const userName = session?.user?.name || userEmail?.split('@')[0];
   const { t } = useTranslation();
   const { darkMode } = useTheme();
   const [inviteEmail, setInviteEmail] = useState("");
   const [contacts, setContacts] = useState([]);
+  const [userId, setUserId] = useState(null); // UUID z bazy danych
+  const [isLoadingUser, setIsLoadingUser] = useState(true);
 
+  // Pobierz UUID użytkownika z bazy danych na podstawie cognitoSub
   useEffect(() => {
-    if (!userId) return;
+    if (!cognitoSub || !userEmail) {
+      setIsLoadingUser(false);
+      return;
+    }
+
+    (async () => {
+      try {
+        // Najpierw sprawdź localStorage (może być już zapisany przez Dashboard)
+        const storedUser = localStorage.getItem('user');
+        if (storedUser) {
+          try {
+            const userData = JSON.parse(storedUser);
+            if (userData.id && userData.cognitoSub === cognitoSub) {
+              setUserId(userData.id);
+              setIsLoadingUser(false);
+              return;
+            }
+          } catch (e) {
+            console.warn('Could not parse user from localStorage:', e);
+          }
+        }
+
+        // Jeśli nie ma w localStorage, zsynchronizuj użytkownika
+        const syncedUser = await syncUser(cognitoSub, userEmail, userName);
+        if (syncedUser && syncedUser.id) {
+          setUserId(syncedUser.id);
+          // Zapisz do localStorage dla przyszłych użyć
+          const userData = {
+            id: syncedUser.id,
+            email: syncedUser.email || userEmail,
+            name: syncedUser.username || userName,
+            cognitoSub: cognitoSub,
+            loginTime: new Date().toISOString()
+          };
+          localStorage.setItem('user', JSON.stringify(userData));
+        } else {
+          // Fallback: spróbuj pobrać przez getCurrentUser
+          const user = await getCurrentUser(cognitoSub);
+          if (user && user.id) {
+            setUserId(user.id);
+          }
+        }
+      } catch (error) {
+        console.error('Error getting user ID:', error);
+      } finally {
+        setIsLoadingUser(false);
+      }
+    })();
+  }, [cognitoSub, userEmail, userName]);
+
+  // Pobierz kontakty po załadowaniu userId
+  useEffect(() => {
+    if (!userId || isLoadingUser) return;
 
     (async () => {
       try {
@@ -34,10 +90,15 @@ export default function ContactsPage() {
         setContacts([]);
       }
     })();
-  }, [userId, userEmail]);
+  }, [userId, userEmail, isLoadingUser]);
 
   const handleSendInvite = async () => {
-    if (!inviteEmail.trim() || !userId) return;
+    if (!inviteEmail.trim() || !userId || isLoadingUser) {
+      if (isLoadingUser) {
+        alert(t("loadingUser", { defaultValue: "Ładowanie danych użytkownika..." }));
+      }
+      return;
+    }
     
     try {
       await sendInvitation(userId, inviteEmail, userEmail);
@@ -59,7 +120,7 @@ export default function ContactsPage() {
   };
 
   const handleAcceptInvitation = async (contactId) => {
-    if (!contactId || !userId) return;
+    if (!contactId || !userId || isLoadingUser) return;
     
     try {
       await acceptInvitation(userId, contactId, userEmail);
@@ -79,7 +140,7 @@ export default function ContactsPage() {
   };
 
   const handleRemoveContact = async (contactId, status) => {
-    if (!contactId || !userId) return;
+    if (!contactId || !userId || isLoadingUser) return;
     
     try {
       await deleteContact(userId, contactId, status, userEmail);
@@ -239,33 +300,49 @@ export default function ContactsPage() {
                 {t("inviteToCollaboration", { defaultValue: "Zaproś do współpracy" })}
               </Typography>
               <Box sx={{ display: 'flex', flexDirection: 'column', gap: { xs: 1.5, sm: 2 } }}>
-                <TextField
-                  fullWidth
-                  type="email"
-                  size="small"
-                  label={t("collaborationEmail", { defaultValue: "Adres e-mail" })}
-                  placeholder={t("collaborationEmail", { defaultValue: "Adres e-mail" })}
-                  value={inviteEmail}
-                  onChange={(e) => setInviteEmail(e.target.value)}
-                  variant="outlined"
-                />
-                <Button
-                  variant="contained"
-                  onClick={handleSendInvite}
-                  disabled={!inviteEmail.trim()}
-                  fullWidth
-                  sx={{
-                    py: { xs: 0.75, sm: 1.25 },
-                    fontSize: { xs: '0.8rem', sm: '0.9rem' },
-                    fontWeight: 600,
-                    '@media (min-width: 1366px) and (max-width: 1367px) and (max-height: 700px)': {
-                      py: 0.75,
-                      fontSize: '0.75rem'
-                    }
-                  }}
-                >
-                  {t("sendInvite", { defaultValue: "Wyślij zaproszenie" })}
-                </Button>
+                {isLoadingUser ? (
+                  <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'center', py: 2 }}>
+                    <CircularProgress size={24} />
+                    <Typography variant="body2" sx={{ ml: 2 }}>
+                      {t("loadingUser", { defaultValue: "Ładowanie danych użytkownika..." })}
+                    </Typography>
+                  </Box>
+                ) : !userId ? (
+                  <Alert severity="warning" sx={{ mb: 2 }}>
+                    {t("userNotLoaded", { defaultValue: "Nie można załadować danych użytkownika. Odśwież stronę." })}
+                  </Alert>
+                ) : (
+                  <>
+                    <TextField
+                      fullWidth
+                      type="email"
+                      size="small"
+                      label={t("collaborationEmail", { defaultValue: "Adres e-mail" })}
+                      placeholder={t("collaborationEmail", { defaultValue: "Adres e-mail" })}
+                      value={inviteEmail}
+                      onChange={(e) => setInviteEmail(e.target.value)}
+                      variant="outlined"
+                      disabled={isLoadingUser}
+                    />
+                    <Button
+                      variant="contained"
+                      onClick={handleSendInvite}
+                      disabled={!inviteEmail.trim() || isLoadingUser}
+                      fullWidth
+                      sx={{
+                        py: { xs: 0.75, sm: 1.25 },
+                        fontSize: { xs: '0.8rem', sm: '0.9rem' },
+                        fontWeight: 600,
+                        '@media (min-width: 1366px) and (max-width: 1367px) and (max-height: 700px)': {
+                          py: 0.75,
+                          fontSize: '0.75rem'
+                        }
+                      }}
+                    >
+                      {t("sendInvite", { defaultValue: "Wyślij zaproszenie" })}
+                    </Button>
+                  </>
+                )}
               </Box>
             </CardContent>
           </Card>
@@ -299,7 +376,18 @@ export default function ContactsPage() {
               <Typography variant="h5" sx={{ fontWeight: 600, mb: { xs: 1.5, sm: 2 }, fontSize: { xs: '1rem', sm: '1.15rem' }, '@media (min-width: 1366px) and (max-width: 1367px) and (max-height: 700px)': { fontSize: '0.95rem', mb: 1 } }}>
                 {t("contactsList", { defaultValue: "Contacts List" })}
               </Typography>
-              {contacts.length === 0 ? (
+              {isLoadingUser ? (
+                <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'center', py: 4 }}>
+                  <CircularProgress size={24} />
+                  <Typography variant="body2" sx={{ ml: 2 }}>
+                    {t("loadingContacts", { defaultValue: "Ładowanie kontaktów..." })}
+                  </Typography>
+                </Box>
+              ) : !userId ? (
+                <Alert severity="warning">
+                  {t("userNotLoaded", { defaultValue: "Nie można załadować danych użytkownika. Odśwież stronę." })}
+                </Alert>
+              ) : contacts.length === 0 ? (
                 <Typography variant="body2" color="text.secondary" sx={{ textAlign: 'center', py: 4 }}>
                   {t("noContacts", { defaultValue: "No contacts yet" })}
                 </Typography>
