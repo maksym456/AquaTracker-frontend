@@ -630,6 +630,92 @@ export async function getLogs(filters = {}) {
   }
 }
 
+// ============================================
+// FUNKCJE API DLA WSPÓŁDZIELENIA AKWARIUM
+// ============================================
+
+// Udostępnia akwarium użytkownikowi
+// @param {string|number} aquariumId - ID akwarium (może być Long lub format aq_xxx)
+// @param {string} userId - UUID użytkownika, z którym dzielimy akwarium
+// @param {string} sharedBy - UUID użytkownika, który udostępnia (właściciel)
+// @param {string} permissionLevel - poziom uprawnień ('read', 'write', 'admin', domyślnie 'read')
+// @returns {Promise<Object>} - odpowiedź z serwera
+export async function shareAquarium(aquariumId, userId, sharedBy, permissionLevel = "read") {
+  try {
+    if (!aquariumId || !userId || !sharedBy) {
+      throw new Error('aquariumId, userId, and sharedBy are required');
+    }
+    
+    // Konwertuj ID akwarium do formatu aq_xxx jeśli jest to Long
+    let formattedAquariumId = aquariumId;
+    if (typeof aquariumId === 'number' || (typeof aquariumId === 'string' && !aquariumId.includes('_'))) {
+      formattedAquariumId = `aq_${aquariumId}`;
+    }
+    
+    const response = await fetchAPI(`/v1/aquariums/${formattedAquariumId}/shares`, {
+      method: 'POST',
+      body: {
+        userId: userId,
+        sharedBy: sharedBy,
+        permissionLevel: permissionLevel
+      }
+    });
+    return response;
+  } catch (error) {
+    console.error('Error sharing aquarium:', error);
+    throw error;
+  }
+}
+
+// Pobiera listę udostępnień akwarium
+// @param {string|number} aquariumId - ID akwarium (może być Long lub format aq_xxx)
+// @returns {Promise<Array>} - lista udostępnień
+export async function getAquariumShares(aquariumId) {
+  try {
+    if (!aquariumId) {
+      throw new Error('aquariumId is required');
+    }
+    
+    // Konwertuj ID akwarium do formatu aq_xxx jeśli jest to Long
+    let formattedAquariumId = aquariumId;
+    if (typeof aquariumId === 'number' || (typeof aquariumId === 'string' && !aquariumId.includes('_'))) {
+      formattedAquariumId = `aq_${aquariumId}`;
+    }
+    
+    const shares = await fetchAPI(`/v1/aquariums/${formattedAquariumId}/shares`);
+    return Array.isArray(shares) ? shares : [];
+  } catch (error) {
+    console.error('Error fetching aquarium shares:', error);
+    return [];
+  }
+}
+
+// Usuwa udostępnienie akwarium
+// @param {string|number} aquariumId - ID akwarium (może być Long lub format aq_xxx)
+// @param {string} shareId - ID udostępnienia (format share_xxx)
+// @returns {Promise<boolean>} - true jeśli sukces
+export async function unshareAquarium(aquariumId, shareId) {
+  try {
+    if (!aquariumId || !shareId) {
+      throw new Error('aquariumId and shareId are required');
+    }
+    
+    // Konwertuj ID akwarium do formatu aq_xxx jeśli jest to Long
+    let formattedAquariumId = aquariumId;
+    if (typeof aquariumId === 'number' || (typeof aquariumId === 'string' && !aquariumId.includes('_'))) {
+      formattedAquariumId = `aq_${aquariumId}`;
+    }
+    
+    await fetchAPI(`/v1/aquariums/${formattedAquariumId}/shares/${shareId}`, {
+      method: 'DELETE'
+    });
+    return true;
+  } catch (error) {
+    console.error('Error unsharing aquarium:', error);
+    throw error;
+  }
+}
+
 export default {
   getContacts,
   sendInvitation,
@@ -658,4 +744,7 @@ export default {
   updateUser,
   syncUser,
   getLogs,
+  shareAquarium,
+  getAquariumShares,
+  unshareAquarium,
 };
