@@ -4,9 +4,11 @@
     <option name="autoReloadType" value="SELECTIVE" />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="3e1dcb7d-ed08-49a0-9ff9-f0c8beeee611" name="Changes" comment="Naprawa Contacts pod względem API.">
+    <list default="true" id="3e1dcb7d-ed08-49a0-9ff9-f0c8beeee611" name="Changes" comment="Współdzielenia akwariów.">
+      <change beforePath="$PROJECT_DIR$/.idea/shelf/Uncommitted_changes_before_Update_at_9_01_2026_14_53_[Changes]/shelved.patch" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/shelf/Uncommitted_changes_before_Update_at_9_01_2026_14_53__Changes_.xml" beforeDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/app/my-aquariums/page.js" beforeDir="false" afterPath="$PROJECT_DIR$/app/my-aquariums/page.js" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/app/my-aquariums/[id]/page.js" beforeDir="false" afterPath="$PROJECT_DIR$/app/my-aquariums/[id]/page.js" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -37,12 +39,12 @@
     &quot;assignee&quot;: &quot;maksym456&quot;
   }
 }</component>
-  <component name="GithubPullRequestsUISettings"><![CDATA[{
-  "selectedUrlAndAccountId": {
-    "url": "https://github.com/maksym456/AquaTracker-frontend",
-    "accountId": "83cf5ea8-ca32-484c-a363-2457ec674c83"
+  <component name="GithubPullRequestsUISettings">{
+  &quot;selectedUrlAndAccountId&quot;: {
+    &quot;url&quot;: &quot;https://github.com/maksym456/AquaTracker-frontend&quot;,
+    &quot;accountId&quot;: &quot;83cf5ea8-ca32-484c-a363-2457ec674c83&quot;
   }
-}]]></component>
+}</component>
   <component name="KubernetesApiPersistence">{}</component>
   <component name="KubernetesApiProvider">{
   &quot;isMigrated&quot;: true
@@ -102,7 +104,7 @@
   <component name="SharedIndexes">
     <attachedChunks>
       <set>
-        <option value="bundled-js-predefined-d6986cc7102b-9b0f141eb926-JavaScript-WS-253.29346.143" />
+        <option value="bundled-js-predefined-d6986cc7102b-9b0f141eb926-JavaScript-WS-253.29346.242" />
       </set>
     </attachedChunks>
   </component>
@@ -120,6 +122,7 @@
       <workItem from="1766931670158" duration="98000" />
       <workItem from="1766931779559" duration="1439000" />
       <workItem from="1767889380000" duration="335000" />
+      <workItem from="1768572259737" duration="716000" />
     </task>
     <task id="LOCAL-00001" summary="admin panel">
       <option name="closed" value="true" />
@@ -169,7 +172,23 @@
       <option name="project" value="LOCAL" />
       <updated>1768412499721</updated>
     </task>
-    <option name="localTasksCounter" value="7" />
+    <task id="LOCAL-00007" summary="Dodawanie (działające&quot; znajomych.">
+      <option name="closed" value="true" />
+      <created>1768417391887</created>
+      <option name="number" value="00007" />
+      <option name="presentableId" value="LOCAL-00007" />
+      <option name="project" value="LOCAL" />
+      <updated>1768417391887</updated>
+    </task>
+    <task id="LOCAL-00008" summary="Współdzielenia akwariów.">
+      <option name="closed" value="true" />
+      <created>1768418997382</created>
+      <option name="number" value="00008" />
+      <option name="presentableId" value="LOCAL-00008" />
+      <option name="project" value="LOCAL" />
+      <updated>1768418997382</updated>
+    </task>
+    <option name="localTasksCounter" value="9" />
     <servers />
   </component>
   <component name="TypeScriptGeneratedFilesManager">
@@ -192,7 +211,9 @@
     <MESSAGE value="Poprawki dla wyskakujących błędów (Issues) na frontendzie. Poprawa kompatybilności zgodnej z najnowszym API." />
     <MESSAGE value="Dodanie linii &quot;peer&quot;: true na package-lock.json" />
     <MESSAGE value="Naprawa Contacts pod względem API." />
-    <option name="LAST_COMMIT_MESSAGE" value="Naprawa Contacts pod względem API." />
+    <MESSAGE value="Dodawanie (działające&quot; znajomych." />
+    <MESSAGE value="Współdzielenia akwariów." />
+    <option name="LAST_COMMIT_MESSAGE" value="Współdzielenia akwariów." />
   </component>
   <component name="XDebuggerManager">
     <breakpoint-manager>
