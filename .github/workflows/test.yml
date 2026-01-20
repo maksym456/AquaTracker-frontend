@@ -11,10 +11,6 @@ jobs:
     name: Unit Tests
     runs-on: ubuntu-latest
 
-    strategy:
-      matrix:
-        node-version: [22.x]
-
     steps:
       - name: Checkout repository
         uses: actions/checkout@v3
@@ -22,32 +18,17 @@ jobs:
       - name: Setup Node.js
         uses: actions/setup-node@v3
         with:
-          node-version: ${{ matrix.node-version }}
+          node-version: 22.x
 
       - name: Install dependencies
         run: npm install
 
       - name: Run Unit Tests
-        id: unit-tests
-        run: |
-          npm test tests/Unit_tests
+        run: npm test tests/Unit_tests
         continue-on-error: true   
-
-      - name: Report Unit Tests Status
-        if: always()
-        uses: actions/github-script@v7
-        with:
-          script: |
-            const failed = ${{ steps.unit-tests.outcome }} === 'failure';
-            console.log(`Unit Tests ${failed ? 'FAILED' : 'PASSED'}`);
-
   integration-tests:
     name: Integration Tests
     runs-on: ubuntu-latest
-
-    strategy:
-      matrix:
-        node-version: [22.x]
 
     steps:
       - name: Checkout repository
@@ -56,20 +37,11 @@ jobs:
       - name: Setup Node.js
         uses: actions/setup-node@v3
         with:
-          node-version: ${{ matrix.node-version }}
+          node-version: 22.x
 
       - name: Install dependencies
         run: npm install
 
       - name: Run Integration Tests
-        id: integration-tests
-        run: |
-          npm test tests/Integration_tests
-        continue-on-error: true  
-      - name: Report Integration Tests Status
-        if: always()
-        uses: actions/github-script@v7
-        with:
-          script: |
-            const failed = ${{ steps.integration-tests.outcome }} === 'failure';
-            console.log(`Integration Tests ${failed ? 'FAILED' : 'PASSED'}`);
+        run: npm test tests/Integration_tests
+        continue-on-error: true   
