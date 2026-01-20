@@ -16,7 +16,9 @@
     "release:major": "standard-version --release-as major && npm run version:bump",
     "test": "jest",
     "test:watch": "jest --watch",
-    "test:coverage": "jest --coverage"
+    "test:coverage": "jest --coverage",
+    "test:unit": "jest Unit_tests",
+    "test:integration": "jest Integration_tests"
   },
   "dependencies": {
     "@emotion/react": "^11.14.0",
