@@ -26,36 +26,24 @@ export default function AquariumDetailPage() {
     const isEnglish = currentLanguage === 'en';
     
     let trimmed = name.trim();
-    // Obsłuż nazwy z nawiasami, np. "Pyszczak (Malawi)" lub "Malawi Cichlid (Malawi)"
+    // Usuń wszystkie treści w nawiasach - użytkownik chce tylko główne nazwy
+    // Usuwa wszystkie wystąpienia (tekst) z nazwy
+    trimmed = trimmed.replace(/\s*\([^)]*\)/g, '').trim();
+    
+    // Po usunięciu nawiasów, namePart to po prostu wyczyszczona nazwa
     let namePart = trimmed;
-    let bracketPart = '';
-    const bracketMatch = trimmed.match(/^(.+?)\s*\(([^)]+)\)$/);
-    if (bracketMatch) {
-      namePart = bracketMatch[1].trim();
-      bracketPart = bracketMatch[2].trim();
-    }
     
     // Pobierz wszystkie gatunki
     const allSpecies = t(`${type}.species`, { returnObjects: true });
     if (!allSpecies || typeof allSpecies !== 'object') {
-      // Jeśli nie ma tłumaczeń, zwróć oryginalną nazwę (bez polskich nazw w nawiasach dla angielskiego)
-      return isEnglish ? namePart : (bracketPart ? `${namePart} (${bracketPart})` : namePart);
+      // Jeśli nie ma tłumaczeń, zwróć wyczyszczoną nazwę
+      return namePart;
     }
     
     // 1. Sprawdź czy namePart jest kluczem (polska nazwa)
     if (allSpecies[namePart]) {
       const translated = t(`${type}.species.${namePart}.name`, { defaultValue: namePart });
-      // Dla wersji angielskiej nie dodawaj polskich nazw w nawiasach
-      // Dodaj bracketPart tylko jeśli to nie jest polska nazwa (np. "Malawi" w "Pyszczak (Malawi)")
-      if (isEnglish) {
-        // Sprawdź czy bracketPart to część nazwy gatunku czy dodatkowa informacja
-        const isBracketPartSpeciesName = Object.keys(allSpecies).some(key => 
-          key.toLowerCase().includes(bracketPart.toLowerCase()) || 
-          bracketPart.toLowerCase().includes(key.toLowerCase())
-        );
-        return isBracketPartSpeciesName ? translated : (bracketPart ? `${translated} (${bracketPart})` : translated);
-      }
-      return bracketPart ? `${translated} (${bracketPart})` : translated;
+      return translated;
     }
     
     // 2. Sprawdź czy namePart jest wartością name (angielska nazwa) - znajdź odpowiedni klucz
@@ -66,15 +54,7 @@ export default function AquariumDetailPage() {
     
     if (foundKey) {
       const translated = t(`${type}.species.${foundKey}.name`, { defaultValue: namePart });
-      // Dla wersji angielskiej nie dodawaj polskich nazw w nawiasach
-      if (isEnglish) {
-        const isBracketPartSpeciesName = Object.keys(allSpecies).some(key => 
-          key.toLowerCase().includes(bracketPart.toLowerCase()) || 
-          bracketPart.toLowerCase().includes(key.toLowerCase())
-        );
-        return isBracketPartSpeciesName ? translated : (bracketPart ? `${translated} (${bracketPart})` : translated);
-      }
-      return bracketPart ? `${translated} (${bracketPart})` : translated;
+      return translated;
     }
     
     // 3. Sprawdź częściowe dopasowanie (case-insensitive)
@@ -88,19 +68,11 @@ export default function AquariumDetailPage() {
     
     if (foundKeyPartial) {
       const translated = t(`${type}.species.${foundKeyPartial}.name`, { defaultValue: namePart });
-      // Dla wersji angielskiej nie dodawaj polskich nazw w nawiasach
-      if (isEnglish) {
-        const isBracketPartSpeciesName = Object.keys(allSpecies).some(key => 
-          key.toLowerCase().includes(bracketPart.toLowerCase()) || 
-          bracketPart.toLowerCase().includes(key.toLowerCase())
-        );
-        return isBracketPartSpeciesName ? translated : (bracketPart ? `${translated} (${bracketPart})` : translated);
-      }
-      return bracketPart ? `${translated} (${bracketPart})` : translated;
+      return translated;
     }
     
-    // Jeśli nie znaleziono, zwróć oryginalną nazwę (bez polskich nazw w nawiasach dla angielskiego)
-    return isEnglish ? namePart : (bracketPart ? `${namePart} (${bracketPart})` : namePart);
+    // Jeśli nie znaleziono, zwróć wyczyszczoną nazwę
+    return namePart;
   };
 
   const { darkMode } = useTheme();
