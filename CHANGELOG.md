@@ -1,5 +1,5 @@
 # Changelog
-
+sdfsdf
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
 ## [0.19.0](https://github.com/maksym456/AquaTracker-frontend/compare/v0.18.3...v0.19.0) (2026-01-14)
