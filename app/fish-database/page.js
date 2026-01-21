@@ -20,6 +20,13 @@ export default function FishDatabasePage() {
   const { darkMode } = useCustomTheme();
   const isMobile = useMediaQuery(theme.breakpoints.down('md'));
   
+  // Funkcja pomocnicza do usuwania wszystkich treści w nawiasach z nazw ryb
+  const cleanFishName = (name) => {
+    if (!name) return name;
+    // Usuń wszystkie wystąpienia (tekst) z nazwy
+    return name.replace(/\s*\([^)]*\)/g, '').trim();
+  };
+  
   // Funkcja pomocnicza do mapowania nazw ryb na ścieżki ikon
   const getFishImage = (fishName) => {
     const imageMap = {
@@ -470,7 +477,6 @@ export default function FishDatabasePage() {
             >
               <MenuItem value="all">{t('all', { defaultValue: 'Wszystkie' })}</MenuItem>
               <MenuItem value="freshwater">{t('freshwater', { defaultValue: 'Słodka' })}</MenuItem>
-              <MenuItem value="brackish">{t('brackish', { defaultValue: 'Słonawa' })}</MenuItem>
               <MenuItem value="saltwater">{t('saltwater', { defaultValue: 'Słona' })}</MenuItem>
             </Select>
           </FormControl>
@@ -483,8 +489,8 @@ export default function FishDatabasePage() {
               sx={{ color: 'white', '& .MuiOutlinedInput-notchedOutline': { borderColor: 'rgba(255,255,255,0.2)' } }}
             >
               <MenuItem value="none">{t('noSort', { defaultValue: 'Bez sortowania' })}</MenuItem>
-              <MenuItem value="asc">{t('leastAggressive', { defaultValue: 'Najspokojniejsze' })}</MenuItem>
-              <MenuItem value="desc">{t('mostAggressive', { defaultValue: 'Najagresywniejsze' })}</MenuItem>
+              <MenuItem value="asc">{t('leastAggressive', { defaultValue: 'Spokojne' })}</MenuItem>
+              <MenuItem value="desc">{t('mostAggressive', { defaultValue: 'Agresywne' })}</MenuItem>
             </Select>
           </FormControl>
         </Box>
@@ -506,7 +512,7 @@ export default function FishDatabasePage() {
                 }}
               >
                 <ListItemText
-                  primary={t(`fish.species.${fish.name}.name`, { defaultValue: fish.name })}
+                  primary={t(`fish.species.${fish.name}.name`, { defaultValue: cleanFishName(fish.name) })}
                   secondary={`${getWaterTypeLabel(fish.waterType)} • ${getTemperamentLabel(fish.temperament)}`}
                   primaryTypographyProps={{ sx: { color: 'white', fontWeight: 600 } }}
                   secondaryTypographyProps={{ sx: { color: 'rgba(255,255,255,0.7)', fontSize: '0.8rem' } }}
@@ -847,7 +853,7 @@ export default function FishDatabasePage() {
                       }
                     }}
                   >
-                    {t(`fish.species.${fish.name}.name`, { defaultValue: fish.name })}
+                    {t(`fish.species.${fish.name}.name`, { defaultValue: cleanFishName(fish.name) })}
                   </Typography>
                   
                   {/* Opis */}
