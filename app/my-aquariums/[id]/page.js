@@ -245,10 +245,13 @@ export default function AquariumDetailPage() {
         const foundAquarium = await getAquariumById(aquariumId);
         if (foundAquarium) {
           // Normalizuj dane: backend zwraca 'fish', frontend używa 'fishes'
+          // Backend może zwracać temperatureC i hardnessDGH, mapujemy na temperature i hardness
           const normalizedAquarium = {
             ...foundAquarium,
             fishes: foundAquarium.fishes || foundAquarium.fish || [],
-            plants: foundAquarium.plants || []
+            plants: foundAquarium.plants || [],
+            temperature: foundAquarium.temperature || foundAquarium.temperatureC || null,
+            hardness: foundAquarium.hardness || foundAquarium.hardnessDGH || null
           };
           setAquarium(normalizedAquarium);
           consecutiveErrors = 0; // Reset licznika błędów przy sukcesie
@@ -432,10 +435,13 @@ export default function AquariumDetailPage() {
         console.log('Fishes count (total):', totalCount);
         
         // Utwórz nowy obiekt z nowymi tablicami, żeby wymusić aktualizację React
+        // Backend może zwracać temperatureC i hardnessDGH, mapujemy na temperature i hardness
         const freshAquarium = {
           ...updatedAquarium,
           fishes: normalizedFishes.length > 0 ? [...normalizedFishes] : [],
-          plants: updatedAquarium.plants ? [...updatedAquarium.plants] : []
+          plants: updatedAquarium.plants ? [...updatedAquarium.plants] : [],
+          temperature: updatedAquarium.temperature || updatedAquarium.temperatureC || null,
+          hardness: updatedAquarium.hardness || updatedAquarium.hardnessDGH || null
         };
         console.log('Setting aquarium state with fresh object');
         setAquarium(freshAquarium);
@@ -459,10 +465,13 @@ export default function AquariumDetailPage() {
       // Backend zwraca zaktualizowane akwarium w odpowiedzi
       if (result && typeof result === 'object' && result.id) {
         // Normalizuj dane: backend zwraca 'fish', frontend używa 'fishes'
+        // Backend może zwracać temperatureC i hardnessDGH, mapujemy na temperature i hardness
         const normalizedAquarium = {
           ...result,
           fishes: result.fishes || result.fish || [],
-          plants: result.plants || []
+          plants: result.plants || [],
+          temperature: result.temperature || result.temperatureC || null,
+          hardness: result.hardness || result.hardnessDGH || null
         };
         setAquarium(normalizedAquarium);
       } else {
@@ -470,10 +479,13 @@ export default function AquariumDetailPage() {
         const updatedAquarium = await getAquariumById(aquariumId);
         if (updatedAquarium) {
           // Normalizuj dane: backend zwraca 'fish', frontend używa 'fishes'
+          // Backend może zwracać temperatureC i hardnessDGH, mapujemy na temperature i hardness
           const normalizedAquarium = {
             ...updatedAquarium,
             fishes: updatedAquarium.fishes || updatedAquarium.fish || [],
-            plants: updatedAquarium.plants || []
+            plants: updatedAquarium.plants || [],
+            temperature: updatedAquarium.temperature || updatedAquarium.temperatureC || null,
+            hardness: updatedAquarium.hardness || updatedAquarium.hardnessDGH || null
           };
           setAquarium(normalizedAquarium);
         }
@@ -509,10 +521,13 @@ export default function AquariumDetailPage() {
       // Backend zwraca zaktualizowane akwarium w odpowiedzi
       if (result && typeof result === 'object' && result.id) {
         // Normalizuj dane: backend zwraca 'fish', frontend używa 'fishes'
+        // Backend może zwracać temperatureC i hardnessDGH, mapujemy na temperature i hardness
         const normalizedAquarium = {
           ...result,
           fishes: result.fishes || result.fish || [],
-          plants: result.plants || []
+          plants: result.plants || [],
+          temperature: result.temperature || result.temperatureC || null,
+          hardness: result.hardness || result.hardnessDGH || null
         };
         console.log('Using aquarium from response:', normalizedAquarium);
         setAquarium(normalizedAquarium);
@@ -522,10 +537,13 @@ export default function AquariumDetailPage() {
         const updatedAquarium = await getAquariumById(aquariumId);
         if (updatedAquarium) {
           // Normalizuj dane: backend zwraca 'fish', frontend używa 'fishes'
+          // Backend może zwracać temperatureC i hardnessDGH, mapujemy na temperature i hardness
           const normalizedAquarium = {
             ...updatedAquarium,
             fishes: updatedAquarium.fishes || updatedAquarium.fish || [],
-            plants: updatedAquarium.plants || []
+            plants: updatedAquarium.plants || [],
+            temperature: updatedAquarium.temperature || updatedAquarium.temperatureC || null,
+            hardness: updatedAquarium.hardness || updatedAquarium.hardnessDGH || null
           };
           console.log('Updated aquarium:', normalizedAquarium);
           setAquarium(normalizedAquarium);
@@ -896,15 +914,21 @@ export default function AquariumDetailPage() {
               <Typography variant="caption" sx={{ fontSize: { xs: '0.6rem', sm: '0.65rem', md: '0.75rem' }, whiteSpace: 'nowrap', color: darkMode ? 'white' : 'inherit' }}>
                 {t("waterType", { defaultValue: "Typ wody" })}: {aquarium.waterType === 'freshwater' ? t("freshwater", { defaultValue: "Słodkowodne" }) : t("saltwater", { defaultValue: "Słonowodne" })}
               </Typography>
-              <Typography variant="caption" sx={{ fontSize: { xs: '0.6rem', sm: '0.65rem', md: '0.75rem' }, whiteSpace: 'nowrap', color: darkMode ? 'white' : 'inherit' }}>
-                🌡️ {aquarium.temperature}°C
-              </Typography>
-              <Typography variant="caption" sx={{ fontSize: { xs: '0.6rem', sm: '0.65rem', md: '0.75rem' }, whiteSpace: 'nowrap', color: darkMode ? 'white' : 'inherit' }}>
-                pH: {aquarium.ph}
-              </Typography>
-              <Typography variant="caption" sx={{ fontSize: { xs: '0.6rem', sm: '0.65rem', md: '0.75rem' }, whiteSpace: 'nowrap', color: darkMode ? 'white' : 'inherit' }}>
-                💧 {aquarium.hardness} dGH
-              </Typography>
+              {aquarium.temperature != null && (
+                <Typography variant="caption" sx={{ fontSize: { xs: '0.6rem', sm: '0.65rem', md: '0.75rem' }, whiteSpace: 'nowrap', color: darkMode ? 'white' : 'inherit' }}>
+                  🌡️ {aquarium.temperature}°C
+                </Typography>
+              )}
+              {aquarium.ph != null && (
+                <Typography variant="caption" sx={{ fontSize: { xs: '0.6rem', sm: '0.65rem', md: '0.75rem' }, whiteSpace: 'nowrap', color: darkMode ? 'white' : 'inherit' }}>
+                  pH: {aquarium.ph}
+                </Typography>
+              )}
+              {aquarium.hardness != null && (
+                <Typography variant="caption" sx={{ fontSize: { xs: '0.6rem', sm: '0.65rem', md: '0.75rem' }, whiteSpace: 'nowrap', color: darkMode ? 'white' : 'inherit' }}>
+                  💧 {aquarium.hardness} dGH
+                </Typography>
+              )}
               <Typography variant="caption" sx={{ fontSize: { xs: '0.6rem', sm: '0.65rem', md: '0.75rem' }, whiteSpace: 'nowrap', color: darkMode ? 'white' : 'inherit' }}>
                 🌍 {aquarium.biotope === 'ameryka południowa' ? t("biotopeSouthAmerica", { defaultValue: "Ameryka Południowa" }) :
                     aquarium.biotope === 'ameryka północna' ? t("biotopeNorthAmerica", { defaultValue: "Ameryka Północna" }) :
@@ -1010,15 +1034,21 @@ export default function AquariumDetailPage() {
             <Typography variant="caption" sx={{ fontSize: '0.7rem', whiteSpace: 'nowrap', color: darkMode ? 'white' : 'inherit' }}>
               {t("waterType", { defaultValue: "Typ wody" })}: {aquarium.waterType === 'freshwater' ? t("freshwater", { defaultValue: "Słodkowodne" }) : t("saltwater", { defaultValue: "Słonowodne" })}
             </Typography>
-            <Typography variant="caption" sx={{ fontSize: '0.7rem', whiteSpace: 'nowrap', color: darkMode ? 'white' : 'inherit' }}>
-              🌡️ {aquarium.temperature}°C
-            </Typography>
-            <Typography variant="caption" sx={{ fontSize: '0.7rem', whiteSpace: 'nowrap', color: darkMode ? 'white' : 'inherit' }}>
-              pH: {aquarium.ph}
-            </Typography>
-            <Typography variant="caption" sx={{ fontSize: '0.7rem', whiteSpace: 'nowrap', color: darkMode ? 'white' : 'inherit' }}>
-              💧 {aquarium.hardness} dGH
-            </Typography>
+            {aquarium.temperature != null && (
+              <Typography variant="caption" sx={{ fontSize: '0.7rem', whiteSpace: 'nowrap', color: darkMode ? 'white' : 'inherit' }}>
+                🌡️ {aquarium.temperature}°C
+              </Typography>
+            )}
+            {aquarium.ph != null && (
+              <Typography variant="caption" sx={{ fontSize: '0.7rem', whiteSpace: 'nowrap', color: darkMode ? 'white' : 'inherit' }}>
+                pH: {aquarium.ph}
+              </Typography>
+            )}
+            {aquarium.hardness != null && (
+              <Typography variant="caption" sx={{ fontSize: '0.7rem', whiteSpace: 'nowrap', color: darkMode ? 'white' : 'inherit' }}>
+                💧 {aquarium.hardness} dGH
+              </Typography>
+            )}
             <Typography variant="caption" sx={{ fontSize: '0.7rem', whiteSpace: 'nowrap', color: darkMode ? 'white' : 'inherit' }}>
               🌍 {aquarium.biotope === 'ameryka południowa' ? t("biotopeSouthAmerica", { defaultValue: "Ameryka Południowa" }) :
                   aquarium.biotope === 'ameryka północna' ? t("biotopeNorthAmerica", { defaultValue: "Ameryka Północna" }) :

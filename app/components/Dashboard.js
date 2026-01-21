@@ -287,36 +287,6 @@ export default function Dashboard() {
           }}>
             <LanguageSwitcher />
 
-              <Link href="/admin.js" style={{ textDecoration: 'none' }}>
-                  <Box
-                      sx={{
-                          bgcolor: darkMode ? 'rgba(211, 47, 47, 0.6)' : 'rgba(211, 47, 47, 0.5)',
-                          p: 1,
-                          borderRadius: 1.5,
-                          boxShadow: 2,
-                          transition: "all 0.3s",
-                          backdropFilter: 'blur(8px)',
-                          "&:hover": {
-                              boxShadow: 4,
-                              transform: "translateY(-2px)",
-                              bgcolor: darkMode ? 'rgba(211, 47, 47, 0.8)' : 'rgba(211, 47, 47, 0.7)'
-                          },
-                          cursor: 'pointer',
-                          minHeight: { xs: '40px', md: '48px' },
-                          minWidth: { xs: '40px', md: '48px' },
-                          display: 'flex',
-                          flexDirection: 'column',
-                          alignItems: 'center',
-                          justifyContent: 'center',
-                      }}
-                  >
-                      <Typography sx={{ fontSize: { xs: 18, md: 20 }, mb: 0.2, textAlign: 'center' }}>🛡️</Typography>
-                      <Typography variant="body2" sx={{ fontWeight: 600, color: "white", textAlign: 'center', fontSize: { xs: '0.5rem', md: '0.6rem' } }}>
-                          ADMIN
-                      </Typography>
-                  </Box>
-              </Link>
-
             {/* Settings button */}
             <Box
                 onClick={handleOpenSettings}

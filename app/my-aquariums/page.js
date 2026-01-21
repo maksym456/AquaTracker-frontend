@@ -189,13 +189,44 @@ export default function MyAquariumsPage() {
         return;
       }
       
+      // Walidacja unikalności nazwy akwarium
+      const trimmedName = newAquariumName.trim();
+      const nameExists = aquariums.some(aq => 
+        aq.name && aq.name.trim().toLowerCase() === trimmedName.toLowerCase()
+      );
+      
+      if (nameExists) {
+        setError("Akwarium o tej nazwie już istnieje. Wybierz inną nazwę.");
+        return;
+      }
+      
+      // Walidacja parametrów
+      const temp = parseFloat(newAquariumTemperature);
+      const ph = parseFloat(newAquariumPh);
+      const hardness = parseFloat(newAquariumHardness);
+      
+      if (isNaN(temp) || temp < 18 || temp > 30) {
+        setError("Temperatura musi być w zakresie 18-30°C.");
+        return;
+      }
+      
+      if (isNaN(ph) || ph < 5.5 || ph > 9.0) {
+        setError("pH musi być w zakresie 5.5-9.0.");
+        return;
+      }
+      
+      if (isNaN(hardness) || hardness < 1 || hardness > 30) {
+        setError("Twardość wody (dGH) musi być w zakresie 1-30.");
+        return;
+      }
+      
       const newAquarium = {
         name: newAquariumName,
         waterType: newAquariumWaterType,
-        temperature: parseFloat(newAquariumTemperature),
+        temperature: temp,
         biotope: newAquariumBiotope,
-        ph: parseFloat(newAquariumPh),
-        hardness: parseFloat(newAquariumHardness),
+        ph: ph,
+        hardness: hardness,
         description: newAquariumDescription.trim(),
         ownerId: ownerId
       };
@@ -263,13 +294,50 @@ export default function MyAquariumsPage() {
     if (!editingAquarium || !newAquariumName.trim()) return;
     
     try {
+      // Walidacja unikalności nazwy akwarium (sprawdzamy czy nowa nazwa nie koliduje z innymi akwariami)
+      const trimmedName = newAquariumName.trim();
+      const nameExists = aquariums.some(aq => 
+        aq.id !== editingAquarium.id && 
+        aq.name && 
+        aq.name.trim().toLowerCase() === trimmedName.toLowerCase()
+      );
+      
+      if (nameExists) {
+        setError("Akwarium o tej nazwie już istnieje. Wybierz inną nazwę.");
+        return;
+      }
+      
+      setError(null);
+      
+      // Walidacja parametrów
+      const temp = parseFloat(newAquariumTemperature);
+      const ph = parseFloat(newAquariumPh);
+      const hardness = parseFloat(newAquariumHardness);
+      
+      if (isNaN(temp) || temp < 18 || temp > 30) {
+        setError("Temperatura musi być w zakresie 18-30°C.");
+        return;
+      }
+      
+      if (isNaN(ph) || ph < 5.5 || ph > 9.0) {
+        setError("pH musi być w zakresie 5.5-9.0.");
+        return;
+      }
+      
+      if (isNaN(hardness) || hardness < 1 || hardness > 30) {
+        setError("Twardość wody (dGH) musi być w zakresie 1-30.");
+        return;
+      }
+      
+      setError(null);
+      
       const updatedData = {
         name: newAquariumName,
         waterType: newAquariumWaterType,
-        temperature: parseFloat(newAquariumTemperature),
+        temperature: temp,
         biotope: newAquariumBiotope,
-        ph: parseFloat(newAquariumPh),
-        hardness: parseFloat(newAquariumHardness),
+        ph: ph,
+        hardness: hardness,
         description: newAquariumDescription.trim()
       };
       
@@ -1000,8 +1068,16 @@ export default function MyAquariumsPage() {
             fullWidth
             label={t("aquariumName", { defaultValue: "Nazwa akwarium" })}
             value={newAquariumName}
-            onChange={(e) => setNewAquariumName(e.target.value)}
+            onChange={(e) => {
+              setNewAquariumName(e.target.value);
+              // Wyczyść błąd gdy użytkownik zaczyna wpisywać
+              if (error && error.includes("nazwie już istnieje")) {
+                setError(null);
+              }
+            }}
             sx={{ mb: 2 }}
+            helperText={t("aquariumNameHelper", { defaultValue: "Nazwa musi być unikalna" })}
+            error={error && error.includes("nazwie już istnieje")}
           />
           <FormControl fullWidth sx={{ mb: 2 }}>
             <InputLabel>{t("waterType", { defaultValue: "Typ wody" })}</InputLabel>
@@ -1019,10 +1095,16 @@ export default function MyAquariumsPage() {
             type="number"
             label={t("temperature", { defaultValue: "Temperatura wody (°C)" })}
             value={newAquariumTemperature}
-            onChange={(e) => setNewAquariumTemperature(e.target.value)}
+            onChange={(e) => {
+              const value = e.target.value;
+              if (value === '' || (parseFloat(value) >= 18 && parseFloat(value) <= 30)) {
+                setNewAquariumTemperature(value);
+              }
+            }}
             inputProps={{ min: 18, max: 30, step: 0.5 }}
             sx={{ mb: 2 }}
             helperText={t("temperatureRange", { defaultValue: "Zakres: 18-30°C" })}
+            error={newAquariumTemperature && (parseFloat(newAquariumTemperature) < 18 || parseFloat(newAquariumTemperature) > 30)}
           />
           <FormControl fullWidth sx={{ mb: 2 }}>
             <InputLabel>{t("biotope", { defaultValue: "Biotop" })}</InputLabel>
@@ -1043,20 +1125,32 @@ export default function MyAquariumsPage() {
             type="number"
             label={t("ph", { defaultValue: "pH wody" })}
             value={newAquariumPh}
-            onChange={(e) => setNewAquariumPh(e.target.value)}
+            onChange={(e) => {
+              const value = e.target.value;
+              if (value === '' || (parseFloat(value) >= 5.5 && parseFloat(value) <= 9.0)) {
+                setNewAquariumPh(value);
+              }
+            }}
             inputProps={{ min: 5.5, max: 9.0, step: 0.1 }}
             sx={{ mb: 2 }}
             helperText={t("phRange", { defaultValue: "Zakres: 5.5-9.0" })}
+            error={newAquariumPh && (parseFloat(newAquariumPh) < 5.5 || parseFloat(newAquariumPh) > 9.0)}
           />
           <TextField
             fullWidth
             type="number"
             label={t("hardness", { defaultValue: "Twardość wody (dGH)" })}
             value={newAquariumHardness}
-            onChange={(e) => setNewAquariumHardness(e.target.value)}
+            onChange={(e) => {
+              const value = e.target.value;
+              if (value === '' || (parseFloat(value) >= 1 && parseFloat(value) <= 30)) {
+                setNewAquariumHardness(value);
+              }
+            }}
             inputProps={{ min: 1, max: 30, step: 1 }}
             sx={{ mb: 2 }}
             helperText={t("hardnessRange", { defaultValue: "Zakres: 1-30 dGH" })}
+            error={newAquariumHardness && (parseFloat(newAquariumHardness) < 1 || parseFloat(newAquariumHardness) > 30)}
           />
           <TextField
             fullWidth
@@ -1115,8 +1209,16 @@ export default function MyAquariumsPage() {
             fullWidth
             label={t("aquariumName", { defaultValue: "Nazwa akwarium" })}
             value={newAquariumName}
-            onChange={(e) => setNewAquariumName(e.target.value)}
+            onChange={(e) => {
+              setNewAquariumName(e.target.value);
+              // Wyczyść błąd gdy użytkownik zaczyna wpisywać
+              if (error && error.includes("nazwie już istnieje")) {
+                setError(null);
+              }
+            }}
             sx={{ mb: 2 }}
+            helperText={t("aquariumNameHelper", { defaultValue: "Nazwa musi być unikalna" })}
+            error={error && error.includes("nazwie już istnieje")}
           />
           <FormControl fullWidth sx={{ mb: 2 }}>
             <InputLabel>{t("waterType", { defaultValue: "Typ wody" })}</InputLabel>
@@ -1134,10 +1236,16 @@ export default function MyAquariumsPage() {
             type="number"
             label={t("temperature", { defaultValue: "Temperatura wody (°C)" })}
             value={newAquariumTemperature}
-            onChange={(e) => setNewAquariumTemperature(e.target.value)}
+            onChange={(e) => {
+              const value = e.target.value;
+              if (value === '' || (parseFloat(value) >= 18 && parseFloat(value) <= 30)) {
+                setNewAquariumTemperature(value);
+              }
+            }}
             inputProps={{ min: 18, max: 30, step: 0.5 }}
             sx={{ mb: 2 }}
             helperText={t("temperatureRange", { defaultValue: "Zakres: 18-30°C" })}
+            error={newAquariumTemperature && (parseFloat(newAquariumTemperature) < 18 || parseFloat(newAquariumTemperature) > 30)}
           />
           <FormControl fullWidth sx={{ mb: 2 }}>
             <InputLabel>{t("biotope", { defaultValue: "Biotop" })}</InputLabel>
@@ -1158,20 +1266,32 @@ export default function MyAquariumsPage() {
             type="number"
             label={t("ph", { defaultValue: "pH wody" })}
             value={newAquariumPh}
-            onChange={(e) => setNewAquariumPh(e.target.value)}
+            onChange={(e) => {
+              const value = e.target.value;
+              if (value === '' || (parseFloat(value) >= 5.5 && parseFloat(value) <= 9.0)) {
+                setNewAquariumPh(value);
+              }
+            }}
             inputProps={{ min: 5.5, max: 9.0, step: 0.1 }}
             sx={{ mb: 2 }}
             helperText={t("phRange", { defaultValue: "Zakres: 5.5-9.0" })}
+            error={newAquariumPh && (parseFloat(newAquariumPh) < 5.5 || parseFloat(newAquariumPh) > 9.0)}
           />
           <TextField
             fullWidth
             type="number"
             label={t("hardness", { defaultValue: "Twardość wody (dGH)" })}
             value={newAquariumHardness}
-            onChange={(e) => setNewAquariumHardness(e.target.value)}
+            onChange={(e) => {
+              const value = e.target.value;
+              if (value === '' || (parseFloat(value) >= 1 && parseFloat(value) <= 30)) {
+                setNewAquariumHardness(value);
+              }
+            }}
             inputProps={{ min: 1, max: 30, step: 1 }}
             sx={{ mb: 2 }}
             helperText={t("hardnessRange", { defaultValue: "Zakres: 1-30 dGH" })}
+            error={newAquariumHardness && (parseFloat(newAquariumHardness) < 1 || parseFloat(newAquariumHardness) > 30)}
           />
           <TextField
             fullWidth
