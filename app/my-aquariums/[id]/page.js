@@ -346,6 +346,18 @@ export default function AquariumDetailPage() {
   async function handleAddFish() {
     if (!selectedFishId || !aquariumId) return;
     
+    // Sprawdź limit liczby ryb (maksymalnie 25)
+    const MAX_FISH_LIMIT = 25;
+    const currentFishesCount = aquarium?.fishes 
+      ? aquarium.fishes.reduce((sum, fish) => sum + (fish.count || 1), 0)
+      : 0;
+    const newTotalCount = currentFishesCount + fishQuantity;
+    
+    if (newTotalCount > MAX_FISH_LIMIT) {
+      setError(`Nie można dodać tylu ryb. Maksymalna liczba ryb w akwarium to ${MAX_FISH_LIMIT}. Aktualnie masz ${currentFishesCount} ryb.`);
+      return;
+    }
+    
     // Sprawdź kompatybilność przed dodaniem
     const selectedFish = availableFishes.find(f => f.id === selectedFishId);
     if (selectedFish && aquarium?.fishes) {
@@ -367,6 +379,7 @@ export default function AquariumDetailPage() {
     
     try {
       setIsAddingFish(true);
+      setError(null);
       const result = await addFishToAquarium(aquariumId, selectedFishId, fishQuantity);
       
       // addFishToAquarium zwraca już zaktualizowane akwarium (result.aquarium z API)
@@ -458,8 +471,21 @@ export default function AquariumDetailPage() {
   async function handleAddPlant() {
     if (!selectedPlantId || !aquariumId) return;
     
+    // Sprawdź limit liczby roślin (maksymalnie 50)
+    const MAX_PLANT_LIMIT = 50;
+    const currentPlantsCount = aquarium?.plants 
+      ? aquarium.plants.reduce((sum, plant) => sum + (plant.count || 1), 0)
+      : 0;
+    const newTotalCount = currentPlantsCount + plantQuantity;
+    
+    if (newTotalCount > MAX_PLANT_LIMIT) {
+      setError(`Nie można dodać tylu roślin. Maksymalna liczba roślin w akwarium to ${MAX_PLANT_LIMIT}. Aktualnie masz ${currentPlantsCount} roślin.`);
+      return;
+    }
+    
     try {
       setIsAddingPlant(true);
+      setError(null);
       const result = await addPlantToAquarium(aquariumId, selectedPlantId, plantQuantity);
       
       // Backend zwraca zaktualizowane akwarium w odpowiedzi
@@ -1148,16 +1174,46 @@ export default function AquariumDetailPage() {
               overflow: 'hidden',
               clipPath: 'inset(0)' // Ogranicza ryby do obszaru kontenera
             }}>
-              {aquarium.fishes.flatMap((fish, fishIndex) => {
-                const fishDetails = availableFishes.find(f => f.id === fish.fishId);
-                if (!fishDetails) return [];
+              {(() => {
+                // Oblicz całkowitą liczbę ryb
+                const totalFishCount = aquarium.fishes.reduce((sum, fish) => sum + (fish.count || 1), 0);
+                // Maksymalnie 25 ryb wizualnie w akwarium
+                const MAX_VISUAL_FISH = 25;
+                const visualLimit = Math.min(totalFishCount, MAX_VISUAL_FISH);
                 
-                const fishName = fishDetails.name || `Ryba ${fishIndex + 1}`;
-                const fishCount = fish.count || 1;
-                const fishImage = getFishImage(fishName, fishDetails.iconName);
+                // Oblicz proporcje dla każdego gatunku
+                const visualCounts = aquarium.fishes.map((fish) => {
+                  const fishCount = fish.count || 1;
+                  const proportion = fishCount / totalFishCount;
+                  return Math.max(1, Math.round(proportion * visualLimit));
+                });
                 
-                // Renderuj każdą rybę osobno (dla fishCount > 1)
-                return Array.from({ length: Math.min(fishCount, 10) }).map((_, instanceIndex) => {
+                // Upewnij się, że suma nie przekracza limitu (popraw zaokrąglenia)
+                let totalVisual = visualCounts.reduce((sum, count) => sum + count, 0);
+                if (totalVisual > visualLimit) {
+                  // Zmniejsz proporcjonalnie największe wartości
+                  const diff = totalVisual - visualLimit;
+                  const sortedIndices = visualCounts.map((count, idx) => ({ count, idx }))
+                    .sort((a, b) => b.count - a.count);
+                  for (let i = 0; i < diff && i < sortedIndices.length; i++) {
+                    if (visualCounts[sortedIndices[i].idx] > 1) {
+                      visualCounts[sortedIndices[i].idx]--;
+                    }
+                  }
+                }
+                
+                return aquarium.fishes.flatMap((fish, fishIndex) => {
+                  const fishDetails = availableFishes.find(f => f.id === fish.fishId);
+                  if (!fishDetails) return [];
+                  
+                  const fishName = fishDetails.name || `Ryba ${fishIndex + 1}`;
+                  const fishImage = getFishImage(fishName, fishDetails.iconName);
+                  
+                  // Użyj obliczonej proporcjonalnej liczby
+                  const actualVisualCount = visualCounts[fishIndex];
+                  
+                  // Renderuj ryby proporcjonalnie
+                  return Array.from({ length: actualVisualCount }).map((_, instanceIndex) => {
                   const uniqueKey = `fish-${fish.fishId}-${instanceIndex}`;
                   // Losowe pozycje startowe i parametry animacji dla każdej ryby
                   // Większy zakres pozycji - od 5% do 95% (prawie całe akwarium)
@@ -1191,7 +1247,8 @@ export default function AquariumDetailPage() {
                     />
                   );
                 });
-              })}
+              });
+              })()}
             </Box>
           )}
 
@@ -2297,8 +2354,29 @@ export default function AquariumDetailPage() {
             type="number"
             label={t("quantity", { defaultValue: "Ilość" })}
             value={fishQuantity}
-            onChange={(e) => setFishQuantity(Math.max(1, parseInt(e.target.value) || 1))}
-            inputProps={{ min: 1 }}
+            onChange={(e) => {
+              const value = parseInt(e.target.value) || 1;
+              const MAX_FISH_LIMIT = 25;
+              const currentFishesCount = aquarium?.fishes 
+                ? aquarium.fishes.reduce((sum, fish) => sum + (fish.count || 1), 0)
+                : 0;
+              const maxAllowed = Math.max(1, MAX_FISH_LIMIT - currentFishesCount);
+              const clampedValue = Math.max(1, Math.min(value, maxAllowed));
+              setFishQuantity(clampedValue);
+            }}
+            inputProps={{ 
+              min: 1, 
+              max: aquarium?.fishes 
+                ? Math.max(1, 25 - aquarium.fishes.reduce((sum, fish) => sum + (fish.count || 1), 0))
+                : 25
+            }}
+            helperText={(() => {
+              if (!aquarium?.fishes) return "Maksymalnie 50 ryb w akwarium";
+              const currentCount = aquarium.fishes.reduce((sum, fish) => sum + (fish.count || 1), 0);
+              const remaining = Math.max(0, 50 - currentCount);
+              if (remaining === 0) return "Osiągnięto limit 25 ryb";
+              return `Maksymalnie ${remaining} więcej (limit: 25 ryb, aktualnie: ${currentCount})`;
+            })()}
             sx={{ mb: 3 }}
           />
 
@@ -2509,8 +2587,29 @@ export default function AquariumDetailPage() {
             type="number"
             label={t("quantity", { defaultValue: "Ilość" })}
             value={plantQuantity}
-            onChange={(e) => setPlantQuantity(Math.max(1, parseInt(e.target.value) || 1))}
-            inputProps={{ min: 1 }}
+            onChange={(e) => {
+              const value = parseInt(e.target.value) || 1;
+              const MAX_PLANT_LIMIT = 50;
+              const currentPlantsCount = aquarium?.plants 
+                ? aquarium.plants.reduce((sum, plant) => sum + (plant.count || 1), 0)
+                : 0;
+              const maxAllowed = Math.max(1, MAX_PLANT_LIMIT - currentPlantsCount);
+              const clampedValue = Math.max(1, Math.min(value, maxAllowed));
+              setPlantQuantity(clampedValue);
+            }}
+            inputProps={{ 
+              min: 1, 
+              max: aquarium?.plants 
+                ? Math.max(1, 50 - aquarium.plants.reduce((sum, plant) => sum + (plant.count || 1), 0))
+                : 50
+            }}
+            helperText={(() => {
+              if (!aquarium?.plants) return "Maksymalnie 50 roślin w akwarium";
+              const currentCount = aquarium.plants.reduce((sum, plant) => sum + (plant.count || 1), 0);
+              const remaining = Math.max(0, 50 - currentCount);
+              if (remaining === 0) return "Osiągnięto limit 50 roślin";
+              return `Maksymalnie ${remaining} więcej (limit: 50 roślin, aktualnie: ${currentCount})`;
+            })()}
             sx={{ mb: 3 }}
           />
 
