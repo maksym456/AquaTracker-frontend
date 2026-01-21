@@ -16,7 +16,9 @@
     "release:major": "standard-version --release-as major && npm run version:bump",
     "test": "jest",
     "test:watch": "jest --watch",
-    "test:coverage": "jest --coverage"
+    "test:coverage": "jest --coverage",
+    "test:unit": "jest Unit_tests",
+    "test:integration": "jest Integration_tests"
   },
   "dependencies": {
     "@emotion/react": "^11.14.0",
@@ -33,19 +35,25 @@
     "tailwind": "^4.0.0"
   },
   "devDependencies": {
+    "@babel/core": "^7.28.6",
+    "@babel/preset-env": "^7.28.6",
+    "@babel/preset-react": "^7.28.5",
+    "@babel/preset-typescript": "^7.28.5",
     "@eslint/eslintrc": "^3",
     "@playwright/test": "^1.56.1",
     "@tailwindcss/postcss": "^4",
     "@testing-library/jest-dom": "^6.9.1",
-    "@testing-library/react": "^16.3.1",
+    "@testing-library/react": "^16.3.2",
     "@testing-library/user-event": "^14.6.1",
     "@types/jest": "^30.0.0",
     "@types/node": "24.9.2",
     "autoprefixer": "^10.4.23",
     "babel-jest": "^30.2.0",
+    "babel-loader": "^10.0.0",
     "concurrently": "^9.2.1",
-    "eslint": "^9",
+    "eslint": "^9.39.2",
     "eslint-config-next": "15.5.4",
+    "eslint-plugin-react": "^7.37.5",
     "jest": "^30.2.0",
     "jest-environment-jsdom": "^30.2.0",
     "postcss": "^8.5.6",

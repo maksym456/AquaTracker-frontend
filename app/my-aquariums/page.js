@@ -1224,7 +1224,7 @@ export default function MyAquariumsPage() {
           <Typography variant="body1" sx={{ mb: 3 }}>
             {t("deleteAquariumConfirm", { 
               defaultValue: "Czy na pewno chcesz usunąć akwarium" 
-            })} "{aquariumToDelete?.name}"? {t("deleteWarning", { 
+            })} &quot;{aquariumToDelete?.name}&quot;? {t("deleteWarning", { 
               defaultValue: "Tej operacji nie można cofnąć." 
             })}
           </Typography>
@@ -1756,7 +1756,7 @@ export default function MyAquariumsPage() {
           </Typography>
           {selectedAquariumForShare && (
             <Typography variant="body2" sx={{ mb: 3, color: darkMode ? 'rgba(255,255,255,0.7)' : 'text.secondary' }}>
-              {t("shareAquariumWith", { defaultValue: "Wybierz znajomego, z którym chcesz udostępnić akwarium" })} "{selectedAquariumForShare.name}"
+              {t("shareAquariumWith", { defaultValue: "Wybierz znajomego, z którym chcesz udostępnić akwarium" })} &quot;{selectedAquariumForShare.name}&quot;
             </Typography>
           )}
           

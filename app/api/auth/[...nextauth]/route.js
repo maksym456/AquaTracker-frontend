@@ -20,20 +20,50 @@ const handler = NextAuth({
         }),
     ],
     session: { strategy: "jwt" },
+    debug: true, // Włącz debugowanie aby zobaczyć szczegółowe błędy w terminalu
+    pages: {
+        signIn: '/',
+        error: '/', // Przekieruj błędy na stronę główną
+    },
     callbacks: {
         async jwt({ token, account, profile }) {
-            if (profile?.sub) token.sub = profile.sub;
+            console.log('[NextAuth JWT Callback]', { 
+                hasAccount: !!account, 
+                hasProfile: !!profile, 
+                profileSub: profile?.sub,
+                hasIdToken: !!account?.id_token 
+            });
+            
+            if (profile?.sub) {
+                token.sub = profile.sub;
+            }
             if (!token.sub && account?.id_token) {
                 const sub = getSubFromIdToken(account.id_token);
-                if (sub) token.sub = sub;
+                if (sub) {
+                    token.sub = sub;
+                }
             }
 
             return token;
         },
         async session({ session, token }) {
+            console.log('[NextAuth Session Callback]', { 
+                hasSession: !!session, 
+                hasToken: !!token, 
+                tokenSub: token?.sub 
+            });
+            
             session.user = session.user || {};
             session.user.id = token.sub || null;
             return session;
+        },
+        async signIn({ user, account, profile }) {
+            console.log('[NextAuth SignIn Callback]', { 
+                hasUser: !!user, 
+                hasAccount: !!account, 
+                hasProfile: !!profile 
+            });
+            return true;
         },
     },
 });

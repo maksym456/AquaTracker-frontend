@@ -219,7 +219,13 @@ export default function AquariumDetailPage() {
         setError(null);
         const foundAquarium = await getAquariumById(aquariumId);
         if (foundAquarium) {
-          setAquarium(foundAquarium);
+          // Normalizuj dane: backend zwraca 'fish', frontend używa 'fishes'
+          const normalizedAquarium = {
+            ...foundAquarium,
+            fishes: foundAquarium.fishes || foundAquarium.fish || [],
+            plants: foundAquarium.plants || []
+          };
+          setAquarium(normalizedAquarium);
           
           // Inicjalizuj zbiór ostatnich logów przy pierwszym załadowaniu
           // aby nie pokazywać starych logów jako nowych powiadomień
@@ -266,7 +272,13 @@ export default function AquariumDetailPage() {
       try {
         const foundAquarium = await getAquariumById(aquariumId);
         if (foundAquarium) {
-          setAquarium(foundAquarium);
+          // Normalizuj dane: backend zwraca 'fish', frontend używa 'fishes'
+          const normalizedAquarium = {
+            ...foundAquarium,
+            fishes: foundAquarium.fishes || foundAquarium.fish || [],
+            plants: foundAquarium.plants || []
+          };
+          setAquarium(normalizedAquarium);
           consecutiveErrors = 0; // Reset licznika błędów przy sukcesie
           
           // Sprawdź logi o śmierci ryb (cicho ignoruj błędy)
@@ -384,13 +396,24 @@ export default function AquariumDetailPage() {
       
       // addFishToAquarium zwraca już zaktualizowane akwarium (result.aquarium z API)
       if (result && typeof result === 'object' && result.id) {
-        // result jest już zaktualizowanym akwarium
-        setAquarium(result);
+        // Normalizuj dane: backend zwraca 'fish', frontend używa 'fishes'
+        const normalizedAquarium = {
+          ...result,
+          fishes: result.fishes || result.fish || [],
+          plants: result.plants || []
+        };
+        setAquarium(normalizedAquarium);
       } else {
         // Jeśli nie ma akwarium w odpowiedzi, pobierz je ponownie
         const updatedAquarium = await getAquariumById(aquariumId);
         if (updatedAquarium) {
-          setAquarium(updatedAquarium);
+          // Normalizuj dane: backend zwraca 'fish', frontend używa 'fishes'
+          const normalizedAquarium = {
+            ...updatedAquarium,
+            fishes: updatedAquarium.fishes || updatedAquarium.fish || [],
+            plants: updatedAquarium.plants || []
+          };
+          setAquarium(normalizedAquarium);
         }
       }
       
@@ -429,15 +452,17 @@ export default function AquariumDetailPage() {
       const updatedAquarium = await getAquariumById(aquariumId);
       if (updatedAquarium) {
         console.log('Updated aquarium fetched:', updatedAquarium);
-        console.log('Fishes array:', updatedAquarium.fishes);
-        console.log('Fishes count (positions):', updatedAquarium.fishes?.length || 0);
-        const totalCount = (updatedAquarium.fishes || []).reduce((sum, fish) => sum + (fish.count || 1), 0);
+        // Normalizuj dane: backend zwraca 'fish', frontend używa 'fishes'
+        const normalizedFishes = updatedAquarium.fishes || updatedAquarium.fish || [];
+        console.log('Fishes array:', normalizedFishes);
+        console.log('Fishes count (positions):', normalizedFishes.length || 0);
+        const totalCount = normalizedFishes.reduce((sum, fish) => sum + (fish.count || 1), 0);
         console.log('Fishes count (total):', totalCount);
         
         // Utwórz nowy obiekt z nowymi tablicami, żeby wymusić aktualizację React
         const freshAquarium = {
           ...updatedAquarium,
-          fishes: updatedAquarium.fishes ? [...updatedAquarium.fishes] : [],
+          fishes: normalizedFishes.length > 0 ? [...normalizedFishes] : [],
           plants: updatedAquarium.plants ? [...updatedAquarium.plants] : []
         };
         console.log('Setting aquarium state with fresh object');
@@ -461,13 +486,24 @@ export default function AquariumDetailPage() {
       
       // Backend zwraca zaktualizowane akwarium w odpowiedzi
       if (result && typeof result === 'object' && result.id) {
-        // result jest już zaktualizowanym akwarium
-        setAquarium(result);
+        // Normalizuj dane: backend zwraca 'fish', frontend używa 'fishes'
+        const normalizedAquarium = {
+          ...result,
+          fishes: result.fishes || result.fish || [],
+          plants: result.plants || []
+        };
+        setAquarium(normalizedAquarium);
       } else {
         // Jeśli nie ma akwarium w odpowiedzi, pobierz je ponownie
         const updatedAquarium = await getAquariumById(aquariumId);
         if (updatedAquarium) {
-          setAquarium(updatedAquarium);
+          // Normalizuj dane: backend zwraca 'fish', frontend używa 'fishes'
+          const normalizedAquarium = {
+            ...updatedAquarium,
+            fishes: updatedAquarium.fishes || updatedAquarium.fish || [],
+            plants: updatedAquarium.plants || []
+          };
+          setAquarium(normalizedAquarium);
         }
       }
       
@@ -500,16 +536,27 @@ export default function AquariumDetailPage() {
       
       // Backend zwraca zaktualizowane akwarium w odpowiedzi
       if (result && typeof result === 'object' && result.id) {
-        // result jest już zaktualizowanym akwarium
-        console.log('Using aquarium from response:', result);
-        setAquarium(result);
+        // Normalizuj dane: backend zwraca 'fish', frontend używa 'fishes'
+        const normalizedAquarium = {
+          ...result,
+          fishes: result.fishes || result.fish || [],
+          plants: result.plants || []
+        };
+        console.log('Using aquarium from response:', normalizedAquarium);
+        setAquarium(normalizedAquarium);
       } else {
         // Jeśli nie ma akwarium w odpowiedzi, pobierz je ponownie
         console.log('Fetching updated aquarium...');
         const updatedAquarium = await getAquariumById(aquariumId);
         if (updatedAquarium) {
-          console.log('Updated aquarium:', updatedAquarium);
-          setAquarium(updatedAquarium);
+          // Normalizuj dane: backend zwraca 'fish', frontend używa 'fishes'
+          const normalizedAquarium = {
+            ...updatedAquarium,
+            fishes: updatedAquarium.fishes || updatedAquarium.fish || [],
+            plants: updatedAquarium.plants || []
+          };
+          console.log('Updated aquarium:', normalizedAquarium);
+          setAquarium(normalizedAquarium);
         } else {
           console.error('Failed to fetch updated aquarium');
         }

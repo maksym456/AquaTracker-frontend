@@ -66,9 +66,38 @@ async function fetchAPI(endpoint, options = {}) {
         throw new Error(`API Error: ${response.status} ${response.statusText}`);
       }
 
-      const data = await response.json();
-      console.log(`API Response Data:`, data);
-      return data;
+      // 204 No Content nie ma body, więc zwróć null bez parsowania
+      if (response.status === 204) {
+        console.log(`API Response: 204 No Content`);
+        return null;
+      }
+
+      // Sprawdź content-length przed pobraniem body
+      const contentLength = response.headers.get('content-length');
+      if (contentLength === '0') {
+        console.log(`API Response: Empty body (content-length: 0)`);
+        return null;
+      }
+
+      // Pobierz tekst odpowiedzi
+      const text = await response.text();
+      
+      // Jeśli tekst jest pusty, zwróć null
+      if (!text || text.trim() === '') {
+        console.log(`API Response: Empty body`);
+        return null;
+      }
+
+      // Spróbuj sparsować jako JSON
+      try {
+        const data = JSON.parse(text);
+        console.log(`API Response Data:`, data);
+        return data;
+      } catch (parseError) {
+        // Jeśli nie można sparsować jako JSON, zwróć null
+        console.warn(`API Response is not valid JSON, returning null:`, parseError.message);
+        return null;
+      }
       
     } catch (fetchError) {
       if (timeoutId) {
