@@ -192,10 +192,13 @@ export default function AquariumDetailPage() {
         const foundAquarium = await getAquariumById(aquariumId);
         if (foundAquarium) {
           // Normalizuj dane: backend zwraca 'fish', frontend używa 'fishes'
+          // Backend może zwracać temperatureC i hardnessDGH, mapujemy na temperature i hardness
           const normalizedAquarium = {
             ...foundAquarium,
             fishes: foundAquarium.fishes || foundAquarium.fish || [],
-            plants: foundAquarium.plants || []
+            plants: foundAquarium.plants || [],
+            temperature: foundAquarium.temperature || foundAquarium.temperatureC || null,
+            hardness: foundAquarium.hardness || foundAquarium.hardnessDGH || null
           };
           setAquarium(normalizedAquarium);
           
@@ -1290,9 +1293,13 @@ export default function AquariumDetailPage() {
 
       {/* Status akwarium - ostrzeżenia o kompatybilności w prawym górnym rogu */}
       {/* Pokazuj tylko gdy jest co najmniej 2 ryby (wtedy może być niekompatybilność) */}
+      {/* Pokazuj tylko dla problemów z temperamentem (agresywne + spokojne) lub typem wody */}
       {aquarium?.status && 
        aquarium.status.issues && 
-       aquarium.status.issues.length > 0 && 
+       aquarium.status.issues.some(issue => 
+         issue.type === 'TEMPERAMENT_INCOMPATIBILITY' || 
+         issue.type === 'WATER_TYPE_MISMATCH'
+       ) && 
        aquarium?.fishes && 
        aquarium.fishes.length >= 2 && (
         <Box sx={{
@@ -2391,7 +2398,7 @@ export default function AquariumDetailPage() {
                 style={{ cursor: 'pointer' }}
               />
               <label htmlFor="compatibilityFilter" style={{ cursor: 'pointer', fontSize: '0.875rem', color: darkMode ? 'white' : 'inherit' }}>
-                {t("showOnlyCompatible", { defaultValue: "Pokaż tylko kompatybilne ryby" })}
+                {t("showWarnings", { defaultValue: "Pokaż ostrzeżenia" })}
               </label>
             </Box>
           )}
