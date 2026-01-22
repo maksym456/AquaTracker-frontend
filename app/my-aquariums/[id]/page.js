@@ -741,12 +741,29 @@ export default function AquariumDetailPage() {
     };
 
     // Funkcja znajdowania wolnej pozycji
-    const findFreePosition = (globalIndex, existingPlants, containerWidth = 1200) => {
+    // Obliczamy pozycje procentowo:
+    // - Dolny pasek menu: ~6% wysokości ekranu (78px przy 1312px = 5.95%)
+    // - Górny pasek menu: ~16% wysokości ekranu (207px przy 1312px = 15.78%)
+    // - Dostępna przestrzeń: 100% - 6% - 16% = 78%
+    // - Rośliny: dolne 30% z dostępnej przestrzeni = 23.4% całej wysokości
+    // - Ryby: górne 70% z dostępnej przestrzeni = 54.6% całej wysokości
+    // - Poziom piasku (sandHorizonY): 30% od dołu dostępnej przestrzeni = 6% + 23.4% = 29.4% od dołu
+    const findFreePosition = (globalIndex, existingPlants, containerWidth = 1200, containerHeight = 1000) => {
       const size = 120 + (globalIndex * 13) % 80; // 120-200px
       const height = size * 1.5;
-      const minBottomOffset = 80; // Minimalna odległość od dołu (powyżej menu)
-      const maxBottomOffset = 350; // Maksymalna wysokość piasku
-      const availableHeight = maxBottomOffset - minBottomOffset;
+      
+      // Procentowe wartości
+      const bottomMenuPercent = 0.06; // 6% - dolny pasek menu
+      const topMenuPercent = 0.16; // 16% - górny pasek menu
+      const availableHeightPercent = 1 - bottomMenuPercent - topMenuPercent; // 78% - dostępna przestrzeń
+      const plantZonePercent = 0.30; // 30% z dostępnej przestrzeni dla roślin
+      
+      // Oblicz pozycje w pikselach
+      const bottomMenuHeight = containerHeight * bottomMenuPercent; // ~78px przy 1312px
+      const plantZoneHeight = containerHeight * availableHeightPercent * plantZonePercent; // ~308px przy 1312px
+      const minBottomOffset = bottomMenuHeight; // Minimalna odległość od dołu (powyżej menu) - ~78px
+      const maxBottomOffset = bottomMenuHeight + plantZoneHeight; // Maksymalna wysokość dla roślin - ~386px
+      const availableHeight = maxBottomOffset - minBottomOffset; // ~308px
       
       // Próbuj znaleźć wolną pozycję (maksymalnie 300 prób)
       for (let attempt = 0; attempt < 300; attempt++) {
@@ -784,12 +801,21 @@ export default function AquariumDetailPage() {
     // Umieść wszystkie rośliny, unikając kolizji
     const placedPlants = [];
     const containerWidth = typeof window !== 'undefined' ? window.innerWidth : 1200;
+    // Wysokość kontenera akwarium = wysokość okna minus górny pasek (96px dla sm, 200px dla xs) minus dolny pasek (78px)
+    // Używamy średniej wartości dla responsywności: ~96px górny pasek + ~78px dolny pasek = ~174px
+    // Więc dostępna wysokość = window.innerHeight - 174px
+    const topMenuHeight = typeof window !== 'undefined' && window.innerWidth < 600 ? 200 : 96; // xs: 200px, sm+: 96px
+    const bottomMenuHeight = 78; // Dolny pasek menu
+    const containerHeight = typeof window !== 'undefined' 
+      ? window.innerHeight - topMenuHeight - bottomMenuHeight 
+      : 1000;
     
     return allPlants.map((plant) => {
       const position = findFreePosition(
         plant.globalIndex,
         placedPlants,
-        containerWidth
+        containerWidth,
+        containerHeight
       );
       
       // Dodaj do listy umieszczonych roślin
@@ -1219,9 +1245,11 @@ export default function AquariumDetailPage() {
                   return Array.from({ length: actualVisualCount }).map((_, instanceIndex) => {
                   const uniqueKey = `fish-${fish.fishId}-${instanceIndex}`;
                   // Losowe pozycje startowe i parametry animacji dla każdej ryby
-                  // Większy zakres pozycji - od 5% do 95% (prawie całe akwarium)
+                  // Ryby w górnych 70% dostępnej przestrzeni (powyżej poziomu piasku)
+                  // Górny pasek menu: ~16%, więc ryby od ~16% do ~70% wysokości kontenera
                   const startX = 5 + (fishIndex * 13 + instanceIndex * 7) % 85;
-                  const startY = 10 + (fishIndex * 17 + instanceIndex * 11) % 75;
+                  // Ryby tylko w górnych 70% dostępnej przestrzeni (0% to góra kontenera, 70% to poziom piasku)
+                  const startY = 5 + (fishIndex * 17 + instanceIndex * 11) % 65; // 5% do 70% od góry kontenera
                   // Dłuższe animacje - 12-20 sekund dla bardziej naturalnego ruchu
                   const duration = 12 + (fishIndex * 3 + instanceIndex * 2) % 8;
                   const delay = (fishIndex * 0.7 + instanceIndex * 0.5) % 3;
@@ -1255,14 +1283,14 @@ export default function AquariumDetailPage() {
             </Box>
           )}
 
-          {/* Rośliny w obszarze piasku (do 350px od dołu, ale powyżej dolnego menu) */}
+          {/* Rośliny w obszarze piasku (dolne 30% dostępnej przestrzeni, powyżej dolnego menu) */}
           {plantPositions && plantPositions.length > 0 && (
             <Box sx={{
               position: 'absolute',
               bottom: 0,
               left: 0,
               right: 0,
-              height: '350px', // Wysokość piasku
+              height: '30%', // 30% dostępnej przestrzeni dla roślin (dolne 30% z 78% = 23.4% całej wysokości)
               pointerEvents: 'none',
               overflow: 'visible',
               zIndex: 1 // Rośliny na drugim planie (ryby mają zIndex: 2)
