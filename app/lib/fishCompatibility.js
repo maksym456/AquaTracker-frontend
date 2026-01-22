@@ -52,12 +52,12 @@ export function checkTemperamentCompatibility(fish1, fish2) {
         message: `${temp1 === "agresywne" ? name1 : name2} (agresywne) nie może być z ${temp1 === "pół-agresywne" ? name1 : name2} (pół-agresywne).`
       };
     }
-    // Agresywne z agresywnymi spoza swojego gatunku - konflikt może spowodować pożarcie łagodnego osobnika
+    // Agresywne z agresywnymi spoza swojego gatunku - może dojść do konfliktu między agresywnymi gatunkami
     if (temp1 === "agresywne" && temp2 === "agresywne" && id1 !== id2) {
       return {
         compatible: true,
         severity: "WARNING",
-        message: `${name1} i ${name2} (oba agresywne, różne gatunki) - konflikt może spowodować pożarcie łagodnego osobnika.`
+        message: `${name1} i ${name2} (oba agresywne, różne gatunki) - może dojść do konfliktu między agresywnymi gatunkami.`
       };
     }
   }
@@ -87,9 +87,26 @@ export function checkTemperamentCompatibility(fish1, fish2) {
 /**
  * Sprawdza kompatybilność nowej ryby z wszystkimi rybami w akwarium
  * Zwraca listę problemów kompatybilności
+ * aquarium - opcjonalny obiekt akwarium do sprawdzenia typu wody
  */
-export function checkFishCompatibilityWithAquarium(newFish, aquariumFishes, availableFishes = []) {
+export function checkFishCompatibilityWithAquarium(newFish, aquariumFishes, availableFishes = [], aquarium = null) {
   const issues = [];
+  
+  // Sprawdź niezgodność typu wody (jeśli akwarium jest dostępne)
+  if (aquarium && aquarium.waterType && newFish.waterType) {
+    const isWaterTypeCompatible = checkWaterTypeCompatibility(aquarium.waterType, newFish.waterType);
+    if (!isWaterTypeCompatible) {
+      const aquariumWaterTypeName = aquarium.waterType === 'freshwater' ? 'słodkowodne' : 
+                                    aquarium.waterType === 'saltwater' ? 'słonowodne' : aquarium.waterType;
+      const fishWaterTypeName = newFish.waterType;
+      issues.push({
+        type: "WATER_TYPE_MISMATCH",
+        severity: "ERROR",
+        message: `${newFish.name} wymaga ${fishWaterTypeName}, ale akwarium jest ${aquariumWaterTypeName}. Ryba nie przeżyje w tym typie wody (szok osmotyczny).`,
+        newFish: newFish.name
+      });
+    }
+  }
   
   if (!aquariumFishes || aquariumFishes.length === 0) {
     return issues;
@@ -129,13 +146,32 @@ export function checkFishCompatibilityWithAquarium(newFish, aquariumFishes, avai
 /**
  * Filtruje dostępne ryby, pokazując tylko te kompatybilne z akwarium
  * Zwraca obiekt z kompatybilnymi i niekompatybilnymi rybami
+ * aquarium - opcjonalny obiekt akwarium do sprawdzenia typu wody
  */
-export function filterCompatibleFishes(availableFishes, aquariumFishes) {
+export function filterCompatibleFishes(availableFishes, aquariumFishes, aquarium = null) {
   const compatible = [];
   const incompatible = [];
   const warnings = [];
 
   if (!aquariumFishes || aquariumFishes.length === 0) {
+    // Jeśli akwarium jest puste, sprawdź tylko typ wody
+    if (aquarium && aquarium.waterType) {
+      const result = { compatible: [], incompatible: [], warnings: [] };
+      for (const fish of availableFishes || []) {
+        const issues = checkFishCompatibilityWithAquarium(fish, [], availableFishes, aquarium);
+        const hasErrors = issues.some(issue => issue.severity === "ERROR");
+        const hasWarnings = issues.some(issue => issue.severity === "WARNING");
+        
+        if (hasErrors) {
+          result.incompatible.push({ fish, issues });
+        } else if (hasWarnings) {
+          result.warnings.push({ fish, issues });
+        } else {
+          result.compatible.push({ fish, issues: [] });
+        }
+      }
+      return result;
+    }
     // Jeśli akwarium jest puste, wszystkie ryby są kompatybilne
     return {
       compatible: (availableFishes || []).map(fish => ({ fish, issues: [] })),
@@ -145,7 +181,7 @@ export function filterCompatibleFishes(availableFishes, aquariumFishes) {
   }
 
   for (const fish of availableFishes || []) {
-    const issues = checkFishCompatibilityWithAquarium(fish, aquariumFishes, availableFishes);
+    const issues = checkFishCompatibilityWithAquarium(fish, aquariumFishes, availableFishes, aquarium);
     
     const hasErrors = issues.some(issue => issue.severity === "ERROR");
     const hasWarnings = issues.some(issue => issue.severity === "WARNING");
@@ -189,6 +225,29 @@ function normalizeWaterType(aquariumWaterType, fishWaterType) {
   
   const normalizedAquarium = aquariumMap[aquariumWaterType] || aquariumWaterType;
   return normalizedAquarium === fishWaterType;
+}
+
+/**
+ * Sprawdza czy typ wody ryby jest zgodny z typem wody akwarium
+ * Zwraca true jeśli są zgodne, false jeśli niezgodne
+ */
+export function checkWaterTypeCompatibility(aquariumWaterType, fishWaterType) {
+  if (!aquariumWaterType || !fishWaterType) return true; // Jeśli brak danych, uznaj za zgodne
+  
+  // Normalizuj do lowercase dla porównania
+  const aquariumType = String(aquariumWaterType).toLowerCase().trim();
+  const fishType = String(fishWaterType).toLowerCase().trim();
+  
+  // Mapowanie typów wody
+  const aquariumMap = {
+    'freshwater': ['słodkowodna', 'freshwater'],
+    'saltwater': ['słonowodna', 'saltwater'],
+    'brackish': ['słonawowodna', 'brackish']
+  };
+  
+  // Sprawdź czy typ akwarium pasuje do typu ryby
+  const aquariumTypes = aquariumMap[aquariumType] || [aquariumType];
+  return aquariumTypes.some(type => type === fishType || fishType.includes(type) || type.includes(fishType));
 }
 
 /**
@@ -284,7 +343,7 @@ export function getRecommendedFishes(availableFishes, aquarium, aquariumFishes) 
   const recommended = [];
 
   for (const fish of availableFishes) {
-    const compatibilityIssues = checkFishCompatibilityWithAquarium(fish, aquariumFishes, availableFishes);
+    const compatibilityIssues = checkFishCompatibilityWithAquarium(fish, aquariumFishes, availableFishes, aquarium);
     const hasErrors = compatibilityIssues.some(issue => issue.severity === "ERROR");
     
     if (hasErrors) {

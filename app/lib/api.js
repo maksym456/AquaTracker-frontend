@@ -433,10 +433,15 @@ export async function addFishToAquarium(aquariumId, fishId, count = 1) {
 }
 
 // Usuwa rybę z akwarium
-export async function removeFishFromAquarium(aquariumId, fishId) {
+// count - opcjonalny parametr, jeśli podany, usuwa tylko tyle sztuk (domyślnie usuwa wszystkie)
+export async function removeFishFromAquarium(aquariumId, fishId, count = null) {
   try {
-    console.log('removeFishFromAquarium called with:', { aquariumId, fishId });
-    const endpoint = `/v1/aquariums/${aquariumId}/fish/${fishId}`;
+    console.log('removeFishFromAquarium called with:', { aquariumId, fishId, count });
+    let endpoint = `/v1/aquariums/${aquariumId}/fish/${fishId}`;
+    // Dodaj parametr count jako query parameter jeśli jest podany
+    if (count !== null && count > 0) {
+      endpoint += `?count=${count}`;
+    }
     console.log('Calling DELETE endpoint:', endpoint);
     
     const result = await fetchAPI(endpoint, {

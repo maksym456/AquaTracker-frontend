@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useEffect, useRef, useMemo } from "react";
-import { Box, Button, Typography, Modal, Paper, Grid, Divider, CircularProgress, Alert, TextField, List, ListItem, ListItemText, IconButton, Card, CardContent, FormControl, InputLabel, Select, MenuItem, Snackbar } from "@mui/material";
+import { Box, Button, Typography, Modal, Paper, Grid, Divider, CircularProgress, Alert, TextField, List, ListItem, ListItemText, IconButton, Card, CardContent, FormControl, InputLabel, Select, MenuItem, Snackbar, Switch, FormControlLabel } from "@mui/material";
 import { keyframes } from "@emotion/react";
 import DeleteIcon from '@mui/icons-material/Delete';
 import { useTranslation } from "react-i18next";
@@ -12,7 +12,7 @@ import LanguageSwitcher from "../../components/LanguageSwitcher";
 import KeyboardReturnOutlinedIcon from '@mui/icons-material/KeyboardReturnOutlined';
 import BarChartIcon from '@mui/icons-material/BarChart';
 import { getAquariumById, addFishToAquarium, removeFishFromAquarium, addPlantToAquarium, removePlantFromAquarium, getFishes, getPlants } from "../../lib/api";
-import { checkFishCompatibilityWithAquarium, filterCompatibleFishes, getRecommendedFishes } from "../../lib/fishCompatibility";
+import { checkFishCompatibilityWithAquarium, filterCompatibleFishes, getRecommendedFishes, normalizeTemperament, checkWaterTypeCompatibility } from "../../lib/fishCompatibility";
 
 export default function AquariumDetailPage() {
   
@@ -103,8 +103,11 @@ export default function AquariumDetailPage() {
   const [plantPanelExpanded, setPlantPanelExpanded] = useState(false);
   const [compatibilityPanelExpanded, setCompatibilityPanelExpanded] = useState(false);
   const [deathNotification, setDeathNotification] = useState(null);
+  const [foodChainEnabled, setFoodChainEnabled] = useState(false); // Włącznik łańcucha pokarmowego
   const lastLogIdsRef = useRef(new Set());
   const imageContainerRef = useRef(null);
+  const aquariumRef = useRef(null); // Ref do aktualnego stanu akwarium (dla łańcucha pokarmowego)
+  const availableFishesRef = useRef([]); // Ref do dostępnych ryb (dla łańcucha pokarmowego)
 
   // Funkcja pomocnicza do mapowania nazw ryb na ścieżki ikon
   const getFishImage = (fishName, iconName) => {
@@ -198,9 +201,11 @@ export default function AquariumDetailPage() {
             fishes: foundAquarium.fishes || foundAquarium.fish || [],
             plants: foundAquarium.plants || [],
             temperature: foundAquarium.temperature || foundAquarium.temperatureC || null,
-            hardness: foundAquarium.hardness || foundAquarium.hardnessDGH || null
+            hardness: foundAquarium.hardness || foundAquarium.hardnessDGH || null,
+            status: foundAquarium.status // Zachowaj status z backendu (dla wykrzyknika)
           };
           setAquarium(normalizedAquarium);
+          aquariumRef.current = normalizedAquarium; // Aktualizuj ref
           
           // Inicjalizuj zbiór ostatnich logów przy pierwszym załadowaniu
           // aby nie pokazywać starych logów jako nowych powiadomień
@@ -254,9 +259,11 @@ export default function AquariumDetailPage() {
             fishes: foundAquarium.fishes || foundAquarium.fish || [],
             plants: foundAquarium.plants || [],
             temperature: foundAquarium.temperature || foundAquarium.temperatureC || null,
-            hardness: foundAquarium.hardness || foundAquarium.hardnessDGH || null
+            hardness: foundAquarium.hardness || foundAquarium.hardnessDGH || null,
+            status: foundAquarium.status // Zachowaj status z backendu (dla wykrzyknika)
           };
           setAquarium(normalizedAquarium);
+          aquariumRef.current = normalizedAquarium; // Aktualizuj ref
           consecutiveErrors = 0; // Reset licznika błędów przy sukcesie
           
           // Sprawdź logi o śmierci ryb (cicho ignoruj błędy)
@@ -322,6 +329,7 @@ export default function AquariumDetailPage() {
           getPlants()
         ]);
         setAvailableFishes(fishes || []);
+        availableFishesRef.current = fishes || []; // Aktualizuj ref
         setAvailablePlants(plants || []);
       } catch (err) {
         console.error("Error fetching available fishes/plants:", err);
@@ -329,6 +337,110 @@ export default function AquariumDetailPage() {
     }
     fetchAvailableData();
   }, []);
+
+  // Łańcuch pokarmowy - automatyczne usuwanie spokojnych ryb przez agresywne
+  useEffect(() => {
+    if (!foodChainEnabled || !aquariumId) return;
+    
+    const PREDATION_INTERVAL = 6000; // 6 sekund (szybciej dla prezentacji)
+    const ATTACK_CHANCE = 0.50; // 50% szansy na atak w każdym cyklu
+    const WARNING_DELAY = 4000; // 4 sekundy ostrzeżenia przed atakiem
+    
+    const predationInterval = setInterval(async () => {
+      const currentAquarium = aquariumRef.current;
+      const currentAvailableFishes = availableFishesRef.current;
+      
+      if (!currentAquarium?.fishes || currentAquarium.fishes.length < 2 || !currentAvailableFishes.length) {
+        return;
+      }
+      
+      // Połącz ryby z akwarium z ich szczegółami
+      const fishesWithDetails = currentAquarium.fishes
+        .map(aquariumFish => {
+          const fishDetails = currentAvailableFishes.find(f => f.id === aquariumFish.fishId);
+          if (!fishDetails) return null;
+          return {
+            ...aquariumFish,
+            details: fishDetails,
+            temperament: normalizeTemperament(fishDetails.temperament)
+          };
+        })
+        .filter(f => f !== null);
+      
+      // Znajdź drapieżników (agresywne i pół-agresywne)
+      const predators = fishesWithDetails.filter(f => 
+        f.temperament === "agresywne" || f.temperament === "pół-agresywne"
+      );
+      
+      // Znajdź ofiary (spokojne)
+      const victims = fishesWithDetails.filter(f => f.temperament === "spokojne");
+      
+      // Warunki ataku: musi być przynajmniej 1 drapieżnik i 1 ofiara
+      if (predators.length === 0 || victims.length === 0) {
+        return;
+      }
+      
+      // Losuj czy atak się uda
+      if (Math.random() > ATTACK_CHANCE) {
+        return; // Atak nie udany
+      }
+      
+      // Wybierz losowego drapieżnika i ofiarę
+      const predator = predators[Math.floor(Math.random() * predators.length)];
+      const victim = victims[Math.floor(Math.random() * victims.length)];
+      
+      const predatorName = predator.details.name || "Drapieżnik";
+      const victimName = victim.details.name || "Ofiara";
+      
+      // Pokaż ostrzeżenie przed atakiem
+      setDeathNotification({
+        message: `⚠️ ${predatorName} poluje na ${victimName}...`,
+        severity: 'warning',
+        countdown: WARNING_DELAY / 1000
+      });
+      
+      // Po opóźnieniu wykonaj atak
+      setTimeout(async () => {
+        try {
+          // Usuń tylko jedną sztukę ofiary z akwarium (nie wszystkie)
+          await removeFishFromAquarium(aquariumId, victim.fishId, 1);
+          
+          // Odśwież akwarium
+          const updatedAquarium = await getAquariumById(aquariumId);
+          if (updatedAquarium) {
+            const normalizedAquarium = {
+              ...updatedAquarium,
+              fishes: updatedAquarium.fishes || updatedAquarium.fish || [],
+              plants: updatedAquarium.plants || [],
+              temperature: updatedAquarium.temperature || updatedAquarium.temperatureC || null,
+              hardness: updatedAquarium.hardness || updatedAquarium.hardnessDGH || null,
+              status: updatedAquarium.status // Zachowaj status z backendu
+            };
+            setAquarium(normalizedAquarium);
+            aquariumRef.current = normalizedAquarium;
+          }
+          
+          // Pokaż powiadomienie o ataku
+          setDeathNotification({
+            message: `💀 ${predatorName} zjadł ${victimName}! Natura bywa okrutna...`,
+            severity: 'error'
+          });
+          
+          // Ukryj powiadomienie po 5 sekundach
+          setTimeout(() => {
+            setDeathNotification(null);
+          }, 5000);
+          
+        } catch (err) {
+          console.error("Error removing fish in predation:", err);
+          setDeathNotification(null);
+        }
+      }, WARNING_DELAY);
+      
+    }, PREDATION_INTERVAL);
+    
+    return () => clearInterval(predationInterval);
+  }, [foodChainEnabled, aquariumId]);
 
   // Sprawdź kompatybilność wybranej ryby z akwarium
   useEffect(() => {
@@ -339,12 +451,12 @@ export default function AquariumDetailPage() {
 
     const selectedFish = availableFishes.find(f => f.id === selectedFishId);
     if (selectedFish) {
-      const issues = checkFishCompatibilityWithAquarium(selectedFish, aquarium.fishes, availableFishes);
+      const issues = checkFishCompatibilityWithAquarium(selectedFish, aquarium.fishes, availableFishes, aquarium);
       setCompatibilityIssues(issues);
     } else {
       setCompatibilityIssues([]);
     }
-  }, [selectedFishId, aquarium?.fishes, availableFishes]);
+  }, [selectedFishId, aquarium?.fishes, aquarium?.waterType, availableFishes]);
 
   async function handleAddFish() {
     if (!selectedFishId || !aquariumId) return;
@@ -364,7 +476,7 @@ export default function AquariumDetailPage() {
     // Sprawdź kompatybilność przed dodaniem
     const selectedFish = availableFishes.find(f => f.id === selectedFishId);
     if (selectedFish && aquarium?.fishes) {
-      const issues = checkFishCompatibilityWithAquarium(selectedFish, aquarium.fishes, availableFishes);
+      const issues = checkFishCompatibilityWithAquarium(selectedFish, aquarium.fishes, availableFishes, aquarium);
       const hasErrors = issues.some(issue => issue.severity === "ERROR");
       
       if (hasErrors) {
@@ -391,9 +503,11 @@ export default function AquariumDetailPage() {
         const normalizedAquarium = {
           ...result,
           fishes: result.fishes || result.fish || [],
-          plants: result.plants || []
+          plants: result.plants || [],
+          status: result.status // Zachowaj status z backendu
         };
         setAquarium(normalizedAquarium);
+        aquariumRef.current = normalizedAquarium; // Aktualizuj ref
       } else {
         // Jeśli nie ma akwarium w odpowiedzi, pobierz je ponownie
         const updatedAquarium = await getAquariumById(aquariumId);
@@ -405,6 +519,7 @@ export default function AquariumDetailPage() {
             plants: updatedAquarium.plants || []
           };
           setAquarium(normalizedAquarium);
+          aquariumRef.current = normalizedAquarium; // Aktualizuj ref
         }
       }
       
@@ -457,10 +572,13 @@ export default function AquariumDetailPage() {
           fishes: normalizedFishes.length > 0 ? [...normalizedFishes] : [],
           plants: updatedAquarium.plants ? [...updatedAquarium.plants] : [],
           temperature: updatedAquarium.temperature || updatedAquarium.temperatureC || null,
-          hardness: updatedAquarium.hardness || updatedAquarium.hardnessDGH || null
+          hardness: updatedAquarium.hardness || updatedAquarium.hardnessDGH || null,
+          status: updatedAquarium.status // Zachowaj status z backendu
         };
         console.log('Setting aquarium state with fresh object');
         setAquarium(freshAquarium);
+        aquariumRef.current = freshAquarium; // Aktualizuj ref
+        aquariumRef.current = freshAquarium; // Aktualizuj ref
         console.log('Aquarium state updated');
       } else {
         console.error('Failed to fetch updated aquarium');
@@ -500,7 +618,8 @@ export default function AquariumDetailPage() {
           fishes: result.fishes || result.fish || [],
           plants: result.plants || [],
           temperature: result.temperature || result.temperatureC || null,
-          hardness: result.hardness || result.hardnessDGH || null
+          hardness: result.hardness || result.hardnessDGH || null,
+          status: result.status // Zachowaj status z backendu
         };
         setAquarium(normalizedAquarium);
       } else {
@@ -1126,6 +1245,12 @@ export default function AquariumDetailPage() {
       <Box 
         component="main"
         ref={imageContainerRef}
+        onClick={() => {
+          // Zamknij panel kompatybilności po kliknięciu na akwarium
+          if (compatibilityPanelExpanded) {
+            setCompatibilityPanelExpanded(false);
+          }
+        }}
         sx={{ position: 'absolute', left: 0, right: 0, top: { xs: 200, sm: 96 }, bottom: 0, zIndex: 1 }}
       >
         {imageLoaded && (
@@ -1372,15 +1497,18 @@ export default function AquariumDetailPage() {
             })()
           ) : (
             // Rozwinięty widok - pełny panel
-            <Paper sx={{
-              p: 2,
-              bgcolor: darkMode ? 'rgba(30, 30, 30, 0.95)' : 'rgba(255, 255, 255, 0.95)',
-              backdropFilter: 'blur(10px)',
-              borderRadius: 2,
-              boxShadow: 4,
-              border: aquarium.status.level === 'ERROR' ? '2px solid #f44336' : 
-                      aquarium.status.level === 'WARNING' ? '2px solid #ff9800' : 'none'
-            }}>
+            <Paper 
+              onClick={(e) => e.stopPropagation()} // Zapobiegaj zamykaniu panelu po kliknięciu na niego
+              sx={{
+                p: 2,
+                bgcolor: darkMode ? 'rgba(30, 30, 30, 0.95)' : 'rgba(255, 255, 255, 0.95)',
+                backdropFilter: 'blur(10px)',
+                borderRadius: 2,
+                boxShadow: 4,
+                border: aquarium.status.level === 'ERROR' ? '2px solid #f44336' : 
+                        aquarium.status.level === 'WARNING' ? '2px solid #ff9800' : 'none'
+              }}
+            >
               <Box sx={{ display: 'flex', alignItems: 'flex-start', gap: 1.5, mb: 1 }}>
                 <IconButton
                   size="small"
@@ -1563,6 +1691,44 @@ export default function AquariumDetailPage() {
                       </Typography>
                     )}
                   </Box>
+                  
+                  {/* Włącznik łańcucha pokarmowego */}
+                  <Divider sx={{ my: 1.5, borderColor: darkMode ? 'rgba(255,255,255,0.1)' : 'rgba(0,0,0,0.1)' }} />
+                  <FormControlLabel
+                    control={
+                      <Switch
+                        checked={foodChainEnabled}
+                        onChange={(e) => setFoodChainEnabled(e.target.checked)}
+                        color="warning"
+                        size="small"
+                      />
+                    }
+                    label={
+                      <Typography variant="body2" sx={{ 
+                        fontSize: '0.8rem',
+                        color: darkMode ? 'rgba(255,255,255,0.9)' : 'text.primary'
+                      }}>
+                        {t("foodChain", { defaultValue: "Łańcuch pokarmowy" })}
+                      </Typography>
+                    }
+                    sx={{ 
+                      m: 0,
+                      '& .MuiFormControlLabel-label': {
+                        fontSize: '0.8rem'
+                      }
+                    }}
+                  />
+                  {foodChainEnabled && (
+                    <Typography variant="caption" sx={{ 
+                      color: darkMode ? 'rgba(255,255,255,0.6)' : 'text.secondary',
+                      fontSize: '0.7rem',
+                      display: 'block',
+                      mt: 0.5,
+                      ml: 4
+                    }}>
+                      {t("foodChainDescription", { defaultValue: "Agresywne ryby mogą zjeść spokojne" })}
+                    </Typography>
+                  )}
                 </Box>
               </Box>
             </Paper>
@@ -2225,7 +2391,7 @@ export default function AquariumDetailPage() {
                 // Filtruj ryby według kompatybilności, jeśli opcja jest włączona
                 let fishesToShow = [];
                 if (showCompatibilityFilter && aquarium?.fishes && aquarium.fishes.length > 0) {
-                  const filtered = filterCompatibleFishes(availableFishes, aquarium.fishes);
+                  const filtered = filterCompatibleFishes(availableFishes, aquarium.fishes, aquarium);
                   // Pokaż kompatybilne i z ostrzeżeniami, ale oznacz niekompatybilne
                   // Użyj Set do uniknięcia duplikatów
                   const fishMap = new Map();
@@ -2293,8 +2459,8 @@ export default function AquariumDetailPage() {
             </Select>
           </FormControl>
 
-          {/* Wyświetl ostrzeżenia kompatybilności */}
-          {compatibilityIssues.length > 0 && (
+          {/* Wyświetl ostrzeżenia kompatybilności - tylko gdy checkbox "Pokaż ostrzeżenia" jest zaznaczony */}
+          {showCompatibilityFilter && compatibilityIssues.length > 0 && (
             <Box sx={{ mb: 2 }}>
               {compatibilityIssues.map((issue, index) => (
                 <Alert 
@@ -2406,11 +2572,11 @@ export default function AquariumDetailPage() {
                 : 25
             }}
             helperText={(() => {
-              if (!aquarium?.fishes) return "Maksymalnie 50 ryb w akwarium";
+              if (!aquarium?.fishes) return "Zapełnienie: (limit: 25 ryb, aktualnie: 0)";
               const currentCount = aquarium.fishes.reduce((sum, fish) => sum + (fish.count || 1), 0);
               const remaining = Math.max(0, 50 - currentCount);
-              if (remaining === 0) return "Osiągnięto limit 25 ryb";
-              return `Maksymalnie ${remaining} więcej (limit: 25 ryb, aktualnie: ${currentCount})`;
+              if (remaining === 0) return "Zapełnienie: (limit: 25 ryb, aktualnie: 25)";
+              return `Zapełnienie: (limit: 25 ryb, aktualnie: ${currentCount})`;
             })()}
             sx={{ mb: 3 }}
           />
@@ -2673,6 +2839,7 @@ export default function AquariumDetailPage() {
         autoHideDuration={6000}
         onClose={() => setDeathNotification(null)}
         anchorOrigin={{ vertical: 'top', horizontal: 'center' }}
+        sx={{ mt: '80px' }}
       >
         <Alert 
           onClose={() => setDeathNotification(null)} 
