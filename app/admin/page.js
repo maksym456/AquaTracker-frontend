@@ -20,7 +20,7 @@ import ExpandLessIcon from '@mui/icons-material/ExpandLess';
 import EditIcon from '@mui/icons-material/Edit';
 import DeleteIcon from '@mui/icons-material/Delete';
 import LanguageSwitcher from "../components/LanguageSwitcher";
-import { getLogs } from "../lib/api";
+import { getLogs, checkAdminAccess } from "../lib/api";
 
 function TabPanel({ children, value, index }) {
   return (
@@ -59,6 +59,8 @@ export default function AdminPanelPage() {
   const [systemData, setSystemData] = useState(null);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState(null);
+  const [isAdmin, setIsAdmin] = useState(false);
+  const [accessChecked, setAccessChecked] = useState(false);
   
   // Filtry dla użytkowników
   const [userSearchFilter, setUserSearchFilter] = useState('');
@@ -85,12 +87,54 @@ export default function AdminPanelPage() {
   const [page, setPage] = useState(1);
   const [rowsPerPage, setRowsPerPage] = useState(25);
 
+  // Sprawdzenie uprawnień administratora przy pierwszym załadowaniu
   useEffect(() => {
-    // TODO: Sprawdzenie czy użytkownik jest administratorem
-    // Na razie pozwalamy wszystkim (później dodamy sprawdzanie grupy "admin" z Cognito)
-    
-    loadData();
-  }, [activeTab, systemDataView]);
+    async function checkAccess() {
+      if (!session?.user?.id) {
+        setError('Musisz być zalogowany, aby uzyskać dostęp do panelu administratora');
+        setIsAdmin(false);
+        setAccessChecked(true);
+        setIsLoading(false);
+        return;
+      }
+
+      try {
+        const hasAdminAccess = await checkAdminAccess(session.user.id);
+        setIsAdmin(hasAdminAccess);
+        
+        if (!hasAdminAccess) {
+          setError('Brak uprawnień administratora. Dostęp do panelu administratora jest ograniczony.');
+          setIsLoading(false);
+        } else {
+          // Jeśli użytkownik jest adminem, załaduj dane
+          loadData();
+        }
+      } catch (err) {
+        console.error('Error checking admin access:', err);
+        setError('Błąd podczas sprawdzania uprawnień administratora');
+        setIsAdmin(false);
+        setIsLoading(false);
+      } finally {
+        setAccessChecked(true);
+      }
+    }
+
+    if (session && !accessChecked) {
+      checkAccess();
+    } else if (!session && mounted) {
+      setError('Musisz być zalogowany, aby uzyskać dostęp do panelu administratora');
+      setIsAdmin(false);
+      setAccessChecked(true);
+      setIsLoading(false);
+    }
+  }, [session, accessChecked, mounted]);
+
+  useEffect(() => {
+    // Załaduj dane tylko jeśli użytkownik jest adminem i dostęp został sprawdzony
+    if (isAdmin && accessChecked) {
+      loadData();
+    }
+  }, [activeTab, systemDataView, isAdmin, accessChecked]);
 
   useEffect(() => {
     // Zastosuj filtry i sortowanie gdy zmienią się wartości
@@ -540,12 +584,37 @@ export default function AdminPanelPage() {
           {error && (
             <Box sx={{ p: 2 }}>
               <Alert severity="error">{error}</Alert>
+              {!isAdmin && accessChecked && (
+                <Box sx={{ mt: 2, textAlign: 'center' }}>
+                  <Button 
+                    variant="contained" 
+                    component={Link} 
+                    href="/"
+                    sx={{ mt: 1 }}
+                  >
+                    {t("return", { defaultValue: "Powrót do strony głównej" })}
+                  </Button>
+                </Box>
+              )}
             </Box>
           )}
 
-          {isLoading ? (
+          {!accessChecked || isLoading ? (
             <Box sx={{ display: 'flex', justifyContent: 'center', alignItems: 'center', minHeight: '400px' }}>
               <CircularProgress />
+            </Box>
+          ) : !isAdmin ? (
+            <Box sx={{ p: 4, textAlign: 'center' }}>
+              <Alert severity="warning" sx={{ mb: 2 }}>
+                Brak uprawnień administratora. Dostęp do panelu administratora jest ograniczony.
+              </Alert>
+              <Button 
+                variant="contained" 
+                component={Link} 
+                href="/"
+              >
+                {t("return", { defaultValue: "Powrót do strony głównej" })}
+              </Button>
             </Box>
           ) : (
             <>

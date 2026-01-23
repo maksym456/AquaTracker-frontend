@@ -790,6 +790,23 @@ export async function unshareAquarium(aquariumId, shareId) {
   }
 }
 
+// Sprawdza czy użytkownik ma uprawnienia administratora
+// @param {string} cognitoSub - UUID z Cognito (sub)
+// @returns {Promise<boolean>} - true jeśli użytkownik jest administratorem
+export async function checkAdminAccess(cognitoSub) {
+  try {
+    if (!cognitoSub) {
+      return false;
+    }
+    
+    const response = await fetchAPI(`/admin/check-access?cognitoSub=${encodeURIComponent(cognitoSub)}`);
+    return response?.isAdmin === true;
+  } catch (error) {
+    console.error('Error checking admin access:', error);
+    return false;
+  }
+}
+
 export default {
   getContacts,
   sendInvitation,
