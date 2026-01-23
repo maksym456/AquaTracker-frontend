@@ -114,7 +114,25 @@ export default function ContactsPage() {
       }
     } catch (error) {
       console.error('Error sending invitation:', error);
-      const errorMessage = error.message || t("inviteError", { defaultValue: "Nie udało się wysłać zaproszenia" });
+      // Mapowanie błędów API -> tłumaczenia UI
+      let errorMessage = error?.message || "";
+      
+      // Sprawdź różne warianty komunikatu błędu
+      if (
+        errorMessage === "Recipient not found in system" ||
+        errorMessage.includes("Recipient not found") ||
+        errorMessage.includes("Nie znaleziono zarejestrowanego adresu email")
+      ) {
+        errorMessage = t("recipientNotFoundEmail", {
+          defaultValue:
+            "Nie znaleziono zarejestrowanego adresu email o takiej nazwie w bazie danych",
+        });
+      }
+      
+      if (!errorMessage || errorMessage.startsWith("API Error:")) {
+        errorMessage = t("inviteError", { defaultValue: "Nie udało się wysłać zaproszenia" });
+      }
+      
       alert(errorMessage);
     }
   };
