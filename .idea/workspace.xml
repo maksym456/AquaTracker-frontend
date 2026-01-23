@@ -4,8 +4,11 @@
     <option name="autoReloadType" value="SELECTIVE" />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="3e1dcb7d-ed08-49a0-9ff9-f0c8beeee611" name="Changes" comment="NAPRAWA NA AWS COGNITO, ZMIENIONO 3000 NA 5000 LOCALHOST I MUSIAŁEM RĘCZNIE TO PRZYWRACAĆ">
+    <list default="true" id="3e1dcb7d-ed08-49a0-9ff9-f0c8beeee611" name="Changes" comment="Usunięcie nazwy ryb z nawiasów.">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/app/fish-database/page.js" beforeDir="false" afterPath="$PROJECT_DIR$/app/fish-database/page.js" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/app/i18n.js" beforeDir="false" afterPath="$PROJECT_DIR$/app/i18n.js" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/app/my-aquariums/[id]/page.js" beforeDir="false" afterPath="$PROJECT_DIR$/app/my-aquariums/[id]/page.js" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -49,6 +52,9 @@
   <component name="McpProjectServerCommands">
     <commands />
     <urls />
+  </component>
+  <component name="ProblemsViewState">
+    <option name="selectedTabId" value="CurrentFile" />
   </component>
   <component name="ProjectColorInfo">{
   &quot;customColor&quot;: &quot;&quot;,
@@ -185,7 +191,15 @@
       <option name="project" value="LOCAL" />
       <updated>1769184103620</updated>
     </task>
-    <option name="localTasksCounter" value="9" />
+    <task id="LOCAL-00009" summary="Info">
+      <option name="closed" value="true" />
+      <created>1769185058603</created>
+      <option name="number" value="00009" />
+      <option name="presentableId" value="LOCAL-00009" />
+      <option name="project" value="LOCAL" />
+      <updated>1769185058603</updated>
+    </task>
+    <option name="localTasksCounter" value="10" />
     <servers />
   </component>
   <component name="TypeScriptGeneratedFilesManager">
@@ -209,7 +223,9 @@
     <MESSAGE value="Dodanie linii &quot;peer&quot;: true na package-lock.json" />
     <MESSAGE value="Naprawa Contacts pod względem API." />
     <MESSAGE value="NAPRAWA NA AWS COGNITO, ZMIENIONO 3000 NA 5000 LOCALHOST I MUSIAŁEM RĘCZNIE TO PRZYWRACAĆ" />
-    <option name="LAST_COMMIT_MESSAGE" value="NAPRAWA NA AWS COGNITO, ZMIENIONO 3000 NA 5000 LOCALHOST I MUSIAŁEM RĘCZNIE TO PRZYWRACAĆ" />
+    <MESSAGE value="Info" />
+    <MESSAGE value="Usunięcie nazwy ryb z nawiasów." />
+    <option name="LAST_COMMIT_MESSAGE" value="Usunięcie nazwy ryb z nawiasów." />
   </component>
   <component name="XDebuggerManager">
     <breakpoint-manager>

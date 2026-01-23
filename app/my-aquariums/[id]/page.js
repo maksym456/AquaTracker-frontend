@@ -16,7 +16,7 @@ import { checkFishCompatibilityWithAquarium, filterCompatibleFishes, getRecommen
 
 export default function AquariumDetailPage() {
   
-  const { t, i18n } = useTranslation();
+  const { t } = useTranslation();
   const [mounted, setMounted] = useState(false);
   
   // Upewnij się, że komponent jest zamontowany przed renderowaniem tłumaczeń
@@ -27,9 +27,6 @@ export default function AquariumDetailPage() {
   // Uniwersalna funkcja do tłumaczenia nazw ryb i roślin (działa dwukierunkowo: polski ↔ angielski)
   const translateSpeciesName = (name, type = 'fish') => {
     if (!name) return name;
-    
-    const currentLanguage = i18n.language || 'en';
-    const isEnglish = currentLanguage === 'en';
     
     let trimmed = name.trim();
     // Usuń wszystkie treści w nawiasach - użytkownik chce tylko główne nazwy
@@ -48,8 +45,7 @@ export default function AquariumDetailPage() {
     
     // 1. Sprawdź czy namePart jest kluczem (polska nazwa)
     if (allSpecies[namePart]) {
-      const translated = t(`${type}.species.${namePart}.name`, { defaultValue: namePart });
-      return translated;
+      return t(`${type}.species.${namePart}.name`, { defaultValue: namePart });
     }
     
     // 2. Sprawdź czy namePart jest wartością name (angielska nazwa) - znajdź odpowiedni klucz
@@ -59,8 +55,7 @@ export default function AquariumDetailPage() {
     });
     
     if (foundKey) {
-      const translated = t(`${type}.species.${foundKey}.name`, { defaultValue: namePart });
-      return translated;
+      return t(`${type}.species.${foundKey}.name`, { defaultValue: namePart });
     }
     
     // 3. Sprawdź częściowe dopasowanie (case-insensitive)
@@ -73,8 +68,7 @@ export default function AquariumDetailPage() {
     });
     
     if (foundKeyPartial) {
-      const translated = t(`${type}.species.${foundKeyPartial}.name`, { defaultValue: namePart });
-      return translated;
+      return t(`${type}.species.${foundKeyPartial}.name`, { defaultValue: namePart });
     }
     
     // Jeśli nie znaleziono, zwróć wyczyszczoną nazwę
@@ -91,7 +85,9 @@ export default function AquariumDetailPage() {
   const [aquarium, setAquarium] = useState(null);
   const [imageLoaded, setImageLoaded] = useState(false);
   const [statisticsOpen, setStatisticsOpen] = useState(false);
+  // eslint-disable-next-line no-unused-vars
   const [isLoading, setIsLoading] = useState(true);
+  // eslint-disable-next-line no-unused-vars
   const [error, setError] = useState(null);
   const [addFishModalOpen, setAddFishModalOpen] = useState(false);
   const [addPlantModalOpen, setAddPlantModalOpen] = useState(false);
@@ -122,11 +118,11 @@ export default function AquariumDetailPage() {
       return `/fish/${iconName}`;
     }
     const imageMap = {
-      "Welonka (Złota rybka)": "/fish/Welonka__Złota_rybka.png",
-      "Gupik (Głupik)": "/fish/Gupik__Głupik.png",
+      "Welonka": "/fish/Welonka__Złota_rybka.png",
+      "Gupik": "/fish/Gupik__Głupik.png",
       "Bojownik syjamski": "/fish/Bojownik_syjamski.png",
       "Neon Innesa": "/fish/Neon_Innesa.png",
-      "Skalar (Żaglowiec)": "/fish/Skalar__Żaglowiec.png",
+      "Skalar": "/fish/Skalar__Żaglowiec.png",
       "Mieczyk Hellera": "/fish/Mieczyk_Hellera.png",
       "Molinezja": "/fish/Molinezja.png",
       "Gurami mozaikowy": "/fish/Gurami_mozaikowy.png",
@@ -135,12 +131,12 @@ export default function AquariumDetailPage() {
       "Razbora klinowa": "/fish/Razbora_klinowa.png",
       "Tęczanka neonowa": "/fish/Tęczanka_neonowa.png",
       "Kirys pstry": "/fish/Kirys_pstry.png",
-      "Glonojad (Zbrojnik)": "/fish/GlonojadZbrojnik-.png",
+      "Glonojad": "/fish/GlonojadZbrojnik-.png",
       "Błazenek pomarańczowy": "/fish/Błazenek_pomarańczowy.png",
       "Pirania czerwona": "/fish/Pirania_czerwona.png",
       "Pokolec królewski": "/fish/Pokolec_królewski.png",
       "Proporczykowiec": "/fish/Proporczykowiec.png",
-      "Pyszczak (Malawi)": "/fish/Pyszczak__Malawi.png",
+      "Pyszczak": "/fish/Pyszczak__Malawi.png",
       "Księżniczka z Burundi": "/fish/Księżniczka_z_Burundi.png",
       "Kolcobrzuch karłowaty": "/fish/Kolcobrzuch_karłowaty.png",
       "Mandaryn wspaniały": "/fish/Mandaryn_wspaniały.png",
@@ -325,7 +321,7 @@ export default function AquariumDetailPage() {
     }, 5000); // Zwiększono do 5 sekund, aby zmniejszyć obciążenie
     
     return () => clearInterval(refreshInterval);
-  }, [aquariumId]);
+  }, [aquariumId, t]);
 
   // Pobierz dostępne ryby i rośliny
   useEffect(() => {
@@ -376,7 +372,7 @@ export default function AquariumDetailPage() {
       
       // Znajdź drapieżników (agresywne i pół-agresywne)
       const predators = fishesWithDetails.filter(f => 
-        f.temperament === "agresywne" || f.temperament === "pół-agresywne"
+        f.temperament === "agresywne" || f.temperament === "pol_agresywne"
       );
       
       // Znajdź ofiary (spokojne)
@@ -513,7 +509,6 @@ export default function AquariumDetailPage() {
         // Wybierz losową rybę z niezgodnym typem wody
         const fishToDie = incompatibleFishes[Math.floor(Math.random() * incompatibleFishes.length)];
         const fishName = fishToDie.details.name || "Ryba";
-        const fishWaterType = fishToDie.details.waterType;
         // Poprawne formy przymiotnikowe dla polskiego i angielskiego
         const aquariumWaterTypeName = (() => {
           const waterType = String(aquariumWaterType || '').toLowerCase().trim();
@@ -578,7 +573,7 @@ export default function AquariumDetailPage() {
     }, OSMOTIC_SHOCK_INTERVAL);
     
     return () => clearInterval(osmoticShockInterval);
-  }, [osmoticShockEnabled, aquariumId]);
+  }, [osmoticShockEnabled, aquariumId, t]);
 
   // Sprawdź kompatybilność wybranej ryby z akwarium
   useEffect(() => {
@@ -594,7 +589,7 @@ export default function AquariumDetailPage() {
     } else {
       setCompatibilityIssues([]);
     }
-  }, [selectedFishId, aquarium?.fishes, aquarium?.waterType, availableFishes]);
+  }, [selectedFishId, aquarium, availableFishes]);
 
   async function handleAddFish() {
     if (!selectedFishId || !aquariumId) return;
@@ -1787,10 +1782,10 @@ export default function AquariumDetailPage() {
                                 const map = {
                                   'agresywne': t('fish.temperament.agresywne', { defaultValue: 'agresywne' }),
                                   'spokojne': t('fish.temperament.spokojne', { defaultValue: 'spokojne' }),
-                                  'pół-agresywne': t('fish.temperament.pół-agresywne', { defaultValue: 'pół-agresywne' }),
+                                  'pol_agresywne': t('fish.temperament.pol_agresywne', { defaultValue: 'pół-agresywne' }),
                                   'aggressive': t('fish.temperament.agresywne', { defaultValue: 'agresywne' }),
                                   'peaceful': t('fish.temperament.spokojne', { defaultValue: 'spokojne' }),
-                                  'semi-aggressive': t('fish.temperament.pół-agresywne', { defaultValue: 'pół-agresywne' })
+                                  'semi-aggressive': t('fish.temperament.pol_agresywne', { defaultValue: 'pół-agresywne' })
                                 };
                                 return map[match] || match;
                               });
@@ -2092,7 +2087,7 @@ export default function AquariumDetailPage() {
                             <ListItemText
                               primary={fishCount > 1 ? `${fishName} (${fishCount})` : fishName}
                               secondary={null}
-                              primaryTypographyProps={{ fontSize: '0.875rem' }}
+                              slotProps={{ primary: { sx: { fontSize: '0.875rem' } } }}
                             />
                           </ListItem>
                         );
@@ -2161,7 +2156,7 @@ export default function AquariumDetailPage() {
                             <ListItemText
                               primary={plantCount > 1 ? `${plantName} (${plantCount})` : plantName}
                               secondary={null}
-                              primaryTypographyProps={{ fontSize: '0.875rem' }}
+                              slotProps={{ primary: { sx: { fontSize: '0.875rem' } } }}
                             />
                           </ListItem>
                         );
@@ -2587,10 +2582,11 @@ export default function AquariumDetailPage() {
               value={selectedFishId}
               label={t("selectFish", { defaultValue: "Wybierz rybę" })}
               onChange={(e) => setSelectedFishId(e.target.value)}
+              variant="outlined"
             >
               {(() => {
                 // Filtruj ryby według kompatybilności, jeśli opcja jest włączona
-                let fishesToShow = [];
+                let fishesToShow;
                 if (showCompatibilityFilter && aquarium?.fishes && aquarium.fishes.length > 0) {
                   const filtered = filterCompatibleFishes(availableFishes, aquarium.fishes, aquarium);
                   // Pokaż kompatybilne i z ostrzeżeniami, ale oznacz niekompatybilne
@@ -2736,10 +2732,10 @@ export default function AquariumDetailPage() {
                       const map = {
                         'agresywne': t('fish.temperament.agresywne', { defaultValue: 'agresywne' }),
                         'spokojne': t('fish.temperament.spokojne', { defaultValue: 'spokojne' }),
-                        'pół-agresywne': t('fish.temperament.pół-agresywne', { defaultValue: 'pół-agresywne' }),
+                        'pol_agresywne': t('fish.temperament.pol_agresywne', { defaultValue: 'pół-agresywne' }),
                         'aggressive': t('fish.temperament.agresywne', { defaultValue: 'agresywne' }),
                         'peaceful': t('fish.temperament.spokojne', { defaultValue: 'spokojne' }),
-                        'semi-aggressive': t('fish.temperament.pół-agresywne', { defaultValue: 'pół-agresywne' })
+                        'semi-aggressive': t('fish.temperament.pol_agresywne', { defaultValue: 'pół-agresywne' })
                       };
                       return map[match] || match;
                     });
@@ -2766,11 +2762,13 @@ export default function AquariumDetailPage() {
               const clampedValue = Math.max(1, Math.min(value, maxAllowed));
               setFishQuantity(clampedValue);
             }}
-            inputProps={{ 
-              min: 1, 
-              max: aquarium?.fishes 
-                ? Math.max(1, 25 - aquarium.fishes.reduce((sum, fish) => sum + (fish.count || 1), 0))
-                : 25
+            slotProps={{
+              input: {
+                min: 1,
+                max: aquarium?.fishes 
+                  ? Math.max(1, 25 - aquarium.fishes.reduce((sum, fish) => sum + (fish.count || 1), 0))
+                  : 25
+              }
             }}
             helperText={(() => {
               if (!aquarium?.fishes) return "Zapełnienie: (limit: 25 ryb, aktualnie: 0)";
@@ -2975,6 +2973,7 @@ export default function AquariumDetailPage() {
               value={selectedPlantId}
               label={t("selectPlant", { defaultValue: "Wybierz roślinę" })}
               onChange={(e) => setSelectedPlantId(e.target.value)}
+              variant="outlined"
             >
               {availablePlants.map((plant) => (
                 <MenuItem key={plant.id} value={plant.id}>
@@ -2999,11 +2998,13 @@ export default function AquariumDetailPage() {
               const clampedValue = Math.max(1, Math.min(value, maxAllowed));
               setPlantQuantity(clampedValue);
             }}
-            inputProps={{ 
-              min: 1, 
-              max: aquarium?.plants 
-                ? Math.max(1, 50 - aquarium.plants.reduce((sum, plant) => sum + (plant.count || 1), 0))
-                : 50
+            slotProps={{
+              input: {
+                min: 1,
+                max: aquarium?.plants 
+                  ? Math.max(1, 50 - aquarium.plants.reduce((sum, plant) => sum + (plant.count || 1), 0))
+                  : 50
+              }
             }}
             helperText={(() => {
               if (!aquarium?.plants) return "Maksymalnie 50 roślin w akwarium";
