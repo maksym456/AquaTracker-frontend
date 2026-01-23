@@ -4,7 +4,9 @@
     <option name="autoReloadType" value="SELECTIVE" />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="3e1dcb7d-ed08-49a0-9ff9-f0c8beeee611" name="Changes" comment="NAPRAWA NA AWS COGNITO, ZMIENIONO 3000 NA 5000 LOCALHOST I MUSIAŁEM RĘCZNIE TO PRZYWRACAĆ" />
+    <list default="true" id="3e1dcb7d-ed08-49a0-9ff9-f0c8beeee611" name="Changes" comment="NAPRAWA NA AWS COGNITO, ZMIENIONO 3000 NA 5000 LOCALHOST I MUSIAŁEM RĘCZNIE TO PRZYWRACAĆ">
+      <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
+    </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
     <option name="HIGHLIGHT_NON_ACTIVE_CHANGELIST" value="false" />
@@ -175,7 +177,15 @@
       <option name="project" value="LOCAL" />
       <updated>1769183640626</updated>
     </task>
-    <option name="localTasksCounter" value="8" />
+    <task id="LOCAL-00008" summary="NAPRAWA NA AWS COGNITO, ZMIENIONO 3000 NA 5000 LOCALHOST I MUSIAŁEM RĘCZNIE TO PRZYWRACAĆ">
+      <option name="closed" value="true" />
+      <created>1769184103620</created>
+      <option name="number" value="00008" />
+      <option name="presentableId" value="LOCAL-00008" />
+      <option name="project" value="LOCAL" />
+      <updated>1769184103620</updated>
+    </task>
+    <option name="localTasksCounter" value="9" />
     <servers />
   </component>
   <component name="TypeScriptGeneratedFilesManager">
@@ -206,7 +216,7 @@
       <breakpoints>
         <line-breakpoint enabled="true" type="javascript">
           <url>file://$PROJECT_DIR$/app/lib/api.js</url>
-          <line>471</line>
+          <line>509</line>
           <option name="timeStamp" value="1" />
         </line-breakpoint>
       </breakpoints>
