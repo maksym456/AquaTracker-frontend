@@ -18,6 +18,12 @@ export default function MyAquariumsPage() {
     const { t } = useTranslation();
     const router = useRouter();
     const { darkMode } = useTheme();
+    const [mounted, setMounted] = useState(false);
+    
+    // Upewnij się, że komponent jest zamontowany przed renderowaniem tłumaczeń
+    useEffect(() => {
+        setMounted(true);
+    }, []);
     const [aquariums, setAquariums] = useState([]);
     const [createModalOpen, setCreateModalOpen] = useState(false);
     const [deleteConfirmOpen, setDeleteConfirmOpen] = useState(false);
@@ -575,7 +581,7 @@ export default function MyAquariumsPage() {
       <Box 
         component="nav"
         role="navigation"
-        aria-label={t("mainNavigation", { defaultValue: "Główna nawigacja" })}
+        aria-label={mounted ? t("mainNavigation", { defaultValue: "Główna nawigacja" }) : "Main navigation"}
         sx={{ 
         position: 'absolute', top: 0, left: 0, right: 0,
         display: 'flex', justifyContent: 'space-between', alignItems: 'center',
@@ -621,8 +627,8 @@ export default function MyAquariumsPage() {
             }}
           >
             <Typography sx={{ fontSize: { xs: 16, sm: 14, md: 16 }, mb: 0.2, textAlign: 'center', lineHeight: 1 }}>📊</Typography>
-            <Typography variant="body2" sx={{ fontWeight: 600, color: "text.primary", textAlign: 'center', fontSize: { xs: '0.6rem', sm: '0.55rem', md: '0.65rem' }, lineHeight: 1.1 }}>
-              {t("statistics")}
+            <Typography variant="body2" sx={{ fontWeight: 600, color: "text.primary", textAlign: 'center', fontSize: { xs: '0.6rem', sm: '0.55rem', md: '0.65rem' }, lineHeight: 1.1 }} suppressHydrationWarning>
+              {mounted ? t("statistics") : "Statistics"}
             </Typography>
           </Box>
           <Box 
@@ -651,8 +657,8 @@ export default function MyAquariumsPage() {
             }}
           >
             <Typography sx={{ fontSize: { xs: 16, sm: 14, md: 16 }, mb: 0.2, textAlign: 'center', lineHeight: 1 }}>📋</Typography>
-            <Typography variant="body2" sx={{ fontWeight: 600, color: "text.primary", textAlign: 'center', fontSize: { xs: '0.6rem', sm: '0.55rem', md: '0.65rem' }, lineHeight: 1.1 }}>
-              {t("history")}
+            <Typography variant="body2" sx={{ fontWeight: 600, color: "text.primary", textAlign: 'center', fontSize: { xs: '0.6rem', sm: '0.55rem', md: '0.65rem' }, lineHeight: 1.1 }} suppressHydrationWarning>
+              {mounted ? t("history") : "History"}
             </Typography>
           </Box>
           <Link href="/" style={{ textDecoration: 'none', flexShrink: 0 }}>
@@ -678,8 +684,8 @@ export default function MyAquariumsPage() {
               justifyContent: 'center'
             }}>
               <KeyboardReturnOutlinedIcon sx={{ fontSize: { xs: 16, sm: 14, md: 16 }, mb: 0.2, color: darkMode ? 'white' : 'inherit' }} />
-              <Typography variant="body2" sx={{ fontWeight: 600, color: darkMode ? 'white' : "text.primary", textAlign: 'center', fontSize: { xs: '0.6rem', sm: '0.55rem', md: '0.65rem' }, lineHeight: 1.1 }}>
-                {t("return")}
+              <Typography variant="body2" sx={{ fontWeight: 600, color: darkMode ? 'white' : "text.primary", textAlign: 'center', fontSize: { xs: '0.6rem', sm: '0.55rem', md: '0.65rem' }, lineHeight: 1.1 }} suppressHydrationWarning>
+                {mounted ? t("return") : "Return"}
               </Typography>
             </Box>
           </Link>

@@ -2,6 +2,8 @@
  * Funkcje pomocnicze do sprawdzania kompatybilności ryb
  */
 
+import i18n from '../i18n';
+
 /**
  * Normalizuje nazwę temperamentu do standardowej formy
  */
@@ -39,17 +41,27 @@ export function checkTemperamentCompatibility(fish1, fish2) {
   // Agresywne nie mogą być ani ze spokojnymi ani z półagresywnymi
   if (temp1 === "agresywne" || temp2 === "agresywne") {
     if (temp1 === "spokojne" || temp2 === "spokojne") {
+      const aggressiveName = temp1 === "agresywne" ? name1 : name2;
+      const peacefulName = temp1 === "spokojne" ? name1 : name2;
       return {
         compatible: false,
         severity: "ERROR",
-        message: `${temp1 === "agresywne" ? name1 : name2} (agresywne) nie może być z ${temp1 === "spokojne" ? name1 : name2} (spokojne). Ryba spokojna może zostać pożarta.`
+        message: i18n.t('aggressiveCannotBeWithPeaceful', {
+          aggressiveName,
+          peacefulName
+        })
       };
     }
     if (temp1 === "pół-agresywne" || temp2 === "pół-agresywne") {
+      const aggressiveName = temp1 === "agresywne" ? name1 : name2;
+      const semiAggressiveName = temp1 === "pół-agresywne" ? name1 : name2;
       return {
         compatible: false,
         severity: "ERROR",
-        message: `${temp1 === "agresywne" ? name1 : name2} (agresywne) nie może być z ${temp1 === "pół-agresywne" ? name1 : name2} (pół-agresywne).`
+        message: i18n.t('aggressiveCannotBeWithSemiAggressive', {
+          aggressiveName,
+          semiAggressiveName
+        })
       };
     }
     // Agresywne z agresywnymi spoza swojego gatunku - może dojść do konfliktu między agresywnymi gatunkami
@@ -65,10 +77,15 @@ export function checkTemperamentCompatibility(fish1, fish2) {
   // Półagresywne ze spokojnymi - konflikt może spowodować pożarcie łagodnego osobnika
   if ((temp1 === "pół-agresywne" && temp2 === "spokojne") || 
       (temp1 === "spokojne" && temp2 === "pół-agresywne")) {
+    const semiAggressiveName = temp1 === "pół-agresywne" ? name1 : name2;
+    const peacefulName = temp1 === "spokojne" ? name1 : name2;
     return {
       compatible: true,
       severity: "WARNING",
-      message: `${temp1 === "pół-agresywne" ? name1 : name2} (pół-agresywne) z ${temp1 === "spokojne" ? name1 : name2} (spokojne) - konflikt może spowodować pożarcie łagodnego osobnika.`
+      message: i18n.t('semiAggressiveWithPeacefulConflict', {
+        semiAggressiveName,
+        peacefulName
+      })
     };
   }
 

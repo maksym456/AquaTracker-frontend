@@ -118,9 +118,18 @@ const resources = {
        actionEdited: "Edited",
        actionDeleted: "Deleted",
        actionFishAdded: "Fish Added",
-       actionFishRemoved: "Fish Removed",
-       actionPlantAdded: "Plant Added",
-       actionPlantRemoved: "Plant Removed",
+      actionFishRemoved: "Fish Removed",
+      actionFishDied: "Fish Died",
+      actionPlantAdded: "Plant Added",
+      actionPlantRemoved: "Plant Removed",
+      fishDied: "Fish died",
+      fishCannotSurviveInWater: "⚠️ {{fishName}} cannot survive in {{waterType}} water...",
+      aggressiveCannotBeWithPeaceful: "{{aggressiveName}} (aggressive) cannot be with {{peacefulName}} (peaceful). Peaceful fish may be eaten.",
+      aggressiveCannotBeWithSemiAggressive: "{{aggressiveName}} (aggressive) cannot be with {{semiAggressiveName}} (semi-aggressive).",
+      semiAggressiveWithPeacefulConflict: "{{semiAggressiveName}} (semi-aggressive) with {{peacefulName}} (peaceful) - conflict may cause the peaceful individual to be eaten.",
+      freshwaterAdjective: "Freshwater",
+      saltwaterAdjective: "Saltwater",
+      brackishAdjective: "Brackish",
        actionParameterChanged: "Parameter Changed",
        noActivity: "No activity found",
        sortByDate: "Sort by Date",
@@ -593,9 +602,18 @@ const resources = {
        actionEdited: "Edytowano",
        actionDeleted: "Usunięto",
        actionFishAdded: "Dodano rybę",
-       actionFishRemoved: "Usunięto rybę",
-       actionPlantAdded: "Dodano roślinę",
-       actionPlantRemoved: "Usunięto roślinę",
+      actionFishRemoved: "Usunięto rybę",
+      actionFishDied: "Ryba zdechła",
+      actionPlantAdded: "Dodano roślinę",
+      actionPlantRemoved: "Usunięto roślinę",
+      fishDied: "Ryba zdechła",
+      fishCannotSurviveInWater: "⚠️ {{fishName}} nie może przeżyć w {{waterType}} wodzie...",
+      aggressiveCannotBeWithPeaceful: "{{aggressiveName}} (agresywne) nie może być z {{peacefulName}} (spokojne). Ryba spokojna może zostać pożarta.",
+      aggressiveCannotBeWithSemiAggressive: "{{aggressiveName}} (agresywne) nie może być z {{semiAggressiveName}} (pół-agresywne).",
+      semiAggressiveWithPeacefulConflict: "{{semiAggressiveName}} (pół-agresywne) z {{peacefulName}} (spokojne) - konflikt może spowodować pożarcie łagodnego osobnika.",
+      freshwaterAdjective: "Słodkowodnej",
+      saltwaterAdjective: "Słonej",
+      brackishAdjective: "Słonawowodnej",
        actionParameterChanged: "Zmieniono parametr",
        noActivity: "Brak aktywności",
        sortByDate: "Sortuj po dacie",
@@ -956,12 +974,30 @@ const resources = {
 };
 
 if (!i18n.isInitialized) {
+  // Odczytaj zapisany język z localStorage (jeśli dostępny)
+  const getSavedLanguage = () => {
+    if (typeof window !== 'undefined') {
+      const saved = localStorage.getItem('i18nextLng');
+      if (saved && (saved === 'pl' || saved === 'en')) {
+        return saved;
+      }
+    }
+    return "en"; // Domyślnie angielski
+  };
+
   i18n.use(initReactI18next).init({
     resources,
-    lng: "en",
+    lng: getSavedLanguage(),
     fallbackLng: "en",
     interpolation: {
       escapeValue: false
+    }
+  });
+
+  // Zapisz język do localStorage przy każdej zmianie
+  i18n.on('languageChanged', (lng) => {
+    if (typeof window !== 'undefined') {
+      localStorage.setItem('i18nextLng', lng);
     }
   });
 }

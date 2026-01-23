@@ -17,6 +17,12 @@ import { checkFishCompatibilityWithAquarium, filterCompatibleFishes, getRecommen
 export default function AquariumDetailPage() {
   
   const { t, i18n } = useTranslation();
+  const [mounted, setMounted] = useState(false);
+  
+  // Upewnij się, że komponent jest zamontowany przed renderowaniem tłumaczeń
+  useEffect(() => {
+    setMounted(true);
+  }, []);
   
   // Uniwersalna funkcja do tłumaczenia nazw ryb i roślin (działa dwukierunkowo: polski ↔ angielski)
   const translateSpeciesName = (name, type = 'fish') => {
@@ -287,7 +293,7 @@ export default function AquariumDetailPage() {
               if (newDeathLogs.length > 0) {
                 const latestLog = newDeathLogs[0];
                 setDeathNotification({
-                  message: latestLog.message || latestLog.title || 'Ryba zdechła',
+                  message: latestLog.message || latestLog.title || t('fishDied', { defaultValue: 'Ryba zdechła' }),
                   severity: 'error'
                 });
                 
@@ -508,22 +514,25 @@ export default function AquariumDetailPage() {
         const fishToDie = incompatibleFishes[Math.floor(Math.random() * incompatibleFishes.length)];
         const fishName = fishToDie.details.name || "Ryba";
         const fishWaterType = fishToDie.details.waterType;
-        // Poprawne formy przymiotnikowe dla polskiego
+        // Poprawne formy przymiotnikowe dla polskiego i angielskiego
         const aquariumWaterTypeName = (() => {
           const waterType = String(aquariumWaterType || '').toLowerCase().trim();
           if (waterType === 'freshwater' || waterType === 'słodkowodna') {
-            return 'Słodkowodnej';
+            return t('freshwaterAdjective', { defaultValue: 'Słodkowodnej' });
           } else if (waterType === 'saltwater' || waterType === 'słonowodna') {
-            return 'Słonej';
+            return t('saltwaterAdjective', { defaultValue: 'Słonej' });
           } else if (waterType === 'brackish' || waterType === 'słonawowodna') {
-            return 'Słonawowodnej';
+            return t('brackishAdjective', { defaultValue: 'Słonawowodnej' });
           }
           return aquariumWaterType;
         })();
         
         // Pokaż ostrzeżenie przed śmiercią
         setDeathNotification({
-          message: `⚠️ ${fishName} nie może przeżyć w ${aquariumWaterTypeName} wodzie...`,
+          message: t('fishCannotSurviveInWater', {
+            fishName,
+            waterType: aquariumWaterTypeName
+          }),
           severity: 'warning',
           countdown: WARNING_DELAY / 1000
         });
@@ -1096,7 +1105,9 @@ export default function AquariumDetailPage() {
   if (!aquarium) {
     return (
       <Box sx={{ minHeight: "100vh", display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-        <Typography>{t("loading", { defaultValue: "Ładowanie..." })}</Typography>
+        <Typography suppressHydrationWarning>
+          {mounted ? t("loading", { defaultValue: "Ładowanie..." }) : "Loading..."}
+        </Typography>
       </Box>
     );
   }
