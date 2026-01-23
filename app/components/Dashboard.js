@@ -8,7 +8,7 @@ import {Alert, Box, Button, Modal, Switch, TextField, Typography} from "@mui/mat
 import {APP_VERSION} from "../version";
 import {useTheme} from "../contexts/ThemeContext";
 import Link from "next/link";
-import { syncUser } from "../lib/api";
+import { syncUser, checkAdminAccess } from "../lib/api";
 
 
 
@@ -95,6 +95,29 @@ export default function Dashboard() {
         }
     }, [session]);
 
+    // Sprawdzenie uprawnień administratora
+    useEffect(() => {
+        const checkAdmin = async () => {
+            if (!session?.user?.id) {
+                setIsAdmin(false);
+                setAdminCheckLoading(false);
+                return;
+            }
+
+            try {
+                const hasAdminAccess = await checkAdminAccess(session.user.id);
+                setIsAdmin(hasAdminAccess);
+            } catch (error) {
+                console.error('Error checking admin access:', error);
+                setIsAdmin(false);
+            } finally {
+                setAdminCheckLoading(false);
+            }
+        };
+
+        checkAdmin();
+    }, [session]);
+
     const logout = async () => {
         localStorage.removeItem("sessionLoginTime");
 
@@ -128,6 +151,8 @@ export default function Dashboard() {
   const [sessionInfoOpen, setSessionInfoOpen] = useState(false);
   const [sessionDuration, setSessionDuration] = useState("");
   const sessionIntervalRef = useRef(null);
+  const [isAdmin, setIsAdmin] = useState(false);
+  const [adminCheckLoading, setAdminCheckLoading] = useState(true);
   const handleOpenSettings = () => setSettingsOpen(true);
   const handleCloseSettings = () => setSettingsOpen(false);
   const toggleDataSource = () => setDataSourceExpanded(!dataSourceExpanded);
@@ -685,33 +710,35 @@ export default function Dashboard() {
                   <Typography variant="body2" color="text.secondary">{APP_VERSION}</Typography>
                 </Box>
 
-                {/* Panel Admina */}
-                <Link href="/admin" style={{ textDecoration: 'none' }}>
-                  <Box sx={{
-                    display: 'flex',
-                    alignItems: 'center',
-                    justifyContent: 'space-between',
-                    p: 2,
-                    mb: 1,
-                    borderRadius: 2,
-                    cursor: 'pointer',
-                    bgcolor: 'rgba(156, 39, 176, 0.1)',
-                    border: '1px solid rgba(156, 39, 176, 0.3)',
-                    '&:hover': { 
-                      bgcolor: 'rgba(156, 39, 176, 0.2)',
-                      border: '1px solid rgba(156, 39, 176, 0.5)',
-                      transform: 'translateY(-2px)',
-                      boxShadow: 2
-                    },
-                    transition: 'all 0.3s ease'
-                  }}>
-                    <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
-                      <Typography sx={{ fontSize: 24 }}>🔐</Typography>
-                      <Typography variant="body1" sx={{ fontWeight: 500 }}>{t("adminPanel", { defaultValue: "Panel Admina" })}</Typography>
+                {/* Panel Admina - tylko dla administratorów */}
+                {!adminCheckLoading && isAdmin && (
+                  <Link href="/admin" style={{ textDecoration: 'none' }}>
+                    <Box sx={{
+                      display: 'flex',
+                      alignItems: 'center',
+                      justifyContent: 'space-between',
+                      p: 2,
+                      mb: 1,
+                      borderRadius: 2,
+                      cursor: 'pointer',
+                      bgcolor: 'rgba(156, 39, 176, 0.1)',
+                      border: '1px solid rgba(156, 39, 176, 0.3)',
+                      '&:hover': { 
+                        bgcolor: 'rgba(156, 39, 176, 0.2)',
+                        border: '1px solid rgba(156, 39, 176, 0.5)',
+                        transform: 'translateY(-2px)',
+                        boxShadow: 2
+                      },
+                      transition: 'all 0.3s ease'
+                    }}>
+                      <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
+                        <Typography sx={{ fontSize: 24 }}>🔐</Typography>
+                        <Typography variant="body1" sx={{ fontWeight: 500 }}>{t("adminPanel", { defaultValue: "Panel Admina" })}</Typography>
+                      </Box>
+                      <Typography sx={{ fontSize: 20 }}>→</Typography>
                     </Box>
-                    <Typography sx={{ fontSize: 20 }}>→</Typography>
-                  </Box>
-                </Link>
+                  </Link>
+                )}
               </Box>
               {/* Footer z Logout */}
               <Box sx={{
