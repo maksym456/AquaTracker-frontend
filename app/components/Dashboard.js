@@ -684,6 +684,34 @@ export default function Dashboard() {
                   </Box>
                   <Typography variant="body2" color="text.secondary">{APP_VERSION}</Typography>
                 </Box>
+
+                {/* Panel Admina */}
+                <Link href="/admin" style={{ textDecoration: 'none' }}>
+                  <Box sx={{
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'space-between',
+                    p: 2,
+                    mb: 1,
+                    borderRadius: 2,
+                    cursor: 'pointer',
+                    bgcolor: 'rgba(156, 39, 176, 0.1)',
+                    border: '1px solid rgba(156, 39, 176, 0.3)',
+                    '&:hover': { 
+                      bgcolor: 'rgba(156, 39, 176, 0.2)',
+                      border: '1px solid rgba(156, 39, 176, 0.5)',
+                      transform: 'translateY(-2px)',
+                      boxShadow: 2
+                    },
+                    transition: 'all 0.3s ease'
+                  }}>
+                    <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
+                      <Typography sx={{ fontSize: 24 }}>🔐</Typography>
+                      <Typography variant="body1" sx={{ fontWeight: 500 }}>{t("adminPanel", { defaultValue: "Panel Admina" })}</Typography>
+                    </Box>
+                    <Typography sx={{ fontSize: 20 }}>→</Typography>
+                  </Box>
+                </Link>
               </Box>
               {/* Footer z Logout */}
               <Box sx={{

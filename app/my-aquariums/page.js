@@ -939,8 +939,9 @@ export default function MyAquariumsPage() {
               bgcolor: 'rgba(25, 118, 210, 0.08)'
             }
           }}
+          suppressHydrationWarning
         >
-          {t("inviteFriend", { defaultValue: "Zaproś przyjaciela" })}
+          {mounted ? t("inviteFriend", { defaultValue: "Zaproś przyjaciela" }) : "Invite Friend"}
         </Button>
         <Button variant="contained" color="primary" onClick={handleCreateAquarium}>
           {t("createAquarium")}
