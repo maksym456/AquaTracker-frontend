@@ -4,7 +4,11 @@
     <option name="autoReloadType" value="SELECTIVE" />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="3e1dcb7d-ed08-49a0-9ff9-f0c8beeee611" name="Changes" comment="Panel admina widoczny tylko dla admina." />
+    <list default="true" id="3e1dcb7d-ed08-49a0-9ff9-f0c8beeee611" name="Changes" comment="Panel admina widoczny tylko dla admina (nie tylko pod względem uprawnień, ale pod względem możliwości wejścia ogólnego).">
+      <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/app/admin/page.js" beforeDir="false" afterPath="$PROJECT_DIR$/app/admin/page.js" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/app/lib/api.js" beforeDir="false" afterPath="$PROJECT_DIR$/app/lib/api.js" afterDir="false" />
+    </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
     <option name="HIGHLIGHT_NON_ACTIVE_CHANGELIST" value="false" />
@@ -210,7 +214,15 @@
       <option name="project" value="LOCAL" />
       <updated>1769195237325</updated>
     </task>
-    <option name="localTasksCounter" value="12" />
+    <task id="LOCAL-00012" summary="Panel admina widoczny tylko dla admina (nie tylko pod względem uprawnień, ale pod względem możliwości wejścia ogólnego).">
+      <option name="closed" value="true" />
+      <created>1769195737021</created>
+      <option name="number" value="00012" />
+      <option name="presentableId" value="LOCAL-00012" />
+      <option name="project" value="LOCAL" />
+      <updated>1769195737021</updated>
+    </task>
+    <option name="localTasksCounter" value="13" />
     <servers />
   </component>
   <component name="TypeScriptGeneratedFilesManager">
@@ -237,7 +249,8 @@
     <MESSAGE value="Info" />
     <MESSAGE value="Usunięcie nazwy ryb z nawiasów." />
     <MESSAGE value="Panel admina widoczny tylko dla admina." />
-    <option name="LAST_COMMIT_MESSAGE" value="Panel admina widoczny tylko dla admina." />
+    <MESSAGE value="Panel admina widoczny tylko dla admina (nie tylko pod względem uprawnień, ale pod względem możliwości wejścia ogólnego)." />
+    <option name="LAST_COMMIT_MESSAGE" value="Panel admina widoczny tylko dla admina (nie tylko pod względem uprawnień, ale pod względem możliwości wejścia ogólnego)." />
   </component>
   <component name="XDebuggerManager">
     <breakpoint-manager>

@@ -20,7 +20,20 @@ import ExpandLessIcon from '@mui/icons-material/ExpandLess';
 import EditIcon from '@mui/icons-material/Edit';
 import DeleteIcon from '@mui/icons-material/Delete';
 import LanguageSwitcher from "../components/LanguageSwitcher";
-import { getLogs, checkAdminAccess } from "../lib/api";
+import { 
+  getLogs, 
+  checkAdminAccess,
+  getAdminUsers,
+  updateUserAdminStatus,
+  deleteAdminUser,
+  getSystemStats,
+  getAdminAquariums,
+  deleteAdminAquarium,
+  getAdminFish,
+  deleteAdminFish,
+  getAdminPlants,
+  deleteAdminPlant
+} from "../lib/api";
 
 function TabPanel({ children, value, index }) {
   return (
@@ -142,29 +155,32 @@ export default function AdminPanelPage() {
   }, [allLogs, actionTypeFilter, userFilter, dateFromFilter, dateToFilter, sortBy, sortOrder]);
 
   useEffect(() => {
-    // Filtrowanie użytkowników
-    if (activeTab === 1) {
+    // Filtrowanie użytkowników po stronie klienta (dane już załadowane z API)
+    if (activeTab === 1 && allUsers.length > 0) {
       let filtered = [...allUsers];
       
       // Filtrowanie po wyszukiwaniu
       if (userSearchFilter.trim()) {
-        const searchLower = userSearchFilter.toLowerCase();
+        const searchLower = userSearchFilter.trim().toLowerCase();
         filtered = filtered.filter(user => 
-          user.email?.toLowerCase().includes(searchLower) ||
-          user.username?.toLowerCase().includes(searchLower) ||
-          user.id?.toString().includes(searchLower)
+          (user.email && user.email.toLowerCase().includes(searchLower)) ||
+          (user.username && user.username.toLowerCase().includes(searchLower)) ||
+          (user.id && user.id.toString().toLowerCase().includes(searchLower))
         );
       }
       
       // Filtrowanie po statusie
       if (userStatusFilter !== 'all') {
         filtered = filtered.filter(user => 
-          userStatusFilter === 'active' ? user.active : !user.active
+          userStatusFilter === 'active' ? (user.active === true) : (user.active === false)
         );
       }
       
       setUsers(filtered);
       setUserPage(1);
+    } else if (activeTab === 1 && allUsers.length === 0) {
+      // Jeśli nie ma użytkowników, ustaw pustą listę
+      setUsers([]);
     }
   }, [allUsers, userSearchFilter, userStatusFilter, activeTab]);
 
@@ -178,47 +194,34 @@ export default function AdminPanelPage() {
         const logsData = await getLogs({ sort: 'desc', limit: 1000 });
         setAllLogs(Array.isArray(logsData) ? logsData : []);
       } else if (activeTab === 1) {
-        // TODO: Załaduj użytkowników (będzie wymagało endpointu w backendzie)
-        // Na razie mock data dla UI
-        const mockUsers = [
-          { id: '1', email: 'user1@example.com', username: 'user1', createdAt: '2024-01-15', active: true, cognitoSub: 'sub-1' },
-          { id: '2', email: 'user2@example.com', username: 'user2', createdAt: '2024-02-20', active: true, cognitoSub: 'sub-2' },
-          { id: '3', email: 'admin@example.com', username: 'admin', createdAt: '2024-01-01', active: true, cognitoSub: 'sub-3', isAdmin: true },
-        ];
-        setAllUsers(mockUsers);
-        setUsers(mockUsers);
-      } else if (activeTab === 2) {
-        // TODO: Załaduj dane systemowe (będzie wymagało endpointu w backendzie)
-        // Na razie mock data dla UI
-        setSystemData({
-          totalUsers: 150,
-          totalAquariums: 320,
-          totalFish: 1250,
-          totalPlants: 450
+        // Załaduj użytkowników z API
+        const usersData = await getAdminUsers({ 
+          search: userSearchFilter || undefined,
+          status: userStatusFilter !== 'all' ? userStatusFilter : undefined,
+          page: 1,
+          limit: 1000 // Pobierz wszystkich, filtrowanie po stronie klienta
         });
+        const usersList = Array.isArray(usersData?.users) ? usersData.users : [];
+        setAllUsers(usersList);
+        setUsers(usersList);
+      } else if (activeTab === 2) {
+        // Załaduj statystyki systemowe
+        const statsData = await getSystemStats();
+        setSystemData(statsData);
         
-        // Mock data dla akwariów, ryb i roślin
+        // Załaduj szczegółowe dane w zależności od widoku
         if (systemDataView === 'aquariums') {
-          const mockAquariums = [
-            { id: 1, name: 'Akwarium 1', owner: 'user1@example.com', waterType: 'Słodkowodna', volumeLiters: 100, createdAt: '2024-01-15' },
-            { id: 2, name: 'Akwarium 2', owner: 'user2@example.com', waterType: 'Słonowodna', volumeLiters: 200, createdAt: '2024-01-20' },
-            { id: 3, name: 'Akwarium 3', owner: 'user1@example.com', waterType: 'Słodkowodna', volumeLiters: 150, createdAt: '2024-02-01' },
-          ];
-          setAllAquariums(mockAquariums);
+          const aquariumsData = await getAdminAquariums({ page: 1, limit: 1000 });
+          const aquariumsList = Array.isArray(aquariumsData?.aquariums) ? aquariumsData.aquariums : [];
+          setAllAquariums(aquariumsList);
         } else if (systemDataView === 'fish') {
-          const mockFish = [
-            { id: 1, speciesName: 'Welonka', aquariumName: 'Akwarium 1', owner: 'user1@example.com', count: 5, createdAt: '2024-01-16' },
-            { id: 2, speciesName: 'Gupik', aquariumName: 'Akwarium 1', owner: 'user1@example.com', count: 10, createdAt: '2024-01-16' },
-            { id: 3, speciesName: 'Bojownik', aquariumName: 'Akwarium 2', owner: 'user2@example.com', count: 2, createdAt: '2024-01-21' },
-          ];
-          setAllFish(mockFish);
+          const fishData = await getAdminFish({ page: 1, limit: 1000 });
+          const fishList = Array.isArray(fishData?.fish) ? fishData.fish : [];
+          setAllFish(fishList);
         } else if (systemDataView === 'plants') {
-          const mockPlants = [
-            { id: 1, plantName: 'Moczarka', aquariumName: 'Akwarium 1', owner: 'user1@example.com', count: 3, createdAt: '2024-01-17' },
-            { id: 2, plantName: 'Vallisneria', aquariumName: 'Akwarium 1', owner: 'user1@example.com', count: 5, createdAt: '2024-01-17' },
-            { id: 3, plantName: 'Anubias', aquariumName: 'Akwarium 3', owner: 'user1@example.com', count: 2, createdAt: '2024-02-02' },
-          ];
-          setAllPlants(mockPlants);
+          const plantsData = await getAdminPlants({ page: 1, limit: 1000 });
+          const plantsList = Array.isArray(plantsData?.plants) ? plantsData.plants : [];
+          setAllPlants(plantsList);
         }
       }
     } catch (err) {
@@ -327,16 +330,32 @@ export default function AdminPanelPage() {
   const userTotalPages = Math.ceil(users.length / userRowsPerPage);
   
   // Handlery dla użytkowników
-  const handleUserToggleActive = (userId) => {
-    // TODO: Wywołanie API do zmiany statusu użytkownika (aktywacja/deaktywacja)
-    console.log('Toggle user active:', userId);
-    // Na razie tylko aktualizacja lokalna
-    setAllUsers(prev => prev.map(u => 
-      u.id === userId ? { ...u, active: !u.active } : u
-    ));
-    setUsers(prev => prev.map(u => 
-      u.id === userId ? { ...u, active: !u.active } : u
-    ));
+  const handleUserToggleAdmin = async (userId) => {
+    try {
+      const user = allUsers.find(u => u.id === userId);
+      if (!user) return;
+      
+      const newAdminStatus = !user.isAdmin;
+      const adminCognitoSub = session?.user?.id;
+      
+      await updateUserAdminStatus(userId, newAdminStatus, adminCognitoSub);
+      
+      // Aktualizuj lokalny stan
+      setAllUsers(prev => prev.map(u => 
+        u.id === userId ? { ...u, isAdmin: newAdminStatus } : u
+      ));
+      setUsers(prev => prev.map(u => 
+        u.id === userId ? { ...u, isAdmin: newAdminStatus } : u
+      ));
+      
+      // Jeśli otwarty dialog szczegółów, zaktualizuj też tam
+      if (selectedUser && selectedUser.id === userId) {
+        setSelectedUser(prev => ({ ...prev, isAdmin: newAdminStatus }));
+      }
+    } catch (error) {
+      console.error('Error toggling user admin status:', error);
+      setError(error.message || 'Błąd podczas zmiany uprawnień administratora');
+    }
   };
   
   const handleViewUserDetails = (user) => {
@@ -354,15 +373,27 @@ export default function AdminPanelPage() {
     setDeleteConfirmDialog(true);
   };
 
-  const handleConfirmDelete = () => {
+  const handleConfirmDelete = async () => {
     if (userToDelete) {
-      // TODO: Wywołanie API do usunięcia użytkownika
-      console.log('Delete user:', userToDelete.id);
-      // Na razie tylko aktualizacja lokalna
-      setAllUsers(prev => prev.filter(u => u.id !== userToDelete.id));
-      setUsers(prev => prev.filter(u => u.id !== userToDelete.id));
-      setDeleteConfirmDialog(false);
-      setUserToDelete(null);
+      try {
+        const adminCognitoSub = session?.user?.id;
+        await deleteAdminUser(userToDelete.id, adminCognitoSub);
+        
+        // Aktualizuj lokalny stan
+        setAllUsers(prev => prev.filter(u => u.id !== userToDelete.id));
+        setUsers(prev => prev.filter(u => u.id !== userToDelete.id));
+        setDeleteConfirmDialog(false);
+        setUserToDelete(null);
+        
+        // Zamknij dialog szczegółów jeśli był otwarty
+        if (selectedUser && selectedUser.id === userToDelete.id) {
+          setUserDetailsDialog(false);
+          setSelectedUser(null);
+        }
+      } catch (error) {
+        console.error('Error deleting user:', error);
+        setError(error.message || 'Błąd podczas usuwania użytkownika');
+      }
     }
   };
 
@@ -396,33 +427,66 @@ export default function AdminPanelPage() {
     setPlantDeleteDialog(true);
   };
 
-  const handleConfirmDeleteAquarium = () => {
+  const handleConfirmDeleteAquarium = async () => {
     if (itemToDelete) {
-      // TODO: Wywołanie API do usunięcia akwarium
-      console.log('Delete aquarium:', itemToDelete.id);
-      setAllAquariums(prev => prev.filter(a => a.id !== itemToDelete.id));
-      setAquariumDeleteDialog(false);
-      setItemToDelete(null);
+      try {
+        const adminCognitoSub = session?.user?.id;
+        await deleteAdminAquarium(itemToDelete.id, adminCognitoSub);
+        
+        // Aktualizuj lokalny stan
+        setAllAquariums(prev => prev.filter(a => a.id !== itemToDelete.id));
+        setAquariumDeleteDialog(false);
+        setItemToDelete(null);
+        
+        // Odśwież statystyki
+        const statsData = await getSystemStats();
+        setSystemData(statsData);
+      } catch (error) {
+        console.error('Error deleting aquarium:', error);
+        setError(error.message || 'Błąd podczas usuwania akwarium');
+      }
     }
   };
 
-  const handleConfirmDeleteFish = () => {
+  const handleConfirmDeleteFish = async () => {
     if (itemToDelete) {
-      // TODO: Wywołanie API do usunięcia ryby z akwarium
-      console.log('Delete fish:', itemToDelete.id);
-      setAllFish(prev => prev.filter(f => f.id !== itemToDelete.id));
-      setFishDeleteDialog(false);
-      setItemToDelete(null);
+      try {
+        const adminCognitoSub = session?.user?.id;
+        await deleteAdminFish(itemToDelete.id, adminCognitoSub);
+        
+        // Aktualizuj lokalny stan
+        setAllFish(prev => prev.filter(f => f.id !== itemToDelete.id));
+        setFishDeleteDialog(false);
+        setItemToDelete(null);
+        
+        // Odśwież statystyki
+        const statsData = await getSystemStats();
+        setSystemData(statsData);
+      } catch (error) {
+        console.error('Error deleting fish:', error);
+        setError(error.message || 'Błąd podczas usuwania ryb');
+      }
     }
   };
 
-  const handleConfirmDeletePlant = () => {
+  const handleConfirmDeletePlant = async () => {
     if (itemToDelete) {
-      // TODO: Wywołanie API do usunięcia rośliny z akwarium
-      console.log('Delete plant:', itemToDelete.id);
-      setAllPlants(prev => prev.filter(p => p.id !== itemToDelete.id));
-      setPlantDeleteDialog(false);
-      setItemToDelete(null);
+      try {
+        const adminCognitoSub = session?.user?.id;
+        await deleteAdminPlant(itemToDelete.id, adminCognitoSub);
+        
+        // Aktualizuj lokalny stan
+        setAllPlants(prev => prev.filter(p => p.id !== itemToDelete.id));
+        setPlantDeleteDialog(false);
+        setItemToDelete(null);
+        
+        // Odśwież statystyki
+        const statsData = await getSystemStats();
+        setSystemData(statsData);
+      } catch (error) {
+        console.error('Error deleting plant:', error);
+        setError(error.message || 'Błąd podczas usuwania roślin');
+      }
     }
   };
 
@@ -901,7 +965,7 @@ export default function AdminPanelPage() {
                             <TableCell><strong>{t("adminUserEmail", { defaultValue: "Email" })}</strong></TableCell>
                             <TableCell><strong>{t("adminUserUsername", { defaultValue: "Nazwa użytkownika" })}</strong></TableCell>
                             <TableCell><strong>{t("adminUserCreated", { defaultValue: "Data rejestracji" })}</strong></TableCell>
-                            <TableCell><strong>{t("adminUserStatus", { defaultValue: "Status" })}</strong></TableCell>
+                            <TableCell><strong>{t("adminUserAdminRights", { defaultValue: "Uprawnienia administratora" })}</strong></TableCell>
                             <TableCell><strong>{t("adminUserActions", { defaultValue: "Zarządzanie" })}</strong></TableCell>
                           </TableRow>
                         </TableHead>
@@ -910,19 +974,16 @@ export default function AdminPanelPage() {
                             <TableRow key={user.id} hover>
                               <TableCell>
                                 <Typography variant="body2">{user.email || '-'}</Typography>
-                                {user.isAdmin && (
-                                  <Chip label="Admin" size="small" color="secondary" sx={{ mt: 0.5 }} />
-                                )}
                               </TableCell>
                               <TableCell>{user.username || '-'}</TableCell>
                               <TableCell>{formatDate(user.createdAt)}</TableCell>
                               <TableCell>
                                 <Chip 
-                                  label={user.active ? t("adminUserActive", { defaultValue: "Aktywny" }) : t("adminUserInactive", { defaultValue: "Nieaktywny" })} 
+                                  label={user.isAdmin ? t("adminUserIsAdminYes", { defaultValue: "Tak" }) : t("adminUserIsAdminNo", { defaultValue: "Nie" })} 
                                   size="small"
-                                  color={user.active ? 'success' : 'default'}
+                                  color={user.isAdmin ? 'secondary' : 'default'}
                                 />
-                                <Tooltip title={user.active ? t("adminUserStatusActiveDesc", { defaultValue: "Użytkownik może logować się i korzystać z aplikacji" }) : t("adminUserStatusInactiveDesc", { defaultValue: "Użytkownik jest zablokowany i nie może się logować" })}>
+                                <Tooltip title={user.isAdmin ? t("adminUserGrantAdminRights", { defaultValue: "Użytkownik ma uprawnienia administratora" }) : t("adminUserRemoveAdminRights", { defaultValue: "Użytkownik nie ma uprawnień administratora" })}>
                                   <IconButton size="small" sx={{ ml: 0.5 }}>
                                     <Typography variant="caption" sx={{ fontSize: '0.7rem' }}>ℹ️</Typography>
                                   </IconButton>
@@ -930,11 +991,12 @@ export default function AdminPanelPage() {
                               </TableCell>
                               <TableCell>
                                 <Stack direction="row" spacing={1} alignItems="center">
-                                  <Tooltip title={t("adminUserToggleStatusTooltip", { defaultValue: "Aktywuj/Deaktywuj użytkownika - deaktywacja blokuje dostęp do aplikacji" })}>
+                                  <Tooltip title={user.isAdmin ? t("adminUserRemoveAdminRights", { defaultValue: "Odbierz uprawnienia administratora" }) : t("adminUserGrantAdminRights", { defaultValue: "Nadaj uprawnienia administratora" })}>
                                     <Switch
-                                      checked={user.active}
-                                      onChange={() => handleUserToggleActive(user.id)}
+                                      checked={user.isAdmin || false}
+                                      onChange={() => handleUserToggleAdmin(user.id)}
                                       size="small"
+                                      color="secondary"
                                     />
                                   </Tooltip>
                                   <Tooltip title={t("adminUserDelete", { defaultValue: "Usuń użytkownika" })}>
@@ -1034,22 +1096,23 @@ export default function AdminPanelPage() {
                         </Grid>
                         <Grid item xs={12}>
                           <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, mt: 1 }}>
-                            <Typography variant="body2" color="text.secondary" sx={{ minWidth: '80px' }}>
-                              {t("adminUserStatus", { defaultValue: "Status" })}
+                            <Typography variant="body2" color="text.secondary" sx={{ minWidth: '150px' }}>
+                              {t("adminUserAdminRights", { defaultValue: "Uprawnienia administratora" })}
                             </Typography>
                             <Chip 
-                              label={selectedUser.active ? t("adminUserActive", { defaultValue: "Aktywny" }) : t("adminUserInactive", { defaultValue: "Nieaktywny" })} 
-                              color={selectedUser.active ? 'success' : 'default'}
+                              label={selectedUser.isAdmin ? t("adminUserIsAdminYes", { defaultValue: "Tak" }) : t("adminUserIsAdminNo", { defaultValue: "Nie" })} 
+                              color={selectedUser.isAdmin ? 'secondary' : 'default'}
                               size="small"
                             />
-                            <Tooltip title={t("adminUserToggleStatusTooltip", { defaultValue: "Aktywuj/Deaktywuj użytkownika - deaktywacja blokuje dostęp do aplikacji" })}>
+                            <Tooltip title={selectedUser.isAdmin ? t("adminUserRemoveAdminRights", { defaultValue: "Odbierz uprawnienia administratora" }) : t("adminUserGrantAdminRights", { defaultValue: "Nadaj uprawnienia administratora" })}>
                               <Switch
-                                checked={selectedUser.active}
+                                checked={selectedUser.isAdmin || false}
                                 onChange={() => {
-                                  handleUserToggleActive(selectedUser.id);
-                                  setSelectedUser(prev => ({ ...prev, active: !prev.active }));
+                                  handleUserToggleAdmin(selectedUser.id);
+                                  setSelectedUser(prev => ({ ...prev, isAdmin: !prev.isAdmin }));
                                 }}
                                 size="small"
+                                color="secondary"
                               />
                             </Tooltip>
                           </Box>

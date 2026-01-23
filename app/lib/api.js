@@ -807,6 +807,198 @@ export async function checkAdminAccess(cognitoSub) {
   }
 }
 
+// Pobiera listę użytkowników (dla admina)
+// @param {object} params - parametry zapytania (search, status, page, limit)
+// @returns {Promise<Object>} - { users: [], total: number }
+export async function getAdminUsers(params = {}) {
+  try {
+    const queryParams = new URLSearchParams();
+    if (params.search) queryParams.append('search', params.search);
+    if (params.status) queryParams.append('status', params.status);
+    if (params.page) queryParams.append('page', params.page.toString());
+    if (params.limit) queryParams.append('limit', params.limit.toString());
+    
+    const queryString = queryParams.toString();
+    const endpoint = `/admin/users${queryString ? `?${queryString}` : ''}`;
+    
+    return await fetchAPI(endpoint);
+  } catch (error) {
+    console.error('Error fetching admin users:', error);
+    throw error;
+  }
+}
+
+// Aktualizuje uprawnienia administratora użytkownika
+// @param {string} userId - ID użytkownika
+// @param {boolean} isAdmin - nowe uprawnienia admina
+// @param {string} adminCognitoSub - cognitoSub administratora wykonującego akcję
+// @returns {Promise<Object>} - zaktualizowany użytkownik
+export async function updateUserAdminStatus(userId, isAdmin, adminCognitoSub) {
+  try {
+    const queryParams = adminCognitoSub ? `?adminCognitoSub=${encodeURIComponent(adminCognitoSub)}` : '';
+    return await fetchAPI(`/admin/users/${userId}/admin${queryParams}`, {
+      method: 'PATCH',
+      body: { isAdmin }
+    });
+  } catch (error) {
+    console.error('Error updating user admin status:', error);
+    throw error;
+  }
+}
+
+// Aktualizuje status użytkownika (aktywacja/deaktywacja)
+// @param {string} userId - ID użytkownika
+// @param {boolean} active - nowy status
+// @param {string} adminCognitoSub - cognitoSub administratora wykonującego akcję
+// @returns {Promise<Object>} - zaktualizowany użytkownik
+export async function updateUserStatus(userId, active, adminCognitoSub) {
+  try {
+    const queryParams = adminCognitoSub ? `?adminCognitoSub=${encodeURIComponent(adminCognitoSub)}` : '';
+    return await fetchAPI(`/admin/users/${userId}/status${queryParams}`, {
+      method: 'PATCH',
+      body: { active }
+    });
+  } catch (error) {
+    console.error('Error updating user status:', error);
+    throw error;
+  }
+}
+
+// Usuwa użytkownika
+// @param {string} userId - ID użytkownika
+// @param {string} adminCognitoSub - cognitoSub administratora wykonującego akcję
+// @returns {Promise<Object>} - { success: true }
+export async function deleteAdminUser(userId, adminCognitoSub) {
+  try {
+    const queryParams = adminCognitoSub ? `?adminCognitoSub=${encodeURIComponent(adminCognitoSub)}` : '';
+    return await fetchAPI(`/admin/users/${userId}${queryParams}`, {
+      method: 'DELETE'
+    });
+  } catch (error) {
+    console.error('Error deleting user:', error);
+    throw error;
+  }
+}
+
+// Pobiera statystyki systemowe
+// @returns {Promise<Object>} - { totalUsers, totalAquariums, totalFish, totalPlants, activeUsers, inactiveUsers }
+export async function getSystemStats() {
+  try {
+    return await fetchAPI('/admin/system/stats');
+  } catch (error) {
+    console.error('Error fetching system stats:', error);
+    throw error;
+  }
+}
+
+// Pobiera listę akwariów (dla admina)
+// @param {object} params - parametry zapytania (page, limit, search)
+// @returns {Promise<Object>} - { aquariums: [], total: number }
+export async function getAdminAquariums(params = {}) {
+  try {
+    const queryParams = new URLSearchParams();
+    if (params.page) queryParams.append('page', params.page.toString());
+    if (params.limit) queryParams.append('limit', params.limit.toString());
+    if (params.search) queryParams.append('search', params.search);
+    
+    const queryString = queryParams.toString();
+    const endpoint = `/admin/aquariums${queryString ? `?${queryString}` : ''}`;
+    
+    return await fetchAPI(endpoint);
+  } catch (error) {
+    console.error('Error fetching admin aquariums:', error);
+    throw error;
+  }
+}
+
+// Usuwa akwarium (dla admina)
+// @param {string} aquariumId - ID akwarium
+// @param {string} adminCognitoSub - cognitoSub administratora wykonującego akcję
+// @returns {Promise<Object>} - { success: true }
+export async function deleteAdminAquarium(aquariumId, adminCognitoSub) {
+  try {
+    const queryParams = adminCognitoSub ? `?adminCognitoSub=${encodeURIComponent(adminCognitoSub)}` : '';
+    return await fetchAPI(`/admin/aquariums/${aquariumId}${queryParams}`, {
+      method: 'DELETE'
+    });
+  } catch (error) {
+    console.error('Error deleting aquarium:', error);
+    throw error;
+  }
+}
+
+// Pobiera listę ryb (dla admina)
+// @param {object} params - parametry zapytania (page, limit, aquariumId)
+// @returns {Promise<Object>} - { fish: [], total: number }
+export async function getAdminFish(params = {}) {
+  try {
+    const queryParams = new URLSearchParams();
+    if (params.page) queryParams.append('page', params.page.toString());
+    if (params.limit) queryParams.append('limit', params.limit.toString());
+    if (params.aquariumId) queryParams.append('aquariumId', params.aquariumId.toString());
+    
+    const queryString = queryParams.toString();
+    const endpoint = `/admin/fish${queryString ? `?${queryString}` : ''}`;
+    
+    return await fetchAPI(endpoint);
+  } catch (error) {
+    console.error('Error fetching admin fish:', error);
+    throw error;
+  }
+}
+
+// Usuwa ryby z akwarium (dla admina)
+// @param {number} fishId - ID ryby (z tabeli aquarium_fish)
+// @param {string} adminCognitoSub - cognitoSub administratora wykonującego akcję
+// @returns {Promise<Object>} - { success: true }
+export async function deleteAdminFish(fishId, adminCognitoSub) {
+  try {
+    const queryParams = adminCognitoSub ? `?adminCognitoSub=${encodeURIComponent(adminCognitoSub)}` : '';
+    return await fetchAPI(`/admin/fish/${fishId}${queryParams}`, {
+      method: 'DELETE'
+    });
+  } catch (error) {
+    console.error('Error deleting fish:', error);
+    throw error;
+  }
+}
+
+// Pobiera listę roślin (dla admina)
+// @param {object} params - parametry zapytania (page, limit, aquariumId)
+// @returns {Promise<Object>} - { plants: [], total: number }
+export async function getAdminPlants(params = {}) {
+  try {
+    const queryParams = new URLSearchParams();
+    if (params.page) queryParams.append('page', params.page.toString());
+    if (params.limit) queryParams.append('limit', params.limit.toString());
+    if (params.aquariumId) queryParams.append('aquariumId', params.aquariumId.toString());
+    
+    const queryString = queryParams.toString();
+    const endpoint = `/admin/plants${queryString ? `?${queryString}` : ''}`;
+    
+    return await fetchAPI(endpoint);
+  } catch (error) {
+    console.error('Error fetching admin plants:', error);
+    throw error;
+  }
+}
+
+// Usuwa rośliny z akwarium (dla admina)
+// @param {number} plantId - ID rośliny (z tabeli aquarium_plant)
+// @param {string} adminCognitoSub - cognitoSub administratora wykonującego akcję
+// @returns {Promise<Object>} - { success: true }
+export async function deleteAdminPlant(plantId, adminCognitoSub) {
+  try {
+    const queryParams = adminCognitoSub ? `?adminCognitoSub=${encodeURIComponent(adminCognitoSub)}` : '';
+    return await fetchAPI(`/admin/plants/${plantId}${queryParams}`, {
+      method: 'DELETE'
+    });
+  } catch (error) {
+    console.error('Error deleting plant:', error);
+    throw error;
+  }
+}
+
 export default {
   getContacts,
   sendInvitation,
