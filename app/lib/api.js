@@ -41,11 +41,9 @@ async function fetchAPI(endpoint, options = {}) {
     
     if (typeof AbortController !== 'undefined') {
       controller = new AbortController();
-      // Dla operacji DELETE zwiększamy timeout do 30 sekund (usuwanie może być wolne przy dużej liczbie logów)
-      const timeoutDuration = (options.method === 'DELETE') ? 30000 : 5000;
       timeoutId = setTimeout(() => {
         controller.abort();
-      }, timeoutDuration);
+      }, 5000);
     }
     
     try {
