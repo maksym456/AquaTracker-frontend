@@ -238,16 +238,33 @@ export function checkWaterTypeCompatibility(aquariumWaterType, fishWaterType) {
   const aquariumType = String(aquariumWaterType).toLowerCase().trim();
   const fishType = String(fishWaterType).toLowerCase().trim();
   
-  // Mapowanie typów wody
-  const aquariumMap = {
-    'freshwater': ['słodkowodna', 'freshwater'],
-    'saltwater': ['słonowodna', 'saltwater'],
-    'brackish': ['słonawowodna', 'brackish']
+  // Mapowanie typów wody - obsługuje zarówno angielskie jak i polskie nazwy
+  // Backend może zwracać typy w formacie polskim (Słodkowodna) lub angielskim (freshwater)
+  const waterTypeGroups = {
+    // Grupa słodkowodna
+    freshwater: ['słodkowodna', 'freshwater'],
+    słodkowodna: ['słodkowodna', 'freshwater'],
+    // Grupa słonowodna
+    saltwater: ['słonowodna', 'saltwater'],
+    słonowodna: ['słonowodna', 'saltwater'],
+    // Grupa słonawowodna
+    brackish: ['słonawowodna', 'brackish'],
+    słonawowodna: ['słonawowodna', 'brackish']
   };
   
-  // Sprawdź czy typ akwarium pasuje do typu ryby
-  const aquariumTypes = aquariumMap[aquariumType] || [aquariumType];
-  return aquariumTypes.some(type => type === fishType || fishType.includes(type) || type.includes(fishType));
+  // Znajdź grupę dla typu akwarium
+  const aquariumGroup = waterTypeGroups[aquariumType];
+  // Znajdź grupę dla typu ryby
+  const fishGroup = waterTypeGroups[fishType];
+  
+  // Jeśli oba typy są w tej samej grupie, są zgodne
+  if (aquariumGroup && fishGroup) {
+    // Sprawdź czy mają wspólne wartości
+    return aquariumGroup.some(type => fishGroup.includes(type));
+  }
+  
+  // Fallback: bezpośrednie porównanie (dla przypadków, które nie są w mapowaniu)
+  return aquariumType === fishType || fishType.includes(aquariumType) || aquariumType.includes(fishType);
 }
 
 /**

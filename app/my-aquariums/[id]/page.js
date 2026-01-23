@@ -104,6 +104,7 @@ export default function AquariumDetailPage() {
   const [compatibilityPanelExpanded, setCompatibilityPanelExpanded] = useState(false);
   const [deathNotification, setDeathNotification] = useState(null);
   const [foodChainEnabled, setFoodChainEnabled] = useState(false); // Włącznik łańcucha pokarmowego
+  const [osmoticShockEnabled, setOsmoticShockEnabled] = useState(false); // Włącznik szoku osmotycznego
   const lastLogIdsRef = useRef(new Set());
   const imageContainerRef = useRef(null);
   const aquariumRef = useRef(null); // Ref do aktualnego stanu akwarium (dla łańcucha pokarmowego)
@@ -441,6 +442,134 @@ export default function AquariumDetailPage() {
     
     return () => clearInterval(predationInterval);
   }, [foodChainEnabled, aquariumId]);
+
+  // Szok osmotyczny - automatyczne usuwanie ryb z niezgodnym typem wody
+  useEffect(() => {
+    if (!osmoticShockEnabled || !aquariumId) return;
+    
+    const OSMOTIC_SHOCK_INTERVAL = 6000; // 6 sekund (podobnie jak food chain)
+    const DEATH_CHANCE = 0.50; // 50% szansy na śmierć w każdym cyklu
+    const WARNING_DELAY = 4000; // 4 sekundy ostrzeżenia przed śmiercią
+    
+    const osmoticShockInterval = setInterval(async () => {
+      const currentAquarium = aquariumRef.current;
+      const currentAvailableFishes = availableFishesRef.current;
+      
+      if (!currentAquarium?.fishes || currentAquarium.fishes.length === 0 || !currentAvailableFishes.length || !currentAquarium.waterType) {
+        return;
+      }
+      
+      const aquariumWaterType = currentAquarium.waterType;
+      
+      if (!aquariumWaterType) {
+        console.log('[Szok osmotyczny] Brak typu wody w akwarium');
+        return;
+      }
+      
+      // Znajdź ryby z niezgodnym typem wody
+      const incompatibleFishes = currentAquarium.fishes
+        .map(aquariumFish => {
+          const fishDetails = currentAvailableFishes.find(f => f.id === aquariumFish.fishId);
+          if (!fishDetails) {
+            console.log(`[Szok osmotyczny] Nie znaleziono szczegółów dla ryby ID: ${aquariumFish.fishId}`);
+            return null;
+          }
+          
+          if (!fishDetails.waterType) {
+            console.log(`[Szok osmotyczny] Ryba ${fishDetails.name} nie ma zdefiniowanego typu wody`);
+            return null;
+          }
+          
+          // Sprawdź zgodność typu wody
+          const isCompatible = checkWaterTypeCompatibility(aquariumWaterType, fishDetails.waterType);
+          
+          console.log(`[Szok osmotyczny] Ryba: ${fishDetails.name}, Typ akwarium: ${aquariumWaterType}, Typ ryby: ${fishDetails.waterType}, Zgodne: ${isCompatible}`);
+          
+          if (!isCompatible) {
+            return {
+              ...aquariumFish,
+              details: fishDetails
+            };
+          }
+          return null;
+        })
+        .filter(f => f !== null);
+      
+      console.log(`[Szok osmotyczny] Znaleziono ${incompatibleFishes.length} ryb z niezgodnym typem wody`);
+      
+      // Jeśli są ryby z niezgodnym typem wody
+      if (incompatibleFishes.length > 0) {
+        // Losuj czy ryba zdycha w tym cyklu
+        if (Math.random() > DEATH_CHANCE) {
+          return; // Ryba nie zdycha w tym cyklu
+        }
+        
+        // Wybierz losową rybę z niezgodnym typem wody
+        const fishToDie = incompatibleFishes[Math.floor(Math.random() * incompatibleFishes.length)];
+        const fishName = fishToDie.details.name || "Ryba";
+        const fishWaterType = fishToDie.details.waterType;
+        // Poprawne formy przymiotnikowe dla polskiego
+        const aquariumWaterTypeName = (() => {
+          const waterType = String(aquariumWaterType || '').toLowerCase().trim();
+          if (waterType === 'freshwater' || waterType === 'słodkowodna') {
+            return 'Słodkowodnej';
+          } else if (waterType === 'saltwater' || waterType === 'słonowodna') {
+            return 'Słonej';
+          } else if (waterType === 'brackish' || waterType === 'słonawowodna') {
+            return 'Słonawowodnej';
+          }
+          return aquariumWaterType;
+        })();
+        
+        // Pokaż ostrzeżenie przed śmiercią
+        setDeathNotification({
+          message: `⚠️ ${fishName} nie może przeżyć w ${aquariumWaterTypeName} wodzie...`,
+          severity: 'warning',
+          countdown: WARNING_DELAY / 1000
+        });
+        
+        // Po opóźnieniu usuń rybę
+        setTimeout(async () => {
+          try {
+            // Usuń tylko jedną sztukę ryby
+            await removeFishFromAquarium(aquariumId, fishToDie.fishId, 1);
+            
+            // Odśwież akwarium
+            const updatedAquarium = await getAquariumById(aquariumId);
+            if (updatedAquarium) {
+              const normalizedAquarium = {
+                ...updatedAquarium,
+                fishes: updatedAquarium.fishes || updatedAquarium.fish || [],
+                plants: updatedAquarium.plants || [],
+                temperature: updatedAquarium.temperature || updatedAquarium.temperatureC || null,
+                hardness: updatedAquarium.hardness || updatedAquarium.hardnessDGH || null,
+                status: updatedAquarium.status // Zachowaj status z backendu
+              };
+              setAquarium(normalizedAquarium);
+              aquariumRef.current = normalizedAquarium;
+            }
+            
+            // Pokaż powiadomienie o śmierci
+            setDeathNotification({
+              message: `💀 ${fishName} nie przeżyła w tym typie wody (Szok osmotyczny)!`,
+              severity: 'error'
+            });
+            
+            // Ukryj powiadomienie po 5 sekundach
+            setTimeout(() => {
+              setDeathNotification(null);
+            }, 5000);
+            
+          } catch (err) {
+            console.error("Error removing fish in osmotic shock:", err);
+            setDeathNotification(null);
+          }
+        }, WARNING_DELAY);
+      }
+    }, OSMOTIC_SHOCK_INTERVAL);
+    
+    return () => clearInterval(osmoticShockInterval);
+  }, [osmoticShockEnabled, aquariumId]);
 
   // Sprawdź kompatybilność wybranej ryby z akwarium
   useEffect(() => {
@@ -1086,7 +1215,17 @@ export default function AquariumDetailPage() {
               width: { xs: '100%', sm: 'auto' }
             }}>
               <Typography variant="caption" sx={{ fontSize: { xs: '0.6rem', sm: '0.65rem', md: '0.75rem' }, whiteSpace: 'nowrap', color: darkMode ? 'white' : 'inherit' }}>
-                {t("waterType", { defaultValue: "Typ wody" })}: {aquarium.waterType === 'freshwater' ? t("freshwater", { defaultValue: "Słodkowodne" }) : t("saltwater", { defaultValue: "Słonowodne" })}
+                {t("waterType", { defaultValue: "Typ wody" })}: {(() => {
+                  const waterType = String(aquarium.waterType || '').toLowerCase().trim();
+                  if (waterType === 'freshwater' || waterType === 'słodkowodna') {
+                    return t("freshwater", { defaultValue: "Słodkowodne" });
+                  } else if (waterType === 'saltwater' || waterType === 'słonowodna') {
+                    return t("saltwater", { defaultValue: "Słonowodne" });
+                  } else if (waterType === 'brackish' || waterType === 'słonawowodna') {
+                    return t("brackish", { defaultValue: "Słonawowodne" });
+                  }
+                  return aquarium.waterType || '';
+                })()}
               </Typography>
               {aquarium.temperature != null && (
                 <Typography variant="caption" sx={{ fontSize: { xs: '0.6rem', sm: '0.65rem', md: '0.75rem' }, whiteSpace: 'nowrap', color: darkMode ? 'white' : 'inherit' }}>
@@ -1206,7 +1345,17 @@ export default function AquariumDetailPage() {
             width: '100%'
           }}>
             <Typography variant="caption" sx={{ fontSize: '0.7rem', whiteSpace: 'nowrap', color: darkMode ? 'white' : 'inherit' }}>
-              {t("waterType", { defaultValue: "Typ wody" })}: {aquarium.waterType === 'freshwater' ? t("freshwater", { defaultValue: "Słodkowodne" }) : t("saltwater", { defaultValue: "Słonowodne" })}
+              {t("waterType", { defaultValue: "Typ wody" })}: {(() => {
+                const waterType = String(aquarium.waterType || '').toLowerCase().trim();
+                if (waterType === 'freshwater' || waterType === 'słodkowodna') {
+                  return t("freshwater", { defaultValue: "Słodkowodne" });
+                } else if (waterType === 'saltwater' || waterType === 'słonowodna') {
+                  return t("saltwater", { defaultValue: "Słonowodne" });
+                } else if (waterType === 'brackish' || waterType === 'słonawowodna') {
+                  return t("brackish", { defaultValue: "Słonawowodne" });
+                }
+                return aquarium.waterType || '';
+              })()}
             </Typography>
             {aquarium.temperature != null && (
               <Typography variant="caption" sx={{ fontSize: '0.7rem', whiteSpace: 'nowrap', color: darkMode ? 'white' : 'inherit' }}>
@@ -1454,7 +1603,7 @@ export default function AquariumDetailPage() {
          issue.type === 'WATER_TYPE_MISMATCH'
        ) && 
        aquarium?.fishes && 
-       aquarium.fishes.length >= 2 && (
+       (aquarium.status.issues.some(issue => issue.type === 'WATER_TYPE_MISMATCH') || aquarium.fishes.length >= 2) && (
         <Box sx={{
           position: 'fixed',
           top: { xs: 100, sm: 110, md: 120 },
@@ -1676,7 +1825,7 @@ export default function AquariumDetailPage() {
                                 color: '#f44336',
                                 fontStyle: 'italic'
                               }}>
-                                {t("fishWillBeRemoved", { defaultValue: "⚠️ Ryba zostanie automatycznie usunięta po kilku sekundach!" })}
+                                {t("fishMayNotSurvive", { defaultValue: "Ryba może nie przeżyć w takich warunkach" })}
                               </Typography>
                             )}
                           </Typography>
@@ -1692,43 +1841,84 @@ export default function AquariumDetailPage() {
                     )}
                   </Box>
                   
-                  {/* Włącznik łańcucha pokarmowego */}
+                  {/* Włączniki mechanizmów */}
                   <Divider sx={{ my: 1.5, borderColor: darkMode ? 'rgba(255,255,255,0.1)' : 'rgba(0,0,0,0.1)' }} />
-                  <FormControlLabel
-                    control={
-                      <Switch
-                        checked={foodChainEnabled}
-                        onChange={(e) => setFoodChainEnabled(e.target.checked)}
-                        color="warning"
-                        size="small"
-                      />
-                    }
-                    label={
-                      <Typography variant="body2" sx={{ 
-                        fontSize: '0.8rem',
-                        color: darkMode ? 'rgba(255,255,255,0.9)' : 'text.primary'
-                      }}>
-                        {t("foodChain", { defaultValue: "Łańcuch pokarmowy" })}
-                      </Typography>
-                    }
-                    sx={{ 
-                      m: 0,
-                      '& .MuiFormControlLabel-label': {
-                        fontSize: '0.8rem'
+                  <Box sx={{ display: 'flex', flexDirection: 'column', gap: 0 }}>
+                    {/* Włącznik łańcucha pokarmowego */}
+                    <FormControlLabel
+                      control={
+                        <Switch
+                          checked={foodChainEnabled}
+                          onChange={(e) => setFoodChainEnabled(e.target.checked)}
+                          color="warning"
+                          size="small"
+                        />
                       }
-                    }}
-                  />
-                  {foodChainEnabled && (
-                    <Typography variant="caption" sx={{ 
-                      color: darkMode ? 'rgba(255,255,255,0.6)' : 'text.secondary',
-                      fontSize: '0.7rem',
-                      display: 'block',
-                      mt: 0.5,
-                      ml: 4
-                    }}>
-                      {t("foodChainDescription", { defaultValue: "Agresywne ryby mogą zjeść spokojne" })}
-                    </Typography>
-                  )}
+                      label={
+                        <Typography variant="body2" sx={{ 
+                          fontSize: '0.8rem',
+                          color: darkMode ? 'rgba(255,255,255,0.9)' : 'text.primary'
+                        }}>
+                          {t("foodChain", { defaultValue: "Łańcuch pokarmowy" })}
+                        </Typography>
+                      }
+                      sx={{ 
+                        m: 0,
+                        '& .MuiFormControlLabel-label': {
+                          fontSize: '0.8rem'
+                        }
+                      }}
+                    />
+                    {foodChainEnabled && (
+                      <Typography variant="caption" sx={{ 
+                        color: darkMode ? 'rgba(255,255,255,0.6)' : 'text.secondary',
+                        fontSize: '0.7rem',
+                        display: 'block',
+                        mt: 0.5,
+                        ml: 4
+                      }}>
+                        {t("foodChainDescription", { defaultValue: "Agresywne ryby mogą zjeść spokojne" })}
+                      </Typography>
+                    )}
+                    
+                    {/* Włącznik szoku osmotycznego */}
+                    <FormControlLabel
+                      control={
+                        <Switch
+                          checked={osmoticShockEnabled}
+                          onChange={(e) => setOsmoticShockEnabled(e.target.checked)}
+                          color="error"
+                          size="small"
+                        />
+                      }
+                      label={
+                        <Typography variant="body2" sx={{ 
+                          fontSize: '0.8rem',
+                          color: darkMode ? 'rgba(255,255,255,0.9)' : 'text.primary'
+                        }}>
+                          {t("osmoticShock", { defaultValue: "Szok osmotyczny" })}
+                        </Typography>
+                      }
+                      sx={{ 
+                        m: 0,
+                        mt: 1,
+                        '& .MuiFormControlLabel-label': {
+                          fontSize: '0.8rem'
+                        }
+                      }}
+                    />
+                    {osmoticShockEnabled && (
+                      <Typography variant="caption" sx={{ 
+                        color: darkMode ? 'rgba(255,255,255,0.6)' : 'text.secondary',
+                        fontSize: '0.7rem',
+                        display: 'block',
+                        mt: 0.5,
+                        ml: 4
+                      }}>
+                        {t("osmoticShockDescription", { defaultValue: "Ryby z niezgodnym typem wody zdychają" })}
+                      </Typography>
+                    )}
+                  </Box>
                 </Box>
               </Box>
             </Paper>
