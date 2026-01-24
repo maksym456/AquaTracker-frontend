@@ -77,7 +77,7 @@ export default function AdminPanelPage() {
   
   // Filtry dla użytkowników
   const [userSearchFilter, setUserSearchFilter] = useState('');
-  const [userStatusFilter, setUserStatusFilter] = useState('all');
+  const [userStatusFilter, setUserStatusFilter] = useState('all'); // 'all' | 'admins' | 'regular'
   const [userPage, setUserPage] = useState(1);
   const [userRowsPerPage, setUserRowsPerPage] = useState(10);
   
@@ -104,7 +104,7 @@ export default function AdminPanelPage() {
   useEffect(() => {
     async function checkAccess() {
       if (!session?.user?.id) {
-        setError('Musisz być zalogowany, aby uzyskać dostęp do panelu administratora');
+        setError(t('adminLoginRequired', { defaultValue: 'Musisz być zalogowany, aby uzyskać dostęp do panelu administratora' }));
         setIsAdmin(false);
         setAccessChecked(true);
         setIsLoading(false);
@@ -116,7 +116,7 @@ export default function AdminPanelPage() {
         setIsAdmin(hasAdminAccess);
         
         if (!hasAdminAccess) {
-          setError('Brak uprawnień administratora. Dostęp do panelu administratora jest ograniczony.');
+          setError(t('adminNoAccess', { defaultValue: 'Brak uprawnień administratora. Dostęp do panelu administratora jest ograniczony.' }));
           setIsLoading(false);
         } else {
           // Jeśli użytkownik jest adminem, załaduj dane
@@ -124,7 +124,7 @@ export default function AdminPanelPage() {
         }
       } catch (err) {
         console.error('Error checking admin access:', err);
-        setError('Błąd podczas sprawdzania uprawnień administratora');
+        setError(t('adminAccessCheckError', { defaultValue: 'Błąd podczas sprawdzania uprawnień administratora' }));
         setIsAdmin(false);
         setIsLoading(false);
       } finally {
@@ -135,7 +135,7 @@ export default function AdminPanelPage() {
     if (session && !accessChecked) {
      void checkAccess();
     } else if (!session && mounted) {
-      setError('Musisz być zalogowany, aby uzyskać dostęp do panelu administratora');
+      setError(t('adminLoginRequired', { defaultValue: 'Musisz być zalogowany, aby uzyskać dostęp do panelu administratora' }));
       setIsAdmin(false);
       setAccessChecked(true);
       setIsLoading(false);
@@ -169,10 +169,10 @@ export default function AdminPanelPage() {
         );
       }
       
-      // Filtrowanie po statusie
+      // Filtrowanie po roli (admin / zwykły)
       if (userStatusFilter !== 'all') {
-        filtered = filtered.filter(user => 
-          userStatusFilter === 'active' ? (user.active === true) : (user.active === false)
+        filtered = filtered.filter(user =>
+          userStatusFilter === 'admins' ? (user.isAdmin === true) : (user.isAdmin !== true)
         );
       }
       
@@ -197,7 +197,7 @@ export default function AdminPanelPage() {
         // Załaduj użytkowników z API
         const usersData = await getAdminUsers({ 
           search: userSearchFilter || undefined,
-          status: userStatusFilter !== 'all' ? userStatusFilter : undefined,
+          // status: filtrowanie po roli robimy lokalnie (API oczekuje aktywny/nieaktywny)
           page: 1,
           limit: 1000 // Pobierz wszystkich, filtrowanie po stronie klienta
         });
@@ -226,7 +226,7 @@ export default function AdminPanelPage() {
       }
     } catch (err) {
       console.error('Error loading admin data:', err);
-      setError(err.message || 'Błąd ładowania danych');
+      setError(err.message || t('adminDataLoadError', { defaultValue: 'Błąd ładowania danych' }));
     } finally {
       setIsLoading(false);
     }
@@ -354,7 +354,7 @@ export default function AdminPanelPage() {
       }
     } catch (error) {
       console.error('Error toggling user admin status:', error);
-      setError(error.message || 'Błąd podczas zmiany uprawnień administratora');
+      setError(error.message || t('adminToggleRightsError', { defaultValue: 'Błąd podczas zmiany uprawnień administratora' }));
     }
   };
   
@@ -392,7 +392,7 @@ export default function AdminPanelPage() {
         }
       } catch (error) {
         console.error('Error deleting user:', error);
-        setError(error.message || 'Błąd podczas usuwania użytkownika');
+        setError(error.message || t('adminDeleteUserError', { defaultValue: 'Błąd podczas usuwania użytkownika' }));
       }
     }
   };
@@ -443,7 +443,7 @@ export default function AdminPanelPage() {
         setSystemData(statsData);
       } catch (error) {
         console.error('Error deleting aquarium:', error);
-        setError(error.message || 'Błąd podczas usuwania akwarium');
+        setError(error.message || t("adminDeleteAquariumError", { defaultValue: "Błąd podczas usuwania akwarium" }));
       }
     }
   };
@@ -464,7 +464,7 @@ export default function AdminPanelPage() {
         setSystemData(statsData);
       } catch (error) {
         console.error('Error deleting fish:', error);
-        setError(error.message || 'Błąd podczas usuwania ryb');
+        setError(error.message || t("adminDeleteFishError", { defaultValue: "Błąd podczas usuwania ryb" }));
       }
     }
   };
@@ -485,7 +485,7 @@ export default function AdminPanelPage() {
         setSystemData(statsData);
       } catch (error) {
         console.error('Error deleting plant:', error);
-        setError(error.message || 'Błąd podczas usuwania roślin');
+        setError(error.message || t("adminDeletePlantError", { defaultValue: "Błąd podczas usuwania roślin" }));
       }
     }
   };
@@ -584,7 +584,7 @@ export default function AdminPanelPage() {
             }}>
               <KeyboardReturnOutlinedIcon sx={{ fontSize: { xs: 14, sm: 16 }, mb: 0.3, color: darkMode ? 'white' : 'inherit' }} />
               <Typography variant="body2" sx={{ fontWeight: 600, color: darkMode ? 'white' : "text.primary", textAlign: 'center', fontSize: { xs: '0.55rem', sm: '0.65rem' } }} suppressHydrationWarning>
-                {mounted ? t("return") : "Return"}
+                {t("return", { defaultValue: "Return" })}
               </Typography>
             </Box>
           </Link>
@@ -670,7 +670,7 @@ export default function AdminPanelPage() {
           ) : !isAdmin ? (
             <Box sx={{ p: 4, textAlign: 'center' }}>
               <Alert severity="warning" sx={{ mb: 2 }}>
-                Brak uprawnień administratora. Dostęp do panelu administratora jest ograniczony.
+                {t("adminNoAccess", { defaultValue: "Brak uprawnień administratora. Dostęp do panelu administratora jest ograniczony." })}
               </Alert>
               <Button 
                 variant="contained" 
@@ -809,8 +809,8 @@ export default function AdminPanelPage() {
                   </Alert>
                 ) : (
                   <>
-                    <TableContainer>
-                      <Table>
+                    <TableContainer sx={{ maxHeight: '70vh' }}>
+                      <Table stickyHeader>
                         <TableHead>
                           <TableRow>
                             <TableCell><strong>{t("adminLogDate", { defaultValue: "Data" })}</strong></TableCell>
@@ -938,19 +938,19 @@ export default function AdminPanelPage() {
                     <Grid item xs={12} sm={6} md={3}>
                       <FormControl fullWidth size="small">
                         <InputLabel>
-                          <Tooltip title={t("adminUserStatusFilterTooltip", { defaultValue: "Filtruj użytkowników według statusu: Aktywni - mogą logować się do aplikacji, Nieaktywni - zablokowani" })}>
-                            <span>{t("adminUserStatus", { defaultValue: "Status" })}</span>
+                          <Tooltip title={t("adminUserRoleFilterTooltip", { defaultValue: "Filtruj użytkowników według roli: Administratorzy - mają dostęp do panelu admina, Zwykli - standardowi użytkownicy" })}>
+                            <span>{t("adminUserRole", { defaultValue: "Rola" })}</span>
                           </Tooltip>
                         </InputLabel>
                         <Select
                             variant="outlined"
                           value={userStatusFilter}
-                          label={t("adminUserStatus", { defaultValue: "Status" })}
+                          label={t("adminUserRole", { defaultValue: "Rola" })}
                           onChange={(e) => setUserStatusFilter(e.target.value)}
                         >
-                          <MenuItem value="all">{t("all", { defaultValue: "Wszystkie" })}</MenuItem>
-                          <MenuItem value="active">{t("adminUserActive", { defaultValue: "Aktywni" })}</MenuItem>
-                          <MenuItem value="inactive">{t("adminUserInactive", { defaultValue: "Nieaktywni" })}</MenuItem>
+                          <MenuItem value="all">{t("adminUserAll", { defaultValue: "Wszyscy" })}</MenuItem>
+                          <MenuItem value="admins">{t("adminUserAdmins", { defaultValue: "Administratorzy" })}</MenuItem>
+                          <MenuItem value="regular">{t("adminUserRegular", { defaultValue: "Zwykli użytkownicy" })}</MenuItem>
                         </Select>
                       </FormControl>
                     </Grid>

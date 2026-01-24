@@ -550,9 +550,10 @@ export async function addPlantToAquarium(aquariumId, plantId, count = 1) {
 }
 
 // Usuwa roślinę z akwarium
-export async function removePlantFromAquarium(aquariumId, plantId) {
+export async function removePlantFromAquarium(aquariumId, plantId, count) {
   try {
-    const result = await fetchAPI(`/v1/aquariums/${aquariumId}/plants/${plantId}`, {
+    const url = count ? `/v1/aquariums/${aquariumId}/plants/${plantId}?count=${encodeURIComponent(count)}` : `/v1/aquariums/${aquariumId}/plants/${plantId}`;
+    const result = await fetchAPI(url, {
       method: 'DELETE'
     });
     // Backend zwraca {aquarium: ..., logEntry: ...}
