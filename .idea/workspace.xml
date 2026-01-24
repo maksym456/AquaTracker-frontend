@@ -4,26 +4,7 @@
     <option name="autoReloadType" value="SELECTIVE" />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="3e1dcb7d-ed08-49a0-9ff9-f0c8beeee611" name="Changes" comment="Panel admina widoczny tylko dla admina (nie tylko pod względem uprawnień, ale pod względem możliwości wejścia ogólnego).">
-      <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/app/admin/page.js" beforeDir="false" afterPath="$PROJECT_DIR$/app/admin/page.js" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/app/components/Dashboard.js" beforeDir="false" afterPath="$PROJECT_DIR$/app/components/Dashboard.js" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/app/components/LanguageSwitcher.js" beforeDir="false" afterPath="$PROJECT_DIR$/app/components/LanguageSwitcher.js" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/app/fish-database/page.js" beforeDir="false" afterPath="$PROJECT_DIR$/app/fish-database/page.js" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/app/globals.css" beforeDir="false" afterPath="$PROJECT_DIR$/app/globals.css" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/app/i18n.js" beforeDir="false" afterPath="$PROJECT_DIR$/app/i18n.js" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/app/layout.js" beforeDir="false" afterPath="$PROJECT_DIR$/app/layout.js" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/app/lib/fishCompatibility.js" beforeDir="false" afterPath="$PROJECT_DIR$/app/lib/fishCompatibility.js" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/app/my-aquariums/[id]/page.js" beforeDir="false" afterPath="$PROJECT_DIR$/app/my-aquariums/[id]/page.js" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/app/my-aquariums/page.js" beforeDir="false" afterPath="$PROJECT_DIR$/app/my-aquariums/page.js" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/app/plant-database/page.js" beforeDir="false" afterPath="$PROJECT_DIR$/app/plant-database/page.js" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/designs/fonts/Montserrat-Italic.ttf" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/designs/fonts/Montserrat.ttf" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/designs/index.html" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/designs/script.js" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/designs/style.css" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/package-lock.json" beforeDir="false" afterPath="$PROJECT_DIR$/package-lock.json" afterDir="false" />
-    </list>
+    <list default="true" id="3e1dcb7d-ed08-49a0-9ff9-f0c8beeee611" name="Changes" comment="Panel admina widoczny tylko dla admina (nie tylko pod względem uprawnień, ale pod względem możliwości wejścia ogólnego)." />
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
     <option name="HIGHLIGHT_NON_ACTIVE_CHANGELIST" value="false" />
@@ -145,6 +126,7 @@
       <workItem from="1769209699508" duration="353000" />
       <workItem from="1769210056513" duration="6733000" />
       <workItem from="1769255477436" duration="1076000" />
+      <workItem from="1769258563646" duration="817000" />
     </task>
     <task id="LOCAL-00001" summary="admin panel">
       <option name="closed" value="true" />
