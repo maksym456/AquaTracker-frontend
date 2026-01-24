@@ -4,10 +4,8 @@
     <option name="autoReloadType" value="SELECTIVE" />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="3e1dcb7d-ed08-49a0-9ff9-f0c8beeee611" name="Changes" comment="Panel admina widoczny tylko dla admina (nie tylko pod względem uprawnień, ale pod względem możliwości wejścia ogólnego).">
+    <list default="true" id="3e1dcb7d-ed08-49a0-9ff9-f0c8beeee611" name="Changes" comment="Parametry ryb zgodne z bazą">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/app/lib/api.js" beforeDir="false" afterPath="$PROJECT_DIR$/app/lib/api.js" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/app/my-aquariums/[id]/page.js" beforeDir="false" afterPath="$PROJECT_DIR$/app/my-aquariums/[id]/page.js" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -228,7 +226,23 @@
       <option name="project" value="LOCAL" />
       <updated>1769195737021</updated>
     </task>
-    <option name="localTasksCounter" value="13" />
+    <task id="LOCAL-00013" summary="Usprawnienie walidacji ryb.">
+      <option name="closed" value="true" />
+      <created>1769265410306</created>
+      <option name="number" value="00013" />
+      <option name="presentableId" value="LOCAL-00013" />
+      <option name="project" value="LOCAL" />
+      <updated>1769265410306</updated>
+    </task>
+    <task id="LOCAL-00014" summary="Parametry ryb zgodne z bazą">
+      <option name="closed" value="true" />
+      <created>1769266451328</created>
+      <option name="number" value="00014" />
+      <option name="presentableId" value="LOCAL-00014" />
+      <option name="project" value="LOCAL" />
+      <updated>1769266451328</updated>
+    </task>
+    <option name="localTasksCounter" value="15" />
     <servers />
   </component>
   <component name="TypeScriptGeneratedFilesManager">
@@ -256,7 +270,9 @@
     <MESSAGE value="Usunięcie nazwy ryb z nawiasów." />
     <MESSAGE value="Panel admina widoczny tylko dla admina." />
     <MESSAGE value="Panel admina widoczny tylko dla admina (nie tylko pod względem uprawnień, ale pod względem możliwości wejścia ogólnego)." />
-    <option name="LAST_COMMIT_MESSAGE" value="Panel admina widoczny tylko dla admina (nie tylko pod względem uprawnień, ale pod względem możliwości wejścia ogólnego)." />
+    <MESSAGE value="Usprawnienie walidacji ryb." />
+    <MESSAGE value="Parametry ryb zgodne z bazą" />
+    <option name="LAST_COMMIT_MESSAGE" value="Parametry ryb zgodne z bazą" />
   </component>
   <component name="XDebuggerManager">
     <breakpoint-manager>
