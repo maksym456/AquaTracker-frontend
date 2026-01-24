@@ -20,12 +20,13 @@ jest.mock('../../../app/lib/api', () => ({
     username: 'TestUser',
     settingsLanguage: 'en',
     settingsTheme: 'light'
-  })
+  }),
+  checkAdminAccess: jest.fn().mockResolvedValue(false)   
 }));
 
 jest.mock('react-i18next', () => ({
   useTranslation: () => ({
-    t: (key: string) => key,
+    t: (key: string) => key,                    
     i18n: { changeLanguage: jest.fn(), language: 'en' }
   })
 }));
@@ -34,10 +35,14 @@ jest.mock('../../../app/contexts/ThemeContext', () => ({
   useTheme: () => ({ darkMode: false, toggleDarkMode: jest.fn() })
 }));
 
+jest.mock('../../../app/version', () => ({
+  APP_VERSION: '1.0.2'   
+}));
+
+
 describe('Dashboard Integration Tests', () => {
   it('opens settings panel when clicking the Settings button', async () => {
     render(<Dashboard />);
-
     const settingsTrigger = screen.getByText('⚙️');
     fireEvent.click(settingsTrigger);
 
@@ -47,25 +52,23 @@ describe('Dashboard Integration Tests', () => {
       expect(screen.getByText(/sessionDuration/i)).toBeInTheDocument();
       expect(screen.getByText(/dataSource/i)).toBeInTheDocument();
       expect(screen.getByText(/version/i)).toBeInTheDocument();
-      expect(screen.getByText('0.19.0')).toBeInTheDocument();
+      expect(screen.getByText('1.0.2')).toBeInTheDocument();   
       expect(
         screen.getByRole('button', { name: /auth.logout/i })
       ).toBeInTheDocument();
     });
   });
 
+
   it('calls signOut when clicking Logout button in settings panel', async () => {
     const { signOut } = require('next-auth/react');
-
     render(<Dashboard />);
-
     const settingsTrigger = screen.getByText('⚙️');
     fireEvent.click(settingsTrigger);
-
     await waitFor(() =>
       expect(
         screen.getByRole('button', { name: /auth.logout/i })
-        ).toBeInTheDocument()
+      ).toBeInTheDocument()
     );
 
     fireEvent.click(

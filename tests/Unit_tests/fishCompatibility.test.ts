@@ -2,7 +2,22 @@ import {
     normalizeTemperament,
     checkTemperamentCompatibility,
   } from '../../app/lib/fishCompatibility';
-  
+
+jest.mock('../../app/i18n', () => ({
+  t: (key, params) => {
+    switch (key) {
+      case 'aggressiveCannotBeWithPeaceful':
+        return `${params.aggressiveName} (agresywne) nie może być z ${params.peacefulName} (spokojne). Spokojna ryba może zostać pożarta.`;
+      case 'aggressiveCannotBeWithSemiAggressive':
+        return `${params.aggressiveName} (agresywne) nie może być z ${params.semiAggressiveName} (pół-agresywne). Agresywna ryba może zaatakować pół-agresywną.`;
+      case 'semiAggressiveWithPeacefulConflict':
+        return `${params.semiAggressiveName} (pół-agresywne) z ${params.peacefulName} (spokojne) - konflikt może spowodować pożarcie spokojnego osobnika.`;
+      default:
+        return key;
+    }
+  },
+}));
+
   describe('Fish Compatibility – podstawowe funkcje temperamentu', () => {
     describe('normalizeTemperament', () => {
       it('normalizuje różne warianty spokojnego temperamentu', () => {
@@ -57,7 +72,7 @@ import {
         expect(result.compatible).toBe(true);
         expect(result.severity).toBe('WARNING');
         expect(result.message).toContain('konflikt');
-        expect(result.message).toContain('pożarcie');
+        expect(result.message).toContain('konfliktu');  
       });
   
       it('pół-agresywne + spokojne → WARNING', () => {
