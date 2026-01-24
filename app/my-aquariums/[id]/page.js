@@ -953,7 +953,7 @@ export default function AquariumDetailPage() {
       return;
     }
 
-    const selectedFish = availableFishes.find(f => f.id === selectedFishId);
+    const selectedFish = availableFishes.find((f) => String(f.id) === String(selectedFishId));
     if (selectedFish) {
       const issues = checkFishCompatibilityWithAquarium(selectedFish, aquarium.fishes, availableFishes, aquarium);
       setCompatibilityIssues(issues);
@@ -1054,7 +1054,7 @@ export default function AquariumDetailPage() {
     }
     
     // Sprawdź kompatybilność przed dodaniem
-    const selectedFish = availableFishes.find(f => f.id === selectedFishId);
+    const selectedFish = availableFishes.find((f) => String(f.id) === String(selectedFishId));
     if (selectedFish && aquarium?.fishes) {
       const issues = checkFishCompatibilityWithAquarium(selectedFish, aquarium.fishes, availableFishes, aquarium);
       const hasErrors = issues.some(issue => issue.severity === "ERROR");
@@ -1109,8 +1109,11 @@ export default function AquariumDetailPage() {
       setCompatibilityIssues([]);
       setAddFishModalOpen(false);
     } catch (err) {
-      console.error("Error adding fish:", err);
-      setError(err.message || "Nie udało się dodać ryby.");
+      if (err.validationErrors && Array.isArray(err.validationErrors) && err.validationErrors.length > 0) {
+        setError(err.validationErrors.map((m) => `• ${m}`).join("\n"));
+      } else {
+        setError(err.message || "Nie udało się dodać ryby.");
+      }
     } finally {
       setIsAddingFish(false);
     }
@@ -3140,6 +3143,7 @@ export default function AquariumDetailPage() {
           setSelectedFishId("");
           setPreviewFishId("");
           setFishQuantity(1);
+          setError(null);
         }}
         sx={{
           display: 'flex',
@@ -3158,6 +3162,12 @@ export default function AquariumDetailPage() {
           <Typography variant="h6" sx={{ mb: 2, fontWeight: 600, color: darkMode ? 'white' : 'inherit' }}>
             {t("addFish", { defaultValue: "Dodaj rybę" })}
           </Typography>
+
+          {error && (
+            <Alert severity="error" sx={{ mb: 2, whiteSpace: "pre-line" }} onClose={() => setError(null)}>
+              {error}
+            </Alert>
+          )}
           
           <FormControl fullWidth sx={{ mb: 2 }}>
             <InputLabel>{t("selectFish", { defaultValue: "Wybierz rybę" })}</InputLabel>
@@ -3254,18 +3264,18 @@ export default function AquariumDetailPage() {
           </FormControl>
 
           {(() => {
-            const fishToShow =
-              availableFishes.find((f) => String(f.id) === String(previewFishId || selectedFishId)) || null;
-
+            if (!selectedFishId) return null;
+            const fishToShow = availableFishes.find((f) => String(f.id) === String(selectedFishId)) ?? null;
             if (!fishToShow) return null;
 
+            const waterTypeRaw = fishToShow.waterType ?? fishToShow.water ?? "-";
+            const waterTypeLabel = t(`fish.values.${waterTypeRaw}`, { defaultValue: waterTypeRaw });
             const temperature = fishToShow.temperature ?? "-";
             const ph = fishToShow.ph ?? "-";
-            const hardness = fishToShow.hardnessDGH ?? "-";
+            const hardness = fishToShow.hardnessDGH ?? fishToShow.hardness ?? "-";
             const biotope = fishToShow.biotope ?? fishToShow.biotype ?? "-";
             const temperament = fishToShow.temperament ?? "-";
-            const minSchool =
-              fishToShow.minShoalSize ?? fishToShow.minSchoolSize ?? "-";
+            const minSchool = fishToShow.minShoalSize ?? fishToShow.minSchoolSize ?? "-";
             const translatedTemperament = t(`fish.temperament.${temperament}`, { defaultValue: temperament });
 
             return (
@@ -3281,6 +3291,9 @@ export default function AquariumDetailPage() {
               >
                 <Typography sx={{ fontWeight: 700, mb: 0.5, color: darkMode ? "white" : "text.primary" }}>
                   {t("selectedFishParameters", { defaultValue: "Parametry wybranej ryby" })}
+                </Typography>
+                <Typography variant="body2" sx={{ color: darkMode ? "rgba(255,255,255,0.85)" : "text.secondary" }}>
+                  {t("fish.parameters.waterType", { defaultValue: "Typ wody" })}: <strong>{waterTypeLabel}</strong>
                 </Typography>
                 <Typography variant="body2" sx={{ color: darkMode ? "rgba(255,255,255,0.85)" : "text.secondary" }}>
                   {t("fish.parameters.temperature", { defaultValue: "Temperatura" })}: <strong>{temperature}</strong> °C
