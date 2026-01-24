@@ -13,6 +13,7 @@ import KeyboardReturnOutlinedIcon from '@mui/icons-material/KeyboardReturnOutlin
 import BarChartIcon from '@mui/icons-material/BarChart';
 import { getAquariumById, addFishToAquarium, removeFishFromAquarium, addPlantToAquarium, removePlantFromAquarium, getFishes, getPlants } from "../../lib/api";
 import { checkFishCompatibilityWithAquarium, filterCompatibleFishes, getRecommendedFishes, normalizeTemperament, checkWaterTypeCompatibility } from "../../lib/fishCompatibility";
+import { formatFishParamsFromApi } from "../../lib/fishUtils";
 
 export default function AquariumDetailPage() {
   
@@ -766,7 +767,7 @@ export default function AquariumDetailPage() {
       return;
     }
 
-    const selectedFish = availableFishes.find(f => f.id === selectedFishId);
+    const selectedFish = availableFishes.find((f) => String(f.id) === String(selectedFishId));
     if (selectedFish) {
       const issues = checkFishCompatibilityWithAquarium(selectedFish, aquarium.fishes, availableFishes, aquarium);
       setCompatibilityIssues(issues);
@@ -791,7 +792,7 @@ export default function AquariumDetailPage() {
     }
     
     // Sprawdź kompatybilność przed dodaniem
-    const selectedFish = availableFishes.find(f => f.id === selectedFishId);
+    const selectedFish = availableFishes.find((f) => String(f.id) === String(selectedFishId));
     if (selectedFish && aquarium?.fishes) {
       const issues = checkFishCompatibilityWithAquarium(selectedFish, aquarium.fishes, availableFishes, aquarium);
       const hasErrors = issues.some(issue => issue.severity === "ERROR");
@@ -2864,18 +2865,12 @@ export default function AquariumDetailPage() {
           </FormControl>
 
           {(() => {
-            const fishToShow =
-              availableFishes.find((f) => String(f.id) === String(previewFishId || selectedFishId)) || null;
-
+            if (!selectedFishId) return null;
+            const fishToShow = availableFishes.find((f) => String(f.id) === String(selectedFishId)) ?? null;
             if (!fishToShow) return null;
 
-            const temperature = fishToShow.temperature ?? "-";
-            const ph = fishToShow.ph ?? "-";
-            const hardness = fishToShow.hardnessDGH ?? "-";
-            const biotope = fishToShow.biotope ?? fishToShow.biotype ?? "-";
-            const temperament = fishToShow.temperament ?? "-";
-            const minSchool =
-              fishToShow.minShoalSize ?? fishToShow.minSchoolSize ?? "-";
+            const params = formatFishParamsFromApi(fishToShow);
+            const waterTypeLabel = t(`fish.values.${params.waterType}`, { defaultValue: params.waterType });
 
             return (
               <Box
@@ -2889,25 +2884,28 @@ export default function AquariumDetailPage() {
                 }}
               >
                 <Typography sx={{ fontWeight: 700, mb: 0.5, color: darkMode ? "white" : "text.primary" }}>
-                  Parametry wybranej ryby
+                  {t("fishParametersSelected", { defaultValue: "Parametry wybranej ryby" })}
                 </Typography>
                 <Typography variant="body2" sx={{ color: darkMode ? "rgba(255,255,255,0.85)" : "text.secondary" }}>
-                  Temperatura: <strong>{temperature}</strong> °C
+                  {t("fish.parameters.waterType", { defaultValue: "Typ wody" })}: <strong>{waterTypeLabel}</strong>
                 </Typography>
                 <Typography variant="body2" sx={{ color: darkMode ? "rgba(255,255,255,0.85)" : "text.secondary" }}>
-                  pH: <strong>{ph}</strong>
+                  {t("fish.parameters.temperature", { defaultValue: "Temperatura" })}: <strong>{params.temperature}</strong>
                 </Typography>
                 <Typography variant="body2" sx={{ color: darkMode ? "rgba(255,255,255,0.85)" : "text.secondary" }}>
-                  Twardość: <strong>{hardness}</strong> dGH
+                  {t("fish.parameters.ph", { defaultValue: "pH" })}: <strong>{params.ph}</strong>
                 </Typography>
                 <Typography variant="body2" sx={{ color: darkMode ? "rgba(255,255,255,0.85)" : "text.secondary" }}>
-                  Biotyp: <strong>{biotope}</strong>
+                  {t("fish.parameters.hardness", { defaultValue: "Twardość" })}: <strong>{params.hardness}</strong>
                 </Typography>
                 <Typography variant="body2" sx={{ color: darkMode ? "rgba(255,255,255,0.85)" : "text.secondary" }}>
-                  Usposobienie: <strong>{temperament}</strong>
+                  {t("fish.parameters.biotope", { defaultValue: "Biotyp" })}: <strong>{params.biotope}</strong>
                 </Typography>
                 <Typography variant="body2" sx={{ color: darkMode ? "rgba(255,255,255,0.85)" : "text.secondary" }}>
-                  Stado (min): <strong>{minSchool}</strong>
+                  {t("fish.parameters.temperament", { defaultValue: "Usposobienie" })}: <strong>{params.temperament}</strong>
+                </Typography>
+                <Typography variant="body2" sx={{ color: darkMode ? "rgba(255,255,255,0.85)" : "text.secondary" }}>
+                  {t("fish.parameters.minSchoolSize", { defaultValue: "Stado (min)" })}: <strong>{params.minSchool}</strong>
                 </Typography>
               </Box>
             );
