@@ -7,7 +7,22 @@
     <list default="true" id="3e1dcb7d-ed08-49a0-9ff9-f0c8beeee611" name="Changes" comment="Panel admina widoczny tylko dla admina (nie tylko pod względem uprawnień, ale pod względem możliwości wejścia ogólnego).">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/app/admin/page.js" beforeDir="false" afterPath="$PROJECT_DIR$/app/admin/page.js" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/app/lib/api.js" beforeDir="false" afterPath="$PROJECT_DIR$/app/lib/api.js" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/app/components/Dashboard.js" beforeDir="false" afterPath="$PROJECT_DIR$/app/components/Dashboard.js" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/app/components/LanguageSwitcher.js" beforeDir="false" afterPath="$PROJECT_DIR$/app/components/LanguageSwitcher.js" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/app/fish-database/page.js" beforeDir="false" afterPath="$PROJECT_DIR$/app/fish-database/page.js" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/app/globals.css" beforeDir="false" afterPath="$PROJECT_DIR$/app/globals.css" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/app/i18n.js" beforeDir="false" afterPath="$PROJECT_DIR$/app/i18n.js" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/app/layout.js" beforeDir="false" afterPath="$PROJECT_DIR$/app/layout.js" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/app/lib/fishCompatibility.js" beforeDir="false" afterPath="$PROJECT_DIR$/app/lib/fishCompatibility.js" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/app/my-aquariums/[id]/page.js" beforeDir="false" afterPath="$PROJECT_DIR$/app/my-aquariums/[id]/page.js" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/app/my-aquariums/page.js" beforeDir="false" afterPath="$PROJECT_DIR$/app/my-aquariums/page.js" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/app/plant-database/page.js" beforeDir="false" afterPath="$PROJECT_DIR$/app/plant-database/page.js" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/designs/fonts/Montserrat-Italic.ttf" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/designs/fonts/Montserrat.ttf" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/designs/index.html" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/designs/script.js" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/designs/style.css" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/package-lock.json" beforeDir="false" afterPath="$PROJECT_DIR$/package-lock.json" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -40,8 +55,8 @@
 }</component>
   <component name="GithubPullRequestsUISettings">{
   &quot;selectedUrlAndAccountId&quot;: {
-    &quot;url&quot;: &quot;https://github.com/maksym456/AquaTracker-frontend&quot;,
-    &quot;accountId&quot;: &quot;83cf5ea8-ca32-484c-a363-2457ec674c83&quot;
+    &quot;url&quot;: &quot;https://github.com/maksym456/AquaTracker-frontend.git&quot;,
+    &quot;accountId&quot;: &quot;328f22c3-131a-4aa7-bb67-6aa26ec00eea&quot;
   }
 }</component>
   <component name="KubernetesApiPersistence">{}</component>
@@ -53,7 +68,7 @@
     <urls />
   </component>
   <component name="ProblemsViewState">
-    <option name="selectedTabId" value="CurrentFile" />
+    <option name="selectedTabId" value="DEPENDENCY_CHECKER_PROBLEMS_TAB" />
   </component>
   <component name="ProjectColorInfo">{
   &quot;customColor&quot;: &quot;&quot;,
@@ -78,14 +93,16 @@
     &quot;js.debugger.nextJs.config.created.client&quot;: &quot;true&quot;,
     &quot;js.debugger.nextJs.config.created.server&quot;: &quot;true&quot;,
     &quot;junie.onboarding.icon.badge.shown&quot;: &quot;true&quot;,
+    &quot;last_opened_file_path&quot;: &quot;C:/Users/Jakub/Desktop/Projekt-Rewak/AquaTracker-frontend&quot;,
     &quot;node.js.detected.package.eslint&quot;: &quot;true&quot;,
     &quot;node.js.detected.package.tslint&quot;: &quot;true&quot;,
     &quot;node.js.selected.package.eslint&quot;: &quot;(autodetect)&quot;,
     &quot;node.js.selected.package.tslint&quot;: &quot;(autodetect)&quot;,
     &quot;nodejs_package_manager_path&quot;: &quot;npm&quot;,
     &quot;npm.Next.js: server-side.executor&quot;: &quot;Run&quot;,
+    &quot;run.code.analysis.last.selected.profile&quot;: &quot;pProject Default&quot;,
     &quot;to.speed.mode.migration.done&quot;: &quot;true&quot;,
-    &quot;ts.external.directory.path&quot;: &quot;C:\\Users\\absyn\\AppData\\Local\\Programs\\WebStorm\\plugins\\javascript-plugin\\jsLanguageServicesImpl\\external&quot;,
+    &quot;ts.external.directory.path&quot;: &quot;C:\\Users\\Jakub\\AppData\\Local\\Programs\\WebStorm\\plugins\\javascript-plugin\\jsLanguageServicesImpl\\external&quot;,
     &quot;vue.rearranger.settings.migration&quot;: &quot;true&quot;
   }
 }</component>
@@ -107,7 +124,7 @@
   <component name="SharedIndexes">
     <attachedChunks>
       <set>
-        <option value="bundled-js-predefined-d6986cc7102b-9b0f141eb926-JavaScript-WS-253.29346.143" />
+        <option value="bundled-js-predefined-d6986cc7102b-9b0f141eb926-JavaScript-WS-253.30387.83" />
       </set>
     </attachedChunks>
   </component>
@@ -125,6 +142,9 @@
       <workItem from="1766931670158" duration="98000" />
       <workItem from="1766931779559" duration="1439000" />
       <workItem from="1767889380000" duration="335000" />
+      <workItem from="1769209699508" duration="353000" />
+      <workItem from="1769210056513" duration="6733000" />
+      <workItem from="1769255477436" duration="1076000" />
     </task>
     <task id="LOCAL-00001" summary="admin panel">
       <option name="closed" value="true" />

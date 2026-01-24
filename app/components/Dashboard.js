@@ -74,7 +74,7 @@ export default function Dashboard() {
                     
                     // 3. Zastosuj ustawienia języka
                     if (userSettings.settingsLanguage && i18n.language !== userSettings.settingsLanguage) {
-                        i18n.changeLanguage(userSettings.settingsLanguage);
+                       await i18n.changeLanguage(userSettings.settingsLanguage);
                     }
                     
                     // 4. Zastosuj ustawienia motywu
@@ -91,7 +91,7 @@ export default function Dashboard() {
         };
 
         if (session?.user) {
-            handleUserSync();
+           void handleUserSync();
         }
     }, [session]);
 
@@ -115,7 +115,7 @@ export default function Dashboard() {
             }
         };
 
-        checkAdmin();
+        void checkAdmin();
     }, [session]);
 
     const logout = async () => {

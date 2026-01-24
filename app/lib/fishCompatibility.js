@@ -113,8 +113,8 @@ export function checkFishCompatibilityWithAquarium(newFish, aquariumFishes, avai
   if (aquarium && aquarium.waterType && newFish.waterType) {
     const isWaterTypeCompatible = checkWaterTypeCompatibility(aquarium.waterType, newFish.waterType);
     if (!isWaterTypeCompatible) {
-      const aquariumWaterTypeName = aquarium.waterType === 'freshwater' ? 'słodkowodne' : 
-                                    aquarium.waterType === 'saltwater' ? 'słonowodne' : aquarium.waterType;
+      const aquariumWaterTypeName = aquarium.waterType === 'freshwater' ? 'slodkowodne' : 
+                                    aquarium.waterType === 'saltwater' ? 'slonowodne' : aquarium.waterType;
       const fishWaterTypeName = newFish.waterType;
       issues.push({
         type: "WATER_TYPE_MISMATCH",
@@ -235,9 +235,9 @@ function parseRange(rangeString, defaultValue = [0, 100]) {
  */
 function normalizeWaterType(aquariumWaterType, fishWaterType) {
   const aquariumMap = {
-    'freshwater': 'Słodkowodna',
-    'saltwater': 'Słonowodna',
-    'brackish': 'Słonawowodna'
+    'freshwater': 'Slodkowodna',
+    'saltwater': 'Slonowodna',
+    'brackish': 'Slonawowodna'
   };
   
   const normalizedAquarium = aquariumMap[aquariumWaterType] || aquariumWaterType;
@@ -256,17 +256,17 @@ export function checkWaterTypeCompatibility(aquariumWaterType, fishWaterType) {
   const fishType = String(fishWaterType).toLowerCase().trim();
   
   // Mapowanie typów wody - obsługuje zarówno angielskie jak i polskie nazwy
-  // Backend może zwracać typy w formacie polskim (Słodkowodna) lub angielskim (freshwater)
+  // Backend może zwracać typy w formacie polskim (Slodkowodna) lub angielskim (freshwater)
   const waterTypeGroups = {
-    // Grupa słodkowodna
+    // Grupa slodkowodna
     freshwater: ['słodkowodna', 'freshwater'],
-    słodkowodna: ['słodkowodna', 'freshwater'],
-    // Grupa słonowodna
+    slodkowodna: ['słodkowodna', 'freshwater'],
+    // Grupa slonowodna
     saltwater: ['słonowodna', 'saltwater'],
-    słonowodna: ['słonowodna', 'saltwater'],
-    // Grupa słonawowodna
+    slonowodna: ['słonowodna', 'saltwater'],
+    // Grupa slonawowodna
     brackish: ['słonawowodna', 'brackish'],
-    słonawowodna: ['słonawowodna', 'brackish']
+    slonawowodna: ['słonawowodna', 'brackish']
   };
   
   // Znajdź grupę dla typu akwarium

@@ -220,7 +220,7 @@ export default function FishDatabasePage() {
       }
     }
     
-    fetchFishData();
+    void fetchFishData();
   }, [convertApiFishToUI]);
 
   // Lista przefiltrowana i posortowana dla panelu
@@ -983,7 +983,7 @@ export default function FishDatabasePage() {
                       <Button
                         onClick={(e) => {
                           e.stopPropagation();
-                          handleAddToAquariumClick(fish);
+                          void handleAddToAquariumClick(fish);
                         }}
                         variant="contained"
                         sx={{

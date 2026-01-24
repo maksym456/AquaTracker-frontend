@@ -12,7 +12,7 @@ export default function LanguageSwitcher() {
   }, []);
 
   const changeLanguage = (lng) => {
-    i18n.changeLanguage(lng);
+    void i18n.changeLanguage(lng);
     // Zapisz do localStorage (i18n automatycznie to zrobi przez event listener, ale dla pewności)
     if (typeof window !== 'undefined') {
       localStorage.setItem('i18nextLng', lng);

@@ -120,7 +120,7 @@ export default function AdminPanelPage() {
           setIsLoading(false);
         } else {
           // Jeśli użytkownik jest adminem, załaduj dane
-          loadData();
+          await loadData();
         }
       } catch (err) {
         console.error('Error checking admin access:', err);
@@ -133,7 +133,7 @@ export default function AdminPanelPage() {
     }
 
     if (session && !accessChecked) {
-      checkAccess();
+     void checkAccess();
     } else if (!session && mounted) {
       setError('Musisz być zalogowany, aby uzyskać dostęp do panelu administratora');
       setIsAdmin(false);
@@ -145,7 +145,7 @@ export default function AdminPanelPage() {
   useEffect(() => {
     // Załaduj dane tylko jeśli użytkownik jest adminem i dostęp został sprawdzony
     if (isAdmin && accessChecked) {
-      loadData();
+     void loadData();
     }
   }, [activeTab, systemDataView, isAdmin, accessChecked]);
 
@@ -408,7 +408,7 @@ export default function AdminPanelPage() {
     setSystemDataView(viewType);
     // Załaduj dane gdy zmienia się widok
     if (activeTab === 2) {
-      loadData();
+      void loadData();
     }
   };
 
@@ -711,6 +711,7 @@ export default function AdminPanelPage() {
                           <FormControl fullWidth size="small">
                             <InputLabel>{t("adminLogAction", { defaultValue: "Typ akcji" })}</InputLabel>
                             <Select
+                                variant="outlined"
                               value={actionTypeFilter}
                               label={t("adminLogAction", { defaultValue: "Typ akcji" })}
                               onChange={(e) => setActionTypeFilter(e.target.value)}
@@ -758,6 +759,7 @@ export default function AdminPanelPage() {
                           <FormControl fullWidth size="small">
                             <InputLabel>{t("adminSortBy", { defaultValue: "Sortuj po" })}</InputLabel>
                             <Select
+                                variant="outlined"
                               value={sortBy}
                               label={t("adminSortBy", { defaultValue: "Sortuj po" })}
                               onChange={(e) => setSortBy(e.target.value)}
@@ -772,6 +774,7 @@ export default function AdminPanelPage() {
                           <FormControl fullWidth size="small">
                             <InputLabel>{t("adminSortOrder", { defaultValue: "Kolejność" })}</InputLabel>
                             <Select
+                                variant="outlined"
                               value={sortOrder}
                               label={t("adminSortOrder", { defaultValue: "Kolejność" })}
                               onChange={(e) => setSortOrder(e.target.value)}
@@ -880,6 +883,7 @@ export default function AdminPanelPage() {
                         <Stack spacing={2} direction="row" alignItems="center">
                           <FormControl size="small" sx={{ minWidth: 80 }}>
                             <Select
+                                variant="outlined"
                               value={rowsPerPage}
                               onChange={(e) => {
                                 setRowsPerPage(e.target.value);
@@ -939,6 +943,7 @@ export default function AdminPanelPage() {
                           </Tooltip>
                         </InputLabel>
                         <Select
+                            variant="outlined"
                           value={userStatusFilter}
                           label={t("adminUserStatus", { defaultValue: "Status" })}
                           onChange={(e) => setUserStatusFilter(e.target.value)}
@@ -994,7 +999,7 @@ export default function AdminPanelPage() {
                                   <Tooltip title={user.isAdmin ? t("adminUserRemoveAdminRights", { defaultValue: "Odbierz uprawnienia administratora" }) : t("adminUserGrantAdminRights", { defaultValue: "Nadaj uprawnienia administratora" })}>
                                     <Switch
                                       checked={user.isAdmin || false}
-                                      onChange={() => handleUserToggleAdmin(user.id)}
+                                      onChange={() => void handleUserToggleAdmin(user.id)}
                                       size="small"
                                       color="secondary"
                                     />
@@ -1030,6 +1035,7 @@ export default function AdminPanelPage() {
                         <Stack spacing={2} direction="row" alignItems="center">
                           <FormControl size="small" sx={{ minWidth: 80 }}>
                             <Select
+                                variant="outlined"
                               value={userRowsPerPage}
                               onChange={(e) => {
                                 setUserRowsPerPage(e.target.value);
@@ -1108,7 +1114,7 @@ export default function AdminPanelPage() {
                               <Switch
                                 checked={selectedUser.isAdmin || false}
                                 onChange={() => {
-                                  handleUserToggleAdmin(selectedUser.id);
+                                 void handleUserToggleAdmin(selectedUser.id);
                                   setSelectedUser(prev => ({ ...prev, isAdmin: !prev.isAdmin }));
                                 }}
                                 size="small"

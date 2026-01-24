@@ -123,7 +123,7 @@ export default function MyAquariumsPage() {
         console.error("Error fetching available fishes/plants:", err);
       }
     }
-    fetchAvailableData();
+    void fetchAvailableData();
   }, []);
 
   // Pobierz znajomych gdy otwiera się modal współdzielenia
@@ -144,7 +144,7 @@ export default function MyAquariumsPage() {
         }
       }
     }
-    fetchFriends();
+    void fetchFriends();
   }, [shareModalOpen, user?.id]);
 
   function handleCreateAquarium() {
@@ -403,7 +403,7 @@ export default function MyAquariumsPage() {
       }
     }
     
-    fetchActivityHistory();
+    void fetchActivityHistory();
   }, [historyModalOpen, sortOrder]);
 
   const getActionLabel = (type) => {
@@ -987,6 +987,7 @@ export default function MyAquariumsPage() {
           <FormControl fullWidth sx={{ mb: 2 }}>
             <InputLabel>{t("waterType", { defaultValue: "Typ wody" })}</InputLabel>
             <Select
+                variant="outlined"
               value={newAquariumWaterType}
               label={t("waterType", { defaultValue: "Typ wody" })}
               onChange={(e) => setNewAquariumWaterType(e.target.value)}
@@ -1014,6 +1015,7 @@ export default function MyAquariumsPage() {
           <FormControl fullWidth sx={{ mb: 2 }}>
             <InputLabel>{t("biotope", { defaultValue: "Biotop" })}</InputLabel>
             <Select
+                variant="outlined"
               value={newAquariumBiotope}
               label={t("biotope", { defaultValue: "Biotop" })}
               onChange={(e) => setNewAquariumBiotope(e.target.value)}
@@ -1501,6 +1503,7 @@ export default function MyAquariumsPage() {
             <FormControl sx={{ minWidth: { xs: '100%', sm: 200 } }}>
               <InputLabel>{t("filterByAction", { defaultValue: "Filtruj po akcji" })}</InputLabel>
               <Select
+                  variant="outlined"
                 value={selectedActionFilter}
                 onChange={(e) => setSelectedActionFilter(e.target.value)}
                 label={t("filterByAction", { defaultValue: "Filtruj po akcji" })}
@@ -1515,6 +1518,7 @@ export default function MyAquariumsPage() {
             <FormControl sx={{ minWidth: { xs: '100%', sm: 200 } }}>
               <InputLabel>{t("filterByAquarium", { defaultValue: "Filtruj po akwarium" })}</InputLabel>
               <Select
+                  variant="outlined"
                 value={selectedAquariumFilter}
                 onChange={(e) => setSelectedAquariumFilter(e.target.value)}
                 label={t("filterByAquarium", { defaultValue: "Filtruj po akwarium" })}
@@ -1529,6 +1533,7 @@ export default function MyAquariumsPage() {
             <FormControl sx={{ minWidth: { xs: '100%', sm: 180 } }}>
               <InputLabel>{t("sortByDate", { defaultValue: "Sortuj po dacie" })}</InputLabel>
               <Select
+                  variant="outlined"
                 value={sortOrder}
                 onChange={(e) => setSortOrder(e.target.value)}
                 label={t("sortByDate", { defaultValue: "Sortuj po dacie" })}

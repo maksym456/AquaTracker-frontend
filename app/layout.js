@@ -49,7 +49,7 @@ function LanguageWrapper({ children }) {
       const savedLang = localStorage.getItem('i18nextLng') || i18n.language || "en";
       setCurrentLang(savedLang);
       if (savedLang !== i18n.language) {
-        i18n.changeLanguage(savedLang);
+       void i18n.changeLanguage(savedLang);
       }
     }
   }, [i18n]);

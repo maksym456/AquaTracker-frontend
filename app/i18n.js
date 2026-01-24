@@ -1179,7 +1179,7 @@ if (!i18n.isInitialized) {
     return "en"; // Domyślnie angielski
   };
 
-  i18n.use(initReactI18next).init({
+  void i18n.use(initReactI18next).init({
     resources,
     lng: getSavedLanguage(),
     fallbackLng: "en",

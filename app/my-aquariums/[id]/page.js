@@ -239,7 +239,7 @@ export default function AquariumDetailPage() {
       }
     }
     
-    fetchAquarium();
+    void fetchAquarium();
   }, [aquariumId, router]);
 
   // Auto-refresh co 5 sekund, aby widzieć automatycznie usunięte ryby
@@ -338,7 +338,7 @@ export default function AquariumDetailPage() {
         console.error("Error fetching available fishes/plants:", err);
       }
     }
-    fetchAvailableData();
+    void fetchAvailableData();
   }, []);
 
   // Łańcuch pokarmowy - automatyczne usuwanie spokojnych ryb przez agresywne
