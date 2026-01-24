@@ -187,7 +187,7 @@ export default function PlantDatabasePage() {
     }
     
     // Wywołujemy funkcję pobierającą dane
-    fetchPlantData();
+    void fetchPlantData();
   }, []); // Pusta tablica [] oznacza, że useEffect wykona się tylko raz przy załadowaniu komponentu
 
   // Lista przefiltrowana dla panelu bocznego
@@ -812,7 +812,7 @@ export default function PlantDatabasePage() {
                   <Button
                     onClick={(e) => {
                       e.stopPropagation();
-                      handleAddToAquariumClick(plant);
+                      void handleAddToAquariumClick(plant);
                     }}
                     variant="contained"
                     sx={{

@@ -287,7 +287,7 @@ export default function Dashboard() {
           }}>
             <LanguageSwitcher />
 
-              <Link href="/admin" style={{ textDecoration: 'none' }}>
+              <Link href="/admin.js" style={{ textDecoration: 'none' }}>
                   <Box
                       sx={{
                           bgcolor: darkMode ? 'rgba(211, 47, 47, 0.6)' : 'rgba(211, 47, 47, 0.5)',

@@ -2,6 +2,14 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+## [1.1.0](https://github.com/maksym456/AquaTracker-frontend/compare/v1.0.2...v1.1.0) (2026-01-23)
+
+### [1.0.2](https://github.com/maksym456/AquaTracker-frontend/compare/v1.0.1...v1.0.2) (2026-01-23)
+
+### [1.0.1](https://github.com/maksym456/AquaTracker-frontend/compare/v1.0.0...v1.0.1) (2026-01-23)
+
+## [1.0.0](https://github.com/maksym456/AquaTracker-frontend/compare/v0.19.0...v1.0.0) (2026-01-23)
+
 ## [0.19.0](https://github.com/maksym456/AquaTracker-frontend/compare/v0.18.3...v0.19.0) (2026-01-14)
 
 ### [0.18.3](https://github.com/maksym456/AquaTracker-frontend/compare/v0.18.2...v0.18.3) (2026-01-14)

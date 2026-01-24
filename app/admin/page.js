@@ -1,472 +1,1521 @@
-'use client'
+"use client";
 
-import React, { useState, useMemo } from 'react'
+import { useState, useEffect, useMemo } from "react";
+import { 
+  Box, Typography, Tabs, Tab, Paper, Table, TableBody, TableCell, TableContainer, 
+  TableHead, TableRow, CircularProgress, Alert, Chip, TextField, Select, MenuItem, 
+  FormControl, InputLabel, Button, IconButton, Pagination, Stack, Grid, Collapse,
+  Card, CardContent, Switch, Dialog, DialogTitle, DialogContent, DialogActions,
+  Tooltip
+} from "@mui/material";
+import { useTranslation } from "react-i18next";
+import { useTheme } from "../contexts/ThemeContext";
+import { useSession } from "next-auth/react";
+import { useRouter } from "next/navigation";
+import Link from "next/link";
+import KeyboardReturnOutlinedIcon from '@mui/icons-material/KeyboardReturnOutlined';
+import FilterListIcon from '@mui/icons-material/FilterList';
+import ExpandMoreIcon from '@mui/icons-material/ExpandMore';
+import ExpandLessIcon from '@mui/icons-material/ExpandLess';
+import EditIcon from '@mui/icons-material/Edit';
+import DeleteIcon from '@mui/icons-material/Delete';
+import LanguageSwitcher from "../components/LanguageSwitcher";
+import { 
+  getLogs, 
+  checkAdminAccess,
+  getAdminUsers,
+  updateUserAdminStatus,
+  deleteAdminUser,
+  getSystemStats,
+  getAdminAquariums,
+  deleteAdminAquarium,
+  getAdminFish,
+  deleteAdminFish,
+  getAdminPlants,
+  deleteAdminPlant
+} from "../lib/api";
 
-// --- 1. DANE MOCKOWE ---
+function TabPanel({ children, value, index }) {
+  return (
+    <div role="tabpanel" hidden={value !== index}>
+      {value === index && <Box sx={{ p: 3 }}>{children}</Box>}
+    </div>
+  );
+}
 
-const initialUsers = [
-    { id: 1, name: 'Jan Kowalski', email: 'jan@example.com', friendsCount: 15, isBlocked: false, role: 'User' },
-    { id: 2, name: 'Anna Nowak', email: 'anna@example.com', friendsCount: 42, isBlocked: false, role: 'Admin' },
-    { id: 3, name: 'Piotr Wiśniewski', email: 'piotr@example.com', friendsCount: 0, isBlocked: true, role: 'User' },
-    { id: 5, name: 'Marek Zegarek', email: 'marek@example.com', friendsCount: 120, isBlocked: false, role: 'User' },
-]
+export default function AdminPanelPage() {
+  const { t } = useTranslation();
+  const { darkMode } = useTheme();
+  const { data: session } = useSession();
+  const router = useRouter();
+  const [mounted, setMounted] = useState(false);
+  const [activeTab, setActiveTab] = useState(0);
+  
+  // Stan dla zarządzania danymi systemowymi
+  const [systemDataView, setSystemDataView] = useState(null); // null, 'aquariums', 'fish', 'plants'
+  const [allAquariums, setAllAquariums] = useState([]);
+  const [allFish, setAllFish] = useState([]);
+  const [allPlants, setAllPlants] = useState([]);
+  const [aquariumDeleteDialog, setAquariumDeleteDialog] = useState(false);
+  const [fishDeleteDialog, setFishDeleteDialog] = useState(false);
+  const [plantDeleteDialog, setPlantDeleteDialog] = useState(false);
+  const [itemToDelete, setItemToDelete] = useState(null);
+  
+  // Upewnij się, że komponent jest zamontowany przed renderowaniem tłumaczeń
+  useEffect(() => {
+    setMounted(true);
+  }, []);
+  const [logs, setLogs] = useState([]);
+  const [allLogs, setAllLogs] = useState([]); // Wszystkie logi przed filtrowaniem
+  const [users, setUsers] = useState([]);
+  const [allUsers, setAllUsers] = useState([]); // Wszystkie użytkownicy przed filtrowaniem
+  const [systemData, setSystemData] = useState(null);
+  const [isLoading, setIsLoading] = useState(true);
+  const [error, setError] = useState(null);
+  const [isAdmin, setIsAdmin] = useState(false);
+  const [accessChecked, setAccessChecked] = useState(false);
+  
+  // Filtry dla użytkowników
+  const [userSearchFilter, setUserSearchFilter] = useState('');
+  const [userStatusFilter, setUserStatusFilter] = useState('all'); // 'all' | 'admins' | 'regular'
+  const [userPage, setUserPage] = useState(1);
+  const [userRowsPerPage, setUserRowsPerPage] = useState(10);
+  
+  // Dialogi
+  const [userDetailsDialog, setUserDetailsDialog] = useState(false);
+  const [selectedUser, setSelectedUser] = useState(null);
+  const [deleteConfirmDialog, setDeleteConfirmDialog] = useState(false);
+  const [userToDelete, setUserToDelete] = useState(null);
+  
+  // Filtry i sortowanie
+  const [filtersExpanded, setFiltersExpanded] = useState(false);
+  const [actionTypeFilter, setActionTypeFilter] = useState('all');
+  const [userFilter, setUserFilter] = useState('');
+  const [dateFromFilter, setDateFromFilter] = useState('');
+  const [dateToFilter, setDateToFilter] = useState('');
+  const [sortBy, setSortBy] = useState('date');
+  const [sortOrder, setSortOrder] = useState('desc');
+  
+  // Paginacja
+  const [page, setPage] = useState(1);
+  const [rowsPerPage, setRowsPerPage] = useState(25);
 
-const initialAquariums = [
-    { id: 101, ownerId: 1, name: 'Morska Rafa', capacity: 200, status: 'Aktywne', temp: 25.5, ph: 8.1 },
-    { id: 102, ownerId: 1, name: 'Krewetkarium', capacity: 30, status: 'Aktywne', temp: 22.0, ph: 6.8 },
-    { id: 103, ownerId: 2, name: 'Amazonka', capacity: 120, status: 'Aktywne', temp: 29.5, ph: 6.5 },
-    { id: 104, ownerId: 5, name: 'Holenderskie', capacity: 240, status: 'Konserwacja', temp: 24.0, ph: 7.0 },
-]
+  // Sprawdzenie uprawnień administratora przy pierwszym załadowaniu
+  useEffect(() => {
+    async function checkAccess() {
+      if (!session?.user?.id) {
+        setError(t('adminLoginRequired', { defaultValue: 'Musisz być zalogowany, aby uzyskać dostęp do panelu administratora' }));
+        setIsAdmin(false);
+        setAccessChecked(true);
+        setIsLoading(false);
+        return;
+      }
 
-const initialCatalog = [
-    { id: 1, name: 'Neon Innesa', type: 'Ryba', lifespan: 5 },
-    { id: 2, name: 'Gupik Pawie Oczko', type: 'Ryba', lifespan: 2 },
-    { id: 3, name: 'Moczarka Kanadyjska', type: 'Roślina', lifespan: 100 },
-    { id: 4, name: 'Anubias Nana', type: 'Roślina', lifespan: 100 },
-    { id: 5, name: 'Skalar', type: 'Ryba', lifespan: 10 },
-    { id: 6, name: 'Bojownik', type: 'Ryba', lifespan: 3 },
-]
-
-const initialInhabitants = [
-    { id: 1, aquariumId: 101, catalogId: 5, quantity: 2 },
-    { id: 2, aquariumId: 101, catalogId: 1, quantity: 15 },
-    { id: 3, aquariumId: 102, catalogId: 2, quantity: 50 },
-    { id: 4, aquariumId: 103, catalogId: 6, quantity: 1 },
-    { id: 5, aquariumId: 103, catalogId: 4, quantity: 5 },
-]
-
-const initialHistory = [
-    { id: 1, aquariumId: 101, action: 'ADDED', itemName: 'Neon Innesa', quantity: 10, date: '2023-10-01', user: 'Jan Kowalski' },
-    { id: 2, aquariumId: 101, action: 'ADDED', itemName: 'Skalar', quantity: 2, date: '2023-10-05', user: 'Jan Kowalski' },
-    { id: 3, aquariumId: 101, action: 'ADDED', itemName: 'Neon Innesa', quantity: 5, date: '2023-11-12', user: 'Jan Kowalski' },
-    { id: 4, aquariumId: 101, action: 'REMOVED', itemName: 'Molinezja', quantity: 1, date: '2023-12-01', user: 'Jan Kowalski' },
-    { id: 5, aquariumId: 102, action: 'ADDED', itemName: 'Gupik Pawie Oczko', quantity: 10, date: '2023-09-01', user: 'Jan Kowalski' },
-]
-
-const initialLogs = [
-    { id: 1, timestamp: new Date(Date.now() - 100000).toLocaleTimeString(), level: 'INFO', action: 'SYSTEM_START', details: 'Uruchomiono panel Superadministratora v2.1' },
-]
-
-// --- 2. KOMPONENTY UI ---
-
-const IconStats = () => <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}><path strokeLinecap="round" strokeLinejoin="round" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" /></svg>
-const IconSearch = () => <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}><path strokeLinecap="round" strokeLinejoin="round" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" /></svg>
-const IconCheck = () => <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={3}><path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" /></svg>
-const IconRefresh = ({ className }) => <svg xmlns="http://www.w3.org/2000/svg" className={className} width="16" height="16" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}><path strokeLinecap="round" strokeLinejoin="round" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" /></svg>
-const IconLock = ({ closed }) => closed ? <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}><path strokeLinecap="round" strokeLinejoin="round" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" /></svg> : <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}><path strokeLinecap="round" strokeLinejoin="round" d="M8 11V7a4 4 0 118 0m-4 8v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2z" /></svg>;
-const IconClose = () => <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}><path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" /></svg>;
-const IconClock = () => <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}><path strokeLinecap="round" strokeLinejoin="round" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>;
-
-// --- 3. GŁÓWNY KOMPONENT ---
-
-export default function SuperAdminPanel() {
-    const [users, setUsers] = useState(initialUsers);
-    const [aquariums, setAquariums] = useState(initialAquariums);
-    const [catalog, setCatalog] = useState(initialCatalog);
-    const [logs, setLogs] = useState(initialLogs);
-
-    const [inhabitants, setInhabitants] = useState(initialInhabitants);
-    const [history, setHistory] = useState(initialHistory);
-    const [selectedAquariumId, setSelectedAquariumId] = useState(null);
-
-    const [activeTab, setActiveTab] = useState('users');
-    const [notifications, setNotifications] = useState([]);
-    const [searchTerm, setSearchTerm] = useState('');
-    const [sortConfig, setSortConfig] = useState({ key: null, direction: 'asc' });
-
-    const [newItemName, setNewItemName] = useState('');
-    const [newItemType, setNewItemType] = useState('Ryba');
-    const [newItemLifespan, setNewItemLifespan] = useState('2');
-
-    // --- LOGIKA POMOCNICZA ---
-
-    const addLog = (level, action, details) => {
-        setLogs(prev => [{ id: Date.now(), timestamp: new Date().toLocaleTimeString(), level, action, details }, ...prev]);
-    };
-
-    const processedUsers = useMemo(() => {
-        let result = [...users];
-        if (searchTerm) result = result.filter(u => u.name.toLowerCase().includes(searchTerm.toLowerCase()));
-        if (sortConfig.key) {
-            result.sort((a, b) => {
-                if (a[sortConfig.key] < b[sortConfig.key]) return sortConfig.direction === 'asc' ? -1 : 1;
-                if (a[sortConfig.key] > b[sortConfig.key]) return sortConfig.direction === 'asc' ? 1 : -1;
-                return 0;
-            });
+      try {
+        const hasAdminAccess = await checkAdminAccess(session.user.id);
+        setIsAdmin(hasAdminAccess);
+        
+        if (!hasAdminAccess) {
+          setError(t('adminNoAccess', { defaultValue: 'Brak uprawnień administratora. Dostęp do panelu administratora jest ograniczony.' }));
+          setIsLoading(false);
+        } else {
+          // Jeśli użytkownik jest adminem, załaduj dane
+          await loadData();
         }
-        return result;
-    }, [users, searchTerm, sortConfig]);
+      } catch (err) {
+        console.error('Error checking admin access:', err);
+        setError(t('adminAccessCheckError', { defaultValue: 'Błąd podczas sprawdzania uprawnień administratora' }));
+        setIsAdmin(false);
+        setIsLoading(false);
+      } finally {
+        setAccessChecked(true);
+      }
+    }
 
-    const requestSort = (key) => {
-        let direction = 'asc';
-        if (sortConfig.key === key && sortConfig.direction === 'asc') direction = 'desc';
-        setSortConfig({ key, direction });
-    };
+    if (session && !accessChecked) {
+     void checkAccess();
+    } else if (!session && mounted) {
+      setError(t('adminLoginRequired', { defaultValue: 'Musisz być zalogowany, aby uzyskać dostęp do panelu administratora' }));
+      setIsAdmin(false);
+      setAccessChecked(true);
+      setIsLoading(false);
+    }
+  }, [session, accessChecked, mounted]);
 
-    const handleRestartAquarium = (id) => {
-        const aqName = aquariums.find(a => a.id === id)?.name;
-        addLog('INFO', 'AQUA_RESTART', `Zlecono restart akwarium #${id} (${aqName})`);
-        setAquariums(prev => prev.map(aq => aq.id === id ? { ...aq, status: 'Restartowanie...' } : aq));
-        setTimeout(() => {
-            setAquariums(prev => prev.map(aq => aq.id === id ? { ...aq, status: 'Aktywne' } : aq));
-            addLog('SUCCESS', 'AQUA_RESTART_DONE', `Akwarium #${id} wróciło do pracy.`);
-        }, 3000);
-    };
+  useEffect(() => {
+    // Załaduj dane tylko jeśli użytkownik jest adminem i dostęp został sprawdzony
+    if (isAdmin && accessChecked) {
+     void loadData();
+    }
+  }, [activeTab, systemDataView, isAdmin, accessChecked]);
 
-    const toggleBlockUser = (id) => {
-        setUsers(users.map(u => u.id === id ? { ...u, isBlocked: !u.isBlocked } : u));
-        addLog('WARN', 'USER_BLOCK', `Zmiana blokady użytkownika ID:${id}`);
-    };
+  useEffect(() => {
+    // Zastosuj filtry i sortowanie gdy zmienią się wartości
+    applyFiltersAndSort();
+  }, [allLogs, actionTypeFilter, userFilter, dateFromFilter, dateToFilter, sortBy, sortOrder]);
 
-    const handleAddItem = (e) => {
-        e.preventDefault();
-        if (!newItemName.trim()) return;
-        const newItem = {
-            id: Date.now(),
-            name: newItemName,
-            type: newItemType,
-            lifespan: Number(newItemLifespan)
-        };
-        setCatalog([...catalog, newItem]);
-        addLog('SUCCESS', 'CATALOG_ADD', `Dodano: ${newItemName} (${newItemType})`);
-        setNewItemName('');
-    };
+  useEffect(() => {
+    // Filtrowanie użytkowników po stronie klienta (dane już załadowane z API)
+    if (activeTab === 1 && allUsers.length > 0) {
+      let filtered = [...allUsers];
+      
+      // Filtrowanie po wyszukiwaniu
+      if (userSearchFilter.trim()) {
+        const searchLower = userSearchFilter.trim().toLowerCase();
+        filtered = filtered.filter(user => 
+          (user.email && user.email.toLowerCase().includes(searchLower)) ||
+          (user.username && user.username.toLowerCase().includes(searchLower)) ||
+          (user.id && user.id.toString().toLowerCase().includes(searchLower))
+        );
+      }
+      
+      // Filtrowanie po roli (admin / zwykły)
+      if (userStatusFilter !== 'all') {
+        filtered = filtered.filter(user =>
+          userStatusFilter === 'admins' ? (user.isAdmin === true) : (user.isAdmin !== true)
+        );
+      }
+      
+      setUsers(filtered);
+      setUserPage(1);
+    } else if (activeTab === 1 && allUsers.length === 0) {
+      // Jeśli nie ma użytkowników, ustaw pustą listę
+      setUsers([]);
+    }
+  }, [allUsers, userSearchFilter, userStatusFilter, activeTab]);
 
-    const getAquariumStats = (aqId) => {
-        const myInhabitants = inhabitants.filter(i => i.aquariumId === aqId);
-
-        const speciesCount = myInhabitants.length;
-
-        const detailedList = myInhabitants.map(inh => {
-            const species = catalog.find(c => c.id === inh.catalogId);
-            return {
-                ...inh,
-                name: species?.name || 'Nieznany',
-                type: species?.type || 'Inne',
-                lifespan: species?.lifespan || 0
-            };
+  const loadData = async () => {
+    setIsLoading(true);
+    setError(null);
+    
+    try {
+      if (activeTab === 0) {
+        // Załaduj wszystkie logi (bez limitu, filtrowanie po stronie klienta)
+        const logsData = await getLogs({ sort: 'desc', limit: 1000 });
+        setAllLogs(Array.isArray(logsData) ? logsData : []);
+      } else if (activeTab === 1) {
+        // Załaduj użytkowników z API
+        const usersData = await getAdminUsers({ 
+          search: userSearchFilter || undefined,
+          // status: filtrowanie po roli robimy lokalnie (API oczekuje aktywny/nieaktywny)
+          page: 1,
+          limit: 1000 // Pobierz wszystkich, filtrowanie po stronie klienta
         });
+        const usersList = Array.isArray(usersData?.users) ? usersData.users : [];
+        setAllUsers(usersList);
+        setUsers(usersList);
+      } else if (activeTab === 2) {
+        // Załaduj statystyki systemowe
+        const statsData = await getSystemStats();
+        setSystemData(statsData);
+        
+        // Załaduj szczegółowe dane w zależności od widoku
+        if (systemDataView === 'aquariums') {
+          const aquariumsData = await getAdminAquariums({ page: 1, limit: 1000 });
+          const aquariumsList = Array.isArray(aquariumsData?.aquariums) ? aquariumsData.aquariums : [];
+          setAllAquariums(aquariumsList);
+        } else if (systemDataView === 'fish') {
+          const fishData = await getAdminFish({ page: 1, limit: 1000 });
+          const fishList = Array.isArray(fishData?.fish) ? fishData.fish : [];
+          setAllFish(fishList);
+        } else if (systemDataView === 'plants') {
+          const plantsData = await getAdminPlants({ page: 1, limit: 1000 });
+          const plantsList = Array.isArray(plantsData?.plants) ? plantsData.plants : [];
+          setAllPlants(plantsList);
+        }
+      }
+    } catch (err) {
+      console.error('Error loading admin data:', err);
+      setError(err.message || t('adminDataLoadError', { defaultValue: 'Błąd ładowania danych' }));
+    } finally {
+      setIsLoading(false);
+    }
+  };
 
-        const fish = detailedList.filter(d => d.type === 'Ryba');
-        const totalLifespan = fish.reduce((acc, curr) => acc + curr.lifespan, 0);
-        const avgLifespan = fish.length > 0 ? (totalLifespan / fish.length).toFixed(1) : 0;
+  const applyFiltersAndSort = () => {
+    let filtered = [...allLogs];
 
-        const myHistory = history.filter(h => h.aquariumId === aqId).sort((a,b) => new Date(b.date).getTime() - new Date(a.date).getTime());
+    // Filtrowanie po typie akcji
+    if (actionTypeFilter !== 'all') {
+      filtered = filtered.filter(log => 
+        (log.actionType || log.action || '').toLowerCase().includes(actionTypeFilter.toLowerCase())
+      );
+    }
 
-        return { speciesCount, detailedList, avgLifespan, myHistory };
-    };
+    // Filtrowanie po użytkowniku
+    if (userFilter.trim()) {
+      filtered = filtered.filter(log => {
+        const userId = (log.userId || log.user || '').toString().toLowerCase();
+        return userId.includes(userFilter.toLowerCase());
+      });
+    }
 
-    const selectedAquariumData = selectedAquariumId ? aquariums.find(a => a.id === selectedAquariumId) : null;
-    const stats = selectedAquariumId ? getAquariumStats(selectedAquariumId) : null;
+    // Filtrowanie po dacie
+    if (dateFromFilter) {
+      const fromDate = new Date(dateFromFilter);
+      filtered = filtered.filter(log => {
+        const logDate = new Date(log.createdAt || log.timestamp);
+        return logDate >= fromDate;
+      });
+    }
+    if (dateToFilter) {
+      const toDate = new Date(dateToFilter);
+      toDate.setHours(23, 59, 59, 999); // Koniec dnia
+      filtered = filtered.filter(log => {
+        const logDate = new Date(log.createdAt || log.timestamp);
+        return logDate <= toDate;
+      });
+    }
 
-    return (
-        <div className="min-h-screen bg-gray-50 text-gray-800 font-sans pb-12 relative">
+    // Sortowanie
+    filtered.sort((a, b) => {
+      let aValue, bValue;
+      
+      switch (sortBy) {
+        case 'date':
+          aValue = new Date(a.createdAt || a.timestamp || 0);
+          bValue = new Date(b.createdAt || b.timestamp || 0);
+          break;
+        case 'user':
+          aValue = (a.userId || a.user || '').toString().toLowerCase();
+          bValue = (b.userId || b.user || '').toString().toLowerCase();
+          break;
+        case 'action':
+          aValue = (a.actionType || a.action || '').toString().toLowerCase();
+          bValue = (b.actionType || b.action || '').toString().toLowerCase();
+          break;
+        default:
+          return 0;
+      }
 
-            {/* TOASTY */}
-            <div className="fixed bottom-4 right-4 z-50 flex flex-col gap-2">
-                {notifications.map((note) => (
-                    <div key={note.id} className="flex items-center gap-2 bg-gray-900 text-white px-4 py-3 rounded shadow-lg text-sm animate-slide-up">
-                        <IconCheck /> {note.message}
-                    </div>
-                ))}
-            </div>
+      if (sortBy === 'date') {
+        return sortOrder === 'asc' ? aValue - bValue : bValue - aValue;
+      } else {
+        if (aValue < bValue) return sortOrder === 'asc' ? -1 : 1;
+        if (aValue > bValue) return sortOrder === 'asc' ? 1 : -1;
+        return 0;
+      }
+    });
 
-            {/* --- MODAL STATYSTYK AKWARIUM --- */}
-            {selectedAquariumId && selectedAquariumData && stats && (
-                <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm animate-fade-in overflow-y-auto">
-                    <div className="bg-white rounded-2xl shadow-2xl w-full max-w-4xl max-h-[90vh] overflow-hidden flex flex-col">
+    setLogs(filtered);
+    setPage(1); // Resetuj stronę po zmianie filtrów
+  };
 
-                        {/* Modal Header */}
-                        <div className="bg-gray-900 text-white px-8 py-6 flex justify-between items-start">
-                            <div>
-                                <h2 className="text-2xl font-bold tracking-tight">{selectedAquariumData.name}</h2>
-                                <div className="text-blue-300 text-sm mt-1 font-mono">ID: #{selectedAquariumData.id} • Pojemność: {selectedAquariumData.capacity}L</div>
-                            </div>
-                            <button onClick={() => setSelectedAquariumId(null)} className="text-gray-400 hover:text-white transition">
-                                <IconClose />
-                            </button>
-                        </div>
+  // Unikalne typy akcji dla filtra
+  const uniqueActionTypes = useMemo(() => {
+    const types = new Set();
+    allLogs.forEach(log => {
+      const actionType = log.actionType || log.action;
+      if (actionType) types.add(actionType);
+    });
+    return Array.from(types).sort();
+  }, [allLogs]);
 
-                        {/* Modal Body */}
-                        <div className="p-8 overflow-y-auto bg-gray-50 flex-1">
+  // Paginacja
+  const paginatedLogs = useMemo(() => {
+    const startIndex = (page - 1) * rowsPerPage;
+    const endIndex = startIndex + rowsPerPage;
+    return logs.slice(startIndex, endIndex);
+  }, [logs, page, rowsPerPage]);
 
-                            {/* KPIs */}
-                            <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
-                                <div className="bg-white p-5 rounded-xl border border-blue-100 shadow-sm">
-                                    <div className="text-xs font-semibold uppercase text-gray-500 mb-1">Liczba Gatunków</div>
-                                    <div className="text-3xl font-bold text-blue-600">{stats.speciesCount}</div>
-                                </div>
-                                <div className="bg-white p-5 rounded-xl border border-green-100 shadow-sm">
-                                    <div className="text-xs font-semibold uppercase text-gray-500 mb-1">Całkowita Obsada</div>
-                                    <div className="text-3xl font-bold text-green-600">
-                                        {stats.detailedList.reduce((acc, curr) => acc + curr.quantity, 0)} <span className="text-sm font-normal text-gray-400">szt.</span>
-                                    </div>
-                                </div>
-                                <div className="bg-white p-5 rounded-xl border border-purple-100 shadow-sm">
-                                    <div className="text-xs font-semibold uppercase text-gray-500 mb-1">Śr. Długość Życia Ryb</div>
-                                    <div className="text-3xl font-bold text-purple-600">{stats.avgLifespan} <span className="text-sm font-normal text-gray-400">lat</span></div>
-                                    <div className="text-xs text-gray-400 mt-1">Obliczone na podstawie gatunków w zbiorniku</div>
-                                </div>
-                            </div>
+  const totalPages = Math.ceil(logs.length / rowsPerPage);
+  
+  // Paginacja użytkowników
+  const paginatedUsers = useMemo(() => {
+    const startIndex = (userPage - 1) * userRowsPerPage;
+    const endIndex = startIndex + userRowsPerPage;
+    return users.slice(startIndex, endIndex);
+  }, [users, userPage, userRowsPerPage]);
+  
+  const userTotalPages = Math.ceil(users.length / userRowsPerPage);
+  
+  // Handlery dla użytkowników
+  const handleUserToggleAdmin = async (userId) => {
+    try {
+      const user = allUsers.find(u => u.id === userId);
+      if (!user) return;
+      
+      const newAdminStatus = !user.isAdmin;
+      const adminCognitoSub = session?.user?.id;
+      
+      await updateUserAdminStatus(userId, newAdminStatus, adminCognitoSub);
+      
+      // Aktualizuj lokalny stan
+      setAllUsers(prev => prev.map(u => 
+        u.id === userId ? { ...u, isAdmin: newAdminStatus } : u
+      ));
+      setUsers(prev => prev.map(u => 
+        u.id === userId ? { ...u, isAdmin: newAdminStatus } : u
+      ));
+      
+      // Jeśli otwarty dialog szczegółów, zaktualizuj też tam
+      if (selectedUser && selectedUser.id === userId) {
+        setSelectedUser(prev => ({ ...prev, isAdmin: newAdminStatus }));
+      }
+    } catch (error) {
+      console.error('Error toggling user admin status:', error);
+      setError(error.message || t('adminToggleRightsError', { defaultValue: 'Błąd podczas zmiany uprawnień administratora' }));
+    }
+  };
+  
+  const handleViewUserDetails = (user) => {
+    setSelectedUser(user);
+    setUserDetailsDialog(true);
+  };
+  
+  const handleCloseUserDetails = () => {
+    setUserDetailsDialog(false);
+    setSelectedUser(null);
+  };
 
-                            <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
-                                {/* LISTA GATUNKÓW */}
-                                <div className="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden">
-                                    <div className="px-6 py-4 border-b border-gray-100 bg-gray-50/50">
-                                        <h3 className="font-bold text-gray-800">Obecna Obsada</h3>
-                                    </div>
-                                    <table className="w-full text-sm text-left">
-                                        <thead className="bg-gray-50 text-gray-500">
-                                        <tr>
-                                            <th className="px-6 py-3 font-medium">Gatunek</th>
-                                            <th className="px-6 py-3 font-medium text-center">Ilość</th>
-                                            <th className="px-6 py-3 font-medium text-right">Śr. życie</th>
-                                        </tr>
-                                        </thead>
-                                        <tbody className="divide-y divide-gray-100">
-                                        {stats.detailedList.length > 0 ? stats.detailedList.map((item, idx) => (
-                                            <tr key={idx} className="hover:bg-gray-50">
-                                                <td className="px-6 py-3">
-                                                    <div className="font-medium text-gray-900">{item.name}</div>
-                                                    <div className="text-xs text-gray-400">{item.type}</div>
-                                                </td>
-                                                <td className="px-6 py-3 text-center">
-                                                    <span className="bg-gray-100 text-gray-700 px-2 py-1 rounded-full text-xs font-bold">{item.quantity}</span>
-                                                </td>
-                                                <td className="px-6 py-3 text-right font-mono text-purple-600">
-                                                    {item.type === 'Roślina' ? '∞' : `${item.lifespan} lat`}
-                                                </td>
-                                            </tr>
-                                        )) : (
-                                            <tr><td colSpan={3} className="px-6 py-8 text-center text-gray-400 italic">Zbiornik jest pusty.</td></tr>
-                                        )}
-                                        </tbody>
-                                    </table>
-                                </div>
+  const handleDeleteUser = (user) => {
+    setUserToDelete(user);
+    setDeleteConfirmDialog(true);
+  };
 
-                                {/* HISTORIA ZMIAN */}
-                                <div className="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden flex flex-col h-full">
-                                    <div className="px-6 py-4 border-b border-gray-100 bg-gray-50/50">
-                                        <h3 className="font-bold text-gray-800">Historia Zmian</h3>
-                                    </div>
-                                    <div className="p-6 overflow-y-auto max-h-[300px]">
-                                        {stats.myHistory.length > 0 ? (
-                                            <ol className="relative border-l border-gray-200 ml-2">
-                                                {stats.myHistory.map((h) => (
-                                                    <li key={h.id} className="mb-6 ml-6 last:mb-0">
-                            <span className={`absolute flex items-center justify-center w-6 h-6 rounded-full -left-3 ring-4 ring-white ${h.action === 'ADDED' ? 'bg-green-100 text-green-600' : 'bg-red-100 text-red-600'}`}>
-                              {h.action === 'ADDED' ? '+' : '-'}
-                            </span>
-                                                        <div className="p-3 bg-gray-50 border border-gray-100 rounded-lg shadow-sm">
-                                                            <div className="justify-between items-center mb-1 flex">
-                                                                <time className="mb-1 text-xs font-normal text-gray-400 sm:order-last sm:mb-0 flex items-center gap-1">
-                                                                    <IconClock /> {h.date}
-                                                                </time>
-                                                                <div className={`text-xs font-bold uppercase tracking-wide ${h.action === 'ADDED' ? 'text-green-600' : 'text-red-600'}`}>
-                                                                    {h.action === 'ADDED' ? 'Dodano gatunek' : 'Usunięto gatunek'}
-                                                                </div>
-                                                            </div>
-                                                            <div className="text-sm font-medium text-gray-900">
-                                                                {h.action === 'ADDED' ? 'Dodano' : 'Odłowiono'} <span className="font-bold">{h.quantity} szt.</span> {h.itemName}
-                                                            </div>
-                                                            <div className="text-xs text-gray-500 mt-1">Operacja wykonana przez: <span className="font-medium text-gray-700">{h.user}</span></div>
-                                                        </div>
-                                                    </li>
-                                                ))}
-                                            </ol>
-                                        ) : (
-                                            <div className="text-center text-gray-400 italic mt-10">Brak historii dla tego zbiornika.</div>
-                                        )}
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
+  const handleConfirmDelete = async () => {
+    if (userToDelete) {
+      try {
+        const adminCognitoSub = session?.user?.id;
+        await deleteAdminUser(userToDelete.id, adminCognitoSub);
+        
+        // Aktualizuj lokalny stan
+        setAllUsers(prev => prev.filter(u => u.id !== userToDelete.id));
+        setUsers(prev => prev.filter(u => u.id !== userToDelete.id));
+        setDeleteConfirmDialog(false);
+        setUserToDelete(null);
+        
+        // Zamknij dialog szczegółów jeśli był otwarty
+        if (selectedUser && selectedUser.id === userToDelete.id) {
+          setUserDetailsDialog(false);
+          setSelectedUser(null);
+        }
+      } catch (error) {
+        console.error('Error deleting user:', error);
+        setError(error.message || t('adminDeleteUserError', { defaultValue: 'Błąd podczas usuwania użytkownika' }));
+      }
+    }
+  };
 
-                        {/* Modal Footer */}
-                        <div className="bg-gray-50 px-8 py-4 border-t border-gray-200 flex justify-end">
-                            <button onClick={() => setSelectedAquariumId(null)} className="bg-white border border-gray-300 text-gray-700 font-medium py-2 px-6 rounded-lg hover:bg-gray-100 transition">
-                                Zamknij
-                            </button>
-                        </div>
-                    </div>
-                </div>
-            )}
+  const handleCancelDelete = () => {
+    setDeleteConfirmDialog(false);
+    setUserToDelete(null);
+  };
 
-            {/* --- HEADER --- */}
-            <div className="bg-gray-900 text-white border-b border-gray-800 sticky top-0 z-30 shadow-lg">
-                <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-                    <div className="flex justify-between items-center py-4">
-                        <div className="flex items-center gap-3">
-                            <div className="bg-red-600 text-xs font-bold px-2 py-1 rounded uppercase tracking-wider">Super Admin</div>
-                            <h1 className="text-xl font-bold tracking-tight">Aqua<span className="text-blue-400">Manager</span> System</h1>
-                        </div>
-                        <div className="text-xs text-gray-400 font-mono">System: ONLINE | Logi: {logs.length}</div>
-                    </div>
-                    <div className="flex space-x-1 mt-2 overflow-x-auto">
-                        {[{ id: 'users', label: 'Użytkownicy' }, { id: 'aquariums', label: 'Monitoring Akwariów' }, { id: 'catalog', label: 'Baza Gatunków' }, { id: 'logs', label: 'Logi Systemowe' }].map(tab => (
-                            <button key={tab.id} onClick={() => setActiveTab(tab.id)} className={`px-4 py-3 text-sm font-medium border-b-2 transition-colors duration-200 ${activeTab === tab.id ? 'border-blue-500 text-blue-400 bg-gray-800' : 'border-transparent text-gray-400 hover:text-gray-200 hover:bg-gray-800/50'}`}>
-                                {tab.label}
-                            </button>
-                        ))}
-                    </div>
-                </div>
-            </div>
+  // Handlery dla danych systemowych
+  const handleSystemDataCardClick = (viewType) => {
+    if (viewType === 'users') return; // Użytkownicy nie są klikalni
+    setSystemDataView(viewType);
+    // Załaduj dane gdy zmienia się widok
+    if (activeTab === 2) {
+      void loadData();
+    }
+  };
 
-            <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+  const handleDeleteAquarium = (aquarium) => {
+    setItemToDelete(aquarium);
+    setAquariumDeleteDialog(true);
+  };
 
-                {/* --- USERS TAB --- */}
-                {activeTab === 'users' && (
-                    <div className="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden">
-                        <div className="p-5 border-b border-gray-100 flex flex-col sm:flex-row sm:items-center justify-between gap-4 bg-gray-50/50">
-                            <h2 className="font-semibold text-gray-800">Użytkownicy</h2>
-                            <div className="relative group">
-                                <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-gray-400"><IconSearch /></div>
-                                <input type="text" placeholder="Szukaj..." value={searchTerm} onChange={(e) => setSearchTerm(e.target.value)} className="pl-10 pr-4 py-2 border border-gray-300 rounded-lg text-sm w-full sm:w-64 focus:ring-2 focus:ring-blue-500 outline-none" />
-                            </div>
-                        </div>
-                        <table className="w-full text-left text-sm whitespace-nowrap">
-                            <thead className="bg-gray-50 text-gray-500 border-b border-gray-200">
-                            <tr>
-                                <th onClick={() => requestSort('name')} className="px-6 py-3 cursor-pointer hover:bg-gray-100">Użytkownik</th>
-                                <th className="px-6 py-3">Status</th>
-                                <th className="px-6 py-3 text-right">Akcje</th>
-                            </tr>
-                            </thead>
-                            <tbody className="divide-y divide-gray-100">
-                            {processedUsers.map((user) => (
-                                <tr key={user.id} className={user.isBlocked ? 'bg-gray-100 opacity-75' : 'hover:bg-gray-50'}>
-                                    <td className="px-6 py-4 flex items-center gap-3">
-                                        <div className="h-8 w-8 rounded-full bg-blue-500 flex items-center justify-center text-white text-xs">{user.name[0]}</div>
-                                        <div>
-                                            <div className="font-medium text-gray-900">{user.name}</div>
-                                            <div className="text-gray-400 text-xs">{user.email}</div>
-                                        </div>
-                                    </td>
-                                    <td className="px-6 py-4">
-                                        <span className={`px-2 py-0.5 rounded-full text-xs font-medium ${user.isBlocked ? 'bg-red-100 text-red-800' : 'bg-green-100 text-green-800'}`}>{user.isBlocked ? 'Zablokowany' : 'Aktywny'}</span>
-                                    </td>
-                                    <td className="px-6 py-4 text-right">
-                                        <button onClick={() => toggleBlockUser(user.id)} className="p-2 text-gray-400 hover:text-orange-500"><IconLock closed={user.isBlocked} /></button>
-                                    </td>
-                                </tr>
+  const handleDeleteFish = (fish) => {
+    setItemToDelete(fish);
+    setFishDeleteDialog(true);
+  };
+
+  const handleDeletePlant = (plant) => {
+    setItemToDelete(plant);
+    setPlantDeleteDialog(true);
+  };
+
+  const handleConfirmDeleteAquarium = async () => {
+    if (itemToDelete) {
+      try {
+        const adminCognitoSub = session?.user?.id;
+        await deleteAdminAquarium(itemToDelete.id, adminCognitoSub);
+        
+        // Aktualizuj lokalny stan
+        setAllAquariums(prev => prev.filter(a => a.id !== itemToDelete.id));
+        setAquariumDeleteDialog(false);
+        setItemToDelete(null);
+        
+        // Odśwież statystyki
+        const statsData = await getSystemStats();
+        setSystemData(statsData);
+      } catch (error) {
+        console.error('Error deleting aquarium:', error);
+        setError(error.message || t("adminDeleteAquariumError", { defaultValue: "Błąd podczas usuwania akwarium" }));
+      }
+    }
+  };
+
+  const handleConfirmDeleteFish = async () => {
+    if (itemToDelete) {
+      try {
+        const adminCognitoSub = session?.user?.id;
+        await deleteAdminFish(itemToDelete.id, adminCognitoSub);
+        
+        // Aktualizuj lokalny stan
+        setAllFish(prev => prev.filter(f => f.id !== itemToDelete.id));
+        setFishDeleteDialog(false);
+        setItemToDelete(null);
+        
+        // Odśwież statystyki
+        const statsData = await getSystemStats();
+        setSystemData(statsData);
+      } catch (error) {
+        console.error('Error deleting fish:', error);
+        setError(error.message || t("adminDeleteFishError", { defaultValue: "Błąd podczas usuwania ryb" }));
+      }
+    }
+  };
+
+  const handleConfirmDeletePlant = async () => {
+    if (itemToDelete) {
+      try {
+        const adminCognitoSub = session?.user?.id;
+        await deleteAdminPlant(itemToDelete.id, adminCognitoSub);
+        
+        // Aktualizuj lokalny stan
+        setAllPlants(prev => prev.filter(p => p.id !== itemToDelete.id));
+        setPlantDeleteDialog(false);
+        setItemToDelete(null);
+        
+        // Odśwież statystyki
+        const statsData = await getSystemStats();
+        setSystemData(statsData);
+      } catch (error) {
+        console.error('Error deleting plant:', error);
+        setError(error.message || t("adminDeletePlantError", { defaultValue: "Błąd podczas usuwania roślin" }));
+      }
+    }
+  };
+
+  const handleCancelSystemDelete = () => {
+    setAquariumDeleteDialog(false);
+    setFishDeleteDialog(false);
+    setPlantDeleteDialog(false);
+    setItemToDelete(null);
+  };
+
+  const handleBackToSystemData = () => {
+    setSystemDataView(null);
+  };
+
+  const handleTabChange = (event, newValue) => {
+    setActiveTab(newValue);
+  };
+
+  const formatDate = (dateString) => {
+    if (!dateString) return '-';
+    try {
+      return new Date(dateString).toLocaleString('pl-PL');
+    } catch {
+      return dateString;
+    }
+  };
+
+  return (
+    <Box sx={{ minHeight: "100vh", position: "relative" }}>
+      {/* Górny pasek z gradientem */}
+      <Box sx={{
+        position: 'absolute', top: 0, left: 0, right: 0,
+        height: 96,
+        background: 'linear-gradient(to bottom right, #cfeef6 0%, #87cde1 50%, #2e7fa9 100%)',
+        zIndex: 5
+      }} />
+      
+      {/* Ciemny overlay dla dark mode */}
+      <Box
+        sx={{
+          position: 'absolute',
+          top: 0,
+          left: 0,
+          right: 0,
+          bottom: 0,
+          bgcolor: darkMode ? 'rgba(0, 0, 0, 0.25)' : 'transparent',
+          zIndex: 4,
+          transition: 'background-color 0.3s ease',
+          pointerEvents: 'none'
+        }}
+      />
+      
+      {/* Ciemny overlay na górny pasek dla dark mode */}
+      <Box
+        sx={{
+          position: 'absolute',
+          top: 0,
+          left: 0,
+          right: 0,
+          height: 96,
+          bgcolor: darkMode ? 'rgba(0, 0, 0, 0.3)' : 'transparent',
+          zIndex: 6,
+          transition: 'background-color 0.3s ease',
+          pointerEvents: 'none'
+        }}
+      />
+
+      {/* Top bar */}
+      <Box sx={{ 
+        position: 'absolute', top: 0, left: 0, right: 0,
+        display: 'flex', justifyContent: 'space-between', alignItems: 'center',
+        px: { xs: 2, sm: 4 }, py: 2, zIndex: 10
+      }}>
+        <Box sx={{ display: "flex", gap: { xs: 0.5, sm: 1 } }}>
+          <Link href="/" style={{ textDecoration: 'none' }}>
+            <Box sx={{
+              bgcolor: darkMode ? 'rgba(30, 30, 30, 0.85)' : 'rgba(255, 255, 255, 0.4)', 
+              p: { xs: 0.5, sm: 0.8 }, 
+              borderRadius: 1.5, 
+              boxShadow: 2,
+              transition: "all 0.3s", 
+              backdropFilter: 'blur(8px)',
+              "&:hover": { 
+                boxShadow: 4, 
+                transform: "translateY(-2px)", 
+                bgcolor: darkMode ? 'rgba(40, 40, 40, 0.9)' : 'rgba(255, 255, 255, 0.6)' 
+              },
+              cursor: 'pointer', 
+              minHeight: { xs: '50px', sm: '60px' }, 
+              minWidth: { xs: '60px', sm: '80px' }, 
+              display: 'flex', 
+              flexDirection: 'column', 
+              alignItems: 'center', 
+              justifyContent: 'center'
+            }}>
+              <KeyboardReturnOutlinedIcon sx={{ fontSize: { xs: 14, sm: 16 }, mb: 0.3, color: darkMode ? 'white' : 'inherit' }} />
+              <Typography variant="body2" sx={{ fontWeight: 600, color: darkMode ? 'white' : "text.primary", textAlign: 'center', fontSize: { xs: '0.55rem', sm: '0.65rem' } }} suppressHydrationWarning>
+                {t("return", { defaultValue: "Return" })}
+              </Typography>
+            </Box>
+          </Link>
+        </Box>
+        <Box sx={{ display: 'flex', alignItems: 'center', ml: { xs: 1, sm: 2 } }}>
+          <LanguageSwitcher />
+        </Box>
+      </Box>
+
+      {/* Main Content */}
+      <Box sx={{ 
+        position: "relative", 
+        zIndex: 2, 
+        minHeight: '100vh',
+        pt: { xs: 12, sm: 14 },
+        pb: { xs: 2, sm: 4 },
+        px: { xs: 2, sm: 4 }
+      }}>
+        <Paper sx={{
+          maxWidth: '1400px',
+          margin: '0 auto',
+          bgcolor: darkMode ? 'rgba(30, 30, 30, 0.95)' : '#ffffff',
+          borderRadius: 3,
+          boxShadow: '0 8px 24px rgba(0, 0, 0, 0.12)',
+          overflow: 'hidden'
+        }}>
+          {/* Header */}
+          <Box sx={{
+            p: 3,
+            borderBottom: `1px solid ${darkMode ? 'rgba(255,255,255,0.1)' : 'rgba(0,0,0,0.1)'}`,
+            bgcolor: darkMode ? 'rgba(156, 39, 176, 0.1)' : 'rgba(156, 39, 176, 0.05)'
+          }}>
+            <Typography variant="h4" sx={{ fontWeight: 600, mb: 1 }}>
+              🔐 {t("adminPanel", { defaultValue: "Panel Admina" })}
+            </Typography>
+            <Typography variant="body2" color="text.secondary">
+              {t("adminPanelDescription", { defaultValue: "Zarządzanie użytkownikami, logami i danymi systemowymi" })}
+            </Typography>
+          </Box>
+
+          {/* Tabs */}
+          <Box sx={{ borderBottom: 1, borderColor: 'divider' }}>
+            <Tabs 
+              value={activeTab} 
+              onChange={handleTabChange}
+              sx={{
+                '& .MuiTab-root': {
+                  textTransform: 'none',
+                  fontWeight: 500,
+                  minHeight: 64
+                }
+              }}
+            >
+              <Tab label={t("adminLogs", { defaultValue: "Logi" })} />
+              <Tab label={t("adminUsers", { defaultValue: "Użytkownicy" })} />
+              <Tab label={t("adminSystemData", { defaultValue: "Dane Systemowe" })} />
+            </Tabs>
+          </Box>
+
+          {/* Tab Panels */}
+          {error && (
+            <Box sx={{ p: 2 }}>
+              <Alert severity="error">{error}</Alert>
+              {!isAdmin && accessChecked && (
+                <Box sx={{ mt: 2, textAlign: 'center' }}>
+                  <Button 
+                    variant="contained" 
+                    component={Link} 
+                    href="/"
+                    sx={{ mt: 1 }}
+                  >
+                    {t("return", { defaultValue: "Powrót do strony głównej" })}
+                  </Button>
+                </Box>
+              )}
+            </Box>
+          )}
+
+          {!accessChecked || isLoading ? (
+            <Box sx={{ display: 'flex', justifyContent: 'center', alignItems: 'center', minHeight: '400px' }}>
+              <CircularProgress />
+            </Box>
+          ) : !isAdmin ? (
+            <Box sx={{ p: 4, textAlign: 'center' }}>
+              <Alert severity="warning" sx={{ mb: 2 }}>
+                {t("adminNoAccess", { defaultValue: "Brak uprawnień administratora. Dostęp do panelu administratora jest ograniczony." })}
+              </Alert>
+              <Button 
+                variant="contained" 
+                component={Link} 
+                href="/"
+              >
+                {t("return", { defaultValue: "Powrót do strony głównej" })}
+              </Button>
+            </Box>
+          ) : (
+            <>
+              {/* Logi */}
+              <TabPanel value={activeTab} index={0}>
+                <Box sx={{ mb: 3 }}>
+                  <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 2 }}>
+                    <Typography variant="h6">
+                      {t("adminLogsTitle", { defaultValue: "Logi aplikacji" })}
+                      <Typography component="span" variant="body2" color="text.secondary" sx={{ ml: 1 }}>
+                        ({logs.length} {t("adminLogsCount", { defaultValue: "znalezionych" })})
+                      </Typography>
+                    </Typography>
+                    <Button
+                      startIcon={filtersExpanded ? <ExpandLessIcon /> : <ExpandMoreIcon />}
+                      onClick={() => setFiltersExpanded(!filtersExpanded)}
+                      variant="outlined"
+                      size="small"
+                    >
+                      <FilterListIcon sx={{ mr: 0.5 }} />
+                      {t("adminFilters", { defaultValue: "Filtry" })}
+                    </Button>
+                  </Box>
+
+                  {/* Filtry */}
+                  <Collapse in={filtersExpanded}>
+                    <Paper sx={{ p: 2, mb: 2, bgcolor: darkMode ? 'rgba(255,255,255,0.05)' : 'rgba(0,0,0,0.02)' }}>
+                      <Grid container spacing={2}>
+                        <Grid item xs={12} sm={6} md={3}>
+                          <FormControl fullWidth size="small">
+                            <InputLabel>{t("adminLogAction", { defaultValue: "Typ akcji" })}</InputLabel>
+                            <Select
+                                variant="outlined"
+                              value={actionTypeFilter}
+                              label={t("adminLogAction", { defaultValue: "Typ akcji" })}
+                              onChange={(e) => setActionTypeFilter(e.target.value)}
+                            >
+                              <MenuItem value="all">{t("all", { defaultValue: "Wszystkie" })}</MenuItem>
+                              {uniqueActionTypes.map(type => (
+                                <MenuItem key={type} value={type}>{type}</MenuItem>
+                              ))}
+                            </Select>
+                          </FormControl>
+                        </Grid>
+                        <Grid item xs={12} sm={6} md={3}>
+                          <TextField
+                            fullWidth
+                            size="small"
+                            label={t("adminLogUser", { defaultValue: "Użytkownik (ID)" })}
+                            value={userFilter}
+                            onChange={(e) => setUserFilter(e.target.value)}
+                            placeholder={t("adminLogUserPlaceholder", { defaultValue: "Szukaj po ID..." })}
+                          />
+                        </Grid>
+                        <Grid item xs={12} sm={6} md={2}>
+                          <TextField
+                            fullWidth
+                            size="small"
+                            type="date"
+                            label={t("adminLogDateFrom", { defaultValue: "Od" })}
+                            value={dateFromFilter}
+                            onChange={(e) => setDateFromFilter(e.target.value)}
+                            InputLabelProps={{ shrink: true }}
+                          />
+                        </Grid>
+                        <Grid item xs={12} sm={6} md={2}>
+                          <TextField
+                            fullWidth
+                            size="small"
+                            type="date"
+                            label={t("adminLogDateTo", { defaultValue: "Do" })}
+                            value={dateToFilter}
+                            onChange={(e) => setDateToFilter(e.target.value)}
+                            InputLabelProps={{ shrink: true }}
+                          />
+                        </Grid>
+                        <Grid item xs={12} sm={6} md={2}>
+                          <FormControl fullWidth size="small">
+                            <InputLabel>{t("adminSortBy", { defaultValue: "Sortuj po" })}</InputLabel>
+                            <Select
+                                variant="outlined"
+                              value={sortBy}
+                              label={t("adminSortBy", { defaultValue: "Sortuj po" })}
+                              onChange={(e) => setSortBy(e.target.value)}
+                            >
+                              <MenuItem value="date">{t("adminLogDate", { defaultValue: "Dacie" })}</MenuItem>
+                              <MenuItem value="user">{t("adminLogUser", { defaultValue: "Użytkowniku" })}</MenuItem>
+                              <MenuItem value="action">{t("adminLogAction", { defaultValue: "Akcji" })}</MenuItem>
+                            </Select>
+                          </FormControl>
+                        </Grid>
+                        <Grid item xs={12} sm={6} md={2}>
+                          <FormControl fullWidth size="small">
+                            <InputLabel>{t("adminSortOrder", { defaultValue: "Kolejność" })}</InputLabel>
+                            <Select
+                                variant="outlined"
+                              value={sortOrder}
+                              label={t("adminSortOrder", { defaultValue: "Kolejność" })}
+                              onChange={(e) => setSortOrder(e.target.value)}
+                            >
+                              <MenuItem value="desc">{t("newestFirst", { defaultValue: "Najnowsze" })}</MenuItem>
+                              <MenuItem value="asc">{t("oldestFirst", { defaultValue: "Najstarsze" })}</MenuItem>
+                            </Select>
+                          </FormControl>
+                        </Grid>
+                        <Grid item xs={12}>
+                          <Button
+                            variant="outlined"
+                            size="small"
+                            onClick={() => {
+                              setActionTypeFilter('all');
+                              setUserFilter('');
+                              setDateFromFilter('');
+                              setDateToFilter('');
+                            }}
+                          >
+                            {t("adminClearFilters", { defaultValue: "Wyczyść filtry" })}
+                          </Button>
+                        </Grid>
+                      </Grid>
+                    </Paper>
+                  </Collapse>
+                </Box>
+
+                {logs.length === 0 ? (
+                  <Alert severity="info">
+                    {t("noLogs", { defaultValue: "Brak logów do wyświetlenia" })}
+                  </Alert>
+                ) : (
+                  <>
+                    <TableContainer sx={{ maxHeight: '70vh' }}>
+                      <Table stickyHeader>
+                        <TableHead>
+                          <TableRow>
+                            <TableCell><strong>{t("adminLogDate", { defaultValue: "Data" })}</strong></TableCell>
+                            <TableCell><strong>{t("adminLogUser", { defaultValue: "Użytkownik" })}</strong></TableCell>
+                            <TableCell><strong>{t("adminLogAction", { defaultValue: "Akcja" })}</strong></TableCell>
+                            <TableCell><strong>{t("adminLogAquarium", { defaultValue: "Akwarium" })}</strong></TableCell>
+                            <TableCell><strong>{t("adminLogDetails", { defaultValue: "Szczegóły" })}</strong></TableCell>
+                          </TableRow>
+                        </TableHead>
+                        <TableBody>
+                          {paginatedLogs.map((log, index) => (
+                            <TableRow key={log.id || index} hover>
+                              <TableCell>{formatDate(log.createdAt || log.timestamp)}</TableCell>
+                              <TableCell>
+                                <Typography variant="body2" sx={{ fontFamily: 'monospace', fontSize: '0.85rem' }}>
+                                  {log.userId || log.user || '-'}
+                                </Typography>
+                              </TableCell>
+                              <TableCell>
+                                <Chip 
+                                  label={log.actionType || log.action || '-'} 
+                                  size="small"
+                                  color={
+                                    (log.actionType || log.action || '').includes('ERROR') || 
+                                    (log.actionType || log.action || '').includes('DELETE') 
+                                      ? 'error' 
+                                      : (log.actionType || log.action || '').includes('CREATE') || 
+                                        (log.actionType || log.action || '').includes('ADD')
+                                      ? 'success'
+                                      : 'default'
+                                  }
+                                />
+                              </TableCell>
+                              <TableCell>
+                                {log.aquariumId ? (
+                                  <Link href={`/my-aquariums/${log.aquariumId}`} style={{ textDecoration: 'none' }}>
+                                    <Chip 
+                                      label={log.aquariumName || log.aquariumId} 
+                                      size="small"
+                                      variant="outlined"
+                                      clickable
+                                    />
+                                  </Link>
+                                ) : (
+                                  '-'
+                                )}
+                              </TableCell>
+                              <TableCell>
+                                <Typography variant="body2" sx={{ maxWidth: '400px', overflow: 'hidden', textOverflow: 'ellipsis' }}>
+                                  {log.message || log.title || '-'}
+                                </Typography>
+                              </TableCell>
+                            </TableRow>
+                          ))}
+                        </TableBody>
+                      </Table>
+                    </TableContainer>
+
+                    {/* Paginacja */}
+                    {totalPages > 1 && (
+                      <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mt: 2 }}>
+                        <Typography variant="body2" color="text.secondary">
+                          {t("adminLogsShowing", { 
+                            defaultValue: "Wyświetlanie {{from}}-{{to}} z {{total}}",
+                            from: (page - 1) * rowsPerPage + 1,
+                            to: Math.min(page * rowsPerPage, logs.length),
+                            total: logs.length
+                          })}
+                        </Typography>
+                        <Stack spacing={2} direction="row" alignItems="center">
+                          <FormControl size="small" sx={{ minWidth: 80 }}>
+                            <Select
+                                variant="outlined"
+                              value={rowsPerPage}
+                              onChange={(e) => {
+                                setRowsPerPage(e.target.value);
+                                setPage(1);
+                              }}
+                            >
+                              <MenuItem value={10}>10</MenuItem>
+                              <MenuItem value={25}>25</MenuItem>
+                              <MenuItem value={50}>50</MenuItem>
+                              <MenuItem value={100}>100</MenuItem>
+                            </Select>
+                          </FormControl>
+                          <Pagination
+                            count={totalPages}
+                            page={page}
+                            onChange={(e, value) => setPage(value)}
+                            color="primary"
+                            showFirstButton
+                            showLastButton
+                          />
+                        </Stack>
+                      </Box>
+                    )}
+                  </>
+                )}
+              </TabPanel>
+
+              {/* Użytkownicy */}
+              <TabPanel value={activeTab} index={1}>
+                <Box sx={{ mb: 3 }}>
+                  <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 2 }}>
+                    <Typography variant="h6">
+                      {t("adminUsersTitle", { defaultValue: "Zarządzanie użytkownikami" })}
+                      <Typography component="span" variant="body2" color="text.secondary" sx={{ ml: 1 }}>
+                        ({users.length} {t("adminUsersCount", { defaultValue: "znalezionych" })})
+                      </Typography>
+                    </Typography>
+                  </Box>
+
+                  {/* Filtry użytkowników */}
+                  <Grid container spacing={2} sx={{ mb: 2 }}>
+                    <Grid item xs={12} sm={6} md={4}>
+                      <TextField
+                        fullWidth
+                        size="small"
+                        label={t("adminUserSearch", { defaultValue: "Szukaj użytkownika" })}
+                        value={userSearchFilter}
+                        onChange={(e) => setUserSearchFilter(e.target.value)}
+                        placeholder={t("adminUserSearchPlaceholder", { defaultValue: "Email, username, ID..." })}
+                      />
+                    </Grid>
+                    <Grid item xs={12} sm={6} md={3}>
+                      <FormControl fullWidth size="small">
+                        <InputLabel>
+                          <Tooltip title={t("adminUserRoleFilterTooltip", { defaultValue: "Filtruj użytkowników według roli: Administratorzy - mają dostęp do panelu admina, Zwykli - standardowi użytkownicy" })}>
+                            <span>{t("adminUserRole", { defaultValue: "Rola" })}</span>
+                          </Tooltip>
+                        </InputLabel>
+                        <Select
+                            variant="outlined"
+                          value={userStatusFilter}
+                          label={t("adminUserRole", { defaultValue: "Rola" })}
+                          onChange={(e) => setUserStatusFilter(e.target.value)}
+                        >
+                          <MenuItem value="all">{t("adminUserAll", { defaultValue: "Wszyscy" })}</MenuItem>
+                          <MenuItem value="admins">{t("adminUserAdmins", { defaultValue: "Administratorzy" })}</MenuItem>
+                          <MenuItem value="regular">{t("adminUserRegular", { defaultValue: "Zwykli użytkownicy" })}</MenuItem>
+                        </Select>
+                      </FormControl>
+                    </Grid>
+                  </Grid>
+                </Box>
+
+                {users.length === 0 ? (
+                  <Alert severity="info">
+                    {t("adminNoUsers", { defaultValue: "Brak użytkowników do wyświetlenia" })}
+                  </Alert>
+                ) : (
+                  <>
+                    <TableContainer>
+                      <Table>
+                        <TableHead>
+                          <TableRow>
+                            <TableCell><strong>{t("adminUserEmail", { defaultValue: "Email" })}</strong></TableCell>
+                            <TableCell><strong>{t("adminUserUsername", { defaultValue: "Nazwa użytkownika" })}</strong></TableCell>
+                            <TableCell><strong>{t("adminUserCreated", { defaultValue: "Data rejestracji" })}</strong></TableCell>
+                            <TableCell><strong>{t("adminUserAdminRights", { defaultValue: "Uprawnienia administratora" })}</strong></TableCell>
+                            <TableCell><strong>{t("adminUserActions", { defaultValue: "Zarządzanie" })}</strong></TableCell>
+                          </TableRow>
+                        </TableHead>
+                        <TableBody>
+                          {paginatedUsers.map((user) => (
+                            <TableRow key={user.id} hover>
+                              <TableCell>
+                                <Typography variant="body2">{user.email || '-'}</Typography>
+                              </TableCell>
+                              <TableCell>{user.username || '-'}</TableCell>
+                              <TableCell>{formatDate(user.createdAt)}</TableCell>
+                              <TableCell>
+                                <Chip 
+                                  label={user.isAdmin ? t("adminUserIsAdminYes", { defaultValue: "Tak" }) : t("adminUserIsAdminNo", { defaultValue: "Nie" })} 
+                                  size="small"
+                                  color={user.isAdmin ? 'secondary' : 'default'}
+                                />
+                                <Tooltip title={user.isAdmin ? t("adminUserGrantAdminRights", { defaultValue: "Użytkownik ma uprawnienia administratora" }) : t("adminUserRemoveAdminRights", { defaultValue: "Użytkownik nie ma uprawnień administratora" })}>
+                                  <IconButton size="small" sx={{ ml: 0.5 }}>
+                                    <Typography variant="caption" sx={{ fontSize: '0.7rem' }}>ℹ️</Typography>
+                                  </IconButton>
+                                </Tooltip>
+                              </TableCell>
+                              <TableCell>
+                                <Stack direction="row" spacing={1} alignItems="center">
+                                  <Tooltip title={user.isAdmin ? t("adminUserRemoveAdminRights", { defaultValue: "Odbierz uprawnienia administratora" }) : t("adminUserGrantAdminRights", { defaultValue: "Nadaj uprawnienia administratora" })}>
+                                    <Switch
+                                      checked={user.isAdmin || false}
+                                      onChange={() => void handleUserToggleAdmin(user.id)}
+                                      size="small"
+                                      color="secondary"
+                                    />
+                                  </Tooltip>
+                                  <Tooltip title={t("adminUserDelete", { defaultValue: "Usuń użytkownika" })}>
+                                    <IconButton
+                                      size="small"
+                                      color="error"
+                                      onClick={() => handleDeleteUser(user)}
+                                    >
+                                      <DeleteIcon fontSize="small" />
+                                    </IconButton>
+                                  </Tooltip>
+                                </Stack>
+                              </TableCell>
+                            </TableRow>
+                          ))}
+                        </TableBody>
+                      </Table>
+                    </TableContainer>
+
+                    {/* Paginacja użytkowników */}
+                    {userTotalPages > 1 && (
+                      <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mt: 2 }}>
+                        <Typography variant="body2" color="text.secondary">
+                          {t("adminUsersShowing", { 
+                            defaultValue: "Wyświetlanie {{from}}-{{to}} z {{total}}",
+                            from: (userPage - 1) * userRowsPerPage + 1,
+                            to: Math.min(userPage * userRowsPerPage, users.length),
+                            total: users.length
+                          })}
+                        </Typography>
+                        <Stack spacing={2} direction="row" alignItems="center">
+                          <FormControl size="small" sx={{ minWidth: 80 }}>
+                            <Select
+                                variant="outlined"
+                              value={userRowsPerPage}
+                              onChange={(e) => {
+                                setUserRowsPerPage(e.target.value);
+                                setUserPage(1);
+                              }}
+                            >
+                              <MenuItem value={10}>10</MenuItem>
+                              <MenuItem value={25}>25</MenuItem>
+                              <MenuItem value={50}>50</MenuItem>
+                            </Select>
+                          </FormControl>
+                          <Pagination
+                            count={userTotalPages}
+                            page={userPage}
+                            onChange={(e, value) => setUserPage(value)}
+                            color="primary"
+                            showFirstButton
+                            showLastButton
+                          />
+                        </Stack>
+                      </Box>
+                    )}
+                  </>
+                )}
+
+                {/* Dialog szczegółów użytkownika */}
+                <Dialog 
+                  open={userDetailsDialog} 
+                  onClose={handleCloseUserDetails}
+                  maxWidth="md"
+                  fullWidth
+                >
+                  <DialogTitle>
+                    {t("adminUserDetailsTitle", { defaultValue: "Szczegóły użytkownika" })}
+                  </DialogTitle>
+                  <DialogContent>
+                    {selectedUser && (
+                      <Grid container spacing={2} sx={{ mt: 1 }}>
+                        <Grid item xs={12} sm={6}>
+                          <Typography variant="body2" color="text.secondary" sx={{ mb: 0.5 }}>
+                            {t("adminUserEmail", { defaultValue: "Email" })}
+                          </Typography>
+                          <Typography variant="body1">{selectedUser.email}</Typography>
+                        </Grid>
+                        <Grid item xs={12} sm={6}>
+                          <Typography variant="body2" color="text.secondary" sx={{ mb: 0.5 }}>
+                            {t("adminUserUsername", { defaultValue: "Nazwa użytkownika" })}
+                          </Typography>
+                          <Typography variant="body1">{selectedUser.username || '-'}</Typography>
+                        </Grid>
+                        <Grid item xs={12} sm={6}>
+                          <Typography variant="body2" color="text.secondary" sx={{ mb: 0.5 }}>
+                            {t("adminUserID", { defaultValue: "ID użytkownika" })}
+                          </Typography>
+                          <Typography variant="body1" sx={{ fontFamily: 'monospace', fontSize: '0.9rem' }}>
+                            {selectedUser.id}
+                          </Typography>
+                        </Grid>
+                        <Grid item xs={12} sm={6}>
+                          <Typography variant="body2" color="text.secondary" sx={{ mb: 0.5 }}>
+                            {t("adminUserCreated", { defaultValue: "Data rejestracji" })}
+                          </Typography>
+                          <Typography variant="body1">{formatDate(selectedUser.createdAt)}</Typography>
+                        </Grid>
+                        <Grid item xs={12}>
+                          <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, mt: 1 }}>
+                            <Typography variant="body2" color="text.secondary" sx={{ minWidth: '150px' }}>
+                              {t("adminUserAdminRights", { defaultValue: "Uprawnienia administratora" })}
+                            </Typography>
+                            <Chip 
+                              label={selectedUser.isAdmin ? t("adminUserIsAdminYes", { defaultValue: "Tak" }) : t("adminUserIsAdminNo", { defaultValue: "Nie" })} 
+                              color={selectedUser.isAdmin ? 'secondary' : 'default'}
+                              size="small"
+                            />
+                            <Tooltip title={selectedUser.isAdmin ? t("adminUserRemoveAdminRights", { defaultValue: "Odbierz uprawnienia administratora" }) : t("adminUserGrantAdminRights", { defaultValue: "Nadaj uprawnienia administratora" })}>
+                              <Switch
+                                checked={selectedUser.isAdmin || false}
+                                onChange={() => {
+                                 void handleUserToggleAdmin(selectedUser.id);
+                                  setSelectedUser(prev => ({ ...prev, isAdmin: !prev.isAdmin }));
+                                }}
+                                size="small"
+                                color="secondary"
+                              />
+                            </Tooltip>
+                          </Box>
+                        </Grid>
+                      </Grid>
+                    )}
+                  </DialogContent>
+                  <DialogActions>
+                    <Button 
+                      onClick={() => {
+                        handleCloseUserDetails();
+                        handleDeleteUser(selectedUser);
+                      }}
+                      startIcon={<DeleteIcon />}
+                      color="error"
+                      variant="outlined"
+                    >
+                      {t("adminUserDelete", { defaultValue: "Usuń" })}
+                    </Button>
+                    <Button onClick={handleCloseUserDetails} variant="contained">
+                      {t("close", { defaultValue: "Zamknij" })}
+                    </Button>
+                  </DialogActions>
+                </Dialog>
+
+                {/* Dialog potwierdzenia usunięcia */}
+                <Dialog 
+                  open={deleteConfirmDialog} 
+                  onClose={handleCancelDelete}
+                >
+                  <DialogTitle>
+                    {t("adminUserDeleteConfirmTitle", { defaultValue: "Potwierdź usunięcie użytkownika" })}
+                  </DialogTitle>
+                  <DialogContent>
+                    <Typography>
+                      {t("adminUserDeleteConfirmMessage", { 
+                        defaultValue: "Czy na pewno chcesz usunąć użytkownika {{email}}? Ta operacja jest nieodwracalna.",
+                        email: userToDelete?.email || ''
+                      })}
+                    </Typography>
+                  </DialogContent>
+                  <DialogActions>
+                    <Button onClick={handleCancelDelete}>
+                      {t("cancel", { defaultValue: "Anuluj" })}
+                    </Button>
+                    <Button onClick={handleConfirmDelete} color="error" variant="contained">
+                      {t("adminUserDeleteConfirm", { defaultValue: "Usuń" })}
+                    </Button>
+                  </DialogActions>
+                </Dialog>
+
+                {/* Dialogi potwierdzenia usunięcia dla danych systemowych */}
+                <Dialog open={aquariumDeleteDialog} onClose={handleCancelSystemDelete}>
+                  <DialogTitle>
+                    {t("adminDeleteAquariumConfirmTitle", { defaultValue: "Potwierdź usunięcie akwarium" })}
+                  </DialogTitle>
+                  <DialogContent>
+                    <Typography>
+                      {t("adminDeleteAquariumConfirmMessage", { 
+                        defaultValue: "Czy na pewno chcesz usunąć akwarium \"{{name}}\"? Ta operacja jest nieodwracalna i usunie wszystkie powiązane ryby i rośliny.",
+                        name: itemToDelete?.name || ''
+                      })}
+                    </Typography>
+                  </DialogContent>
+                  <DialogActions>
+                    <Button onClick={handleCancelSystemDelete}>
+                      {t("cancel", { defaultValue: "Anuluj" })}
+                    </Button>
+                    <Button onClick={handleConfirmDeleteAquarium} color="error" variant="contained">
+                      {t("adminUserDeleteConfirm", { defaultValue: "Usuń" })}
+                    </Button>
+                  </DialogActions>
+                </Dialog>
+
+                <Dialog open={fishDeleteDialog} onClose={handleCancelSystemDelete}>
+                  <DialogTitle>
+                    {t("adminDeleteFishConfirmTitle", { defaultValue: "Potwierdź usunięcie ryb" })}
+                  </DialogTitle>
+                  <DialogContent>
+                    <Typography>
+                      {t("adminDeleteFishConfirmMessage", { 
+                        defaultValue: "Czy na pewno chcesz usunąć {{count}} {{species}} z akwarium \"{{aquarium}}\"?",
+                        count: itemToDelete?.count || 0,
+                        species: itemToDelete?.speciesName || '',
+                        aquarium: itemToDelete?.aquariumName || ''
+                      })}
+                    </Typography>
+                  </DialogContent>
+                  <DialogActions>
+                    <Button onClick={handleCancelSystemDelete}>
+                      {t("cancel", { defaultValue: "Anuluj" })}
+                    </Button>
+                    <Button onClick={handleConfirmDeleteFish} color="error" variant="contained">
+                      {t("adminUserDeleteConfirm", { defaultValue: "Usuń" })}
+                    </Button>
+                  </DialogActions>
+                </Dialog>
+
+                <Dialog open={plantDeleteDialog} onClose={handleCancelSystemDelete}>
+                  <DialogTitle>
+                    {t("adminDeletePlantConfirmTitle", { defaultValue: "Potwierdź usunięcie roślin" })}
+                  </DialogTitle>
+                  <DialogContent>
+                    <Typography>
+                      {t("adminDeletePlantConfirmMessage", { 
+                        defaultValue: "Czy na pewno chcesz usunąć {{count}} {{plant}} z akwarium \"{{aquarium}}\"?",
+                        count: itemToDelete?.count || 0,
+                        plant: itemToDelete?.plantName || '',
+                        aquarium: itemToDelete?.aquariumName || ''
+                      })}
+                    </Typography>
+                  </DialogContent>
+                  <DialogActions>
+                    <Button onClick={handleCancelSystemDelete}>
+                      {t("cancel", { defaultValue: "Anuluj" })}
+                    </Button>
+                    <Button onClick={handleConfirmDeletePlant} color="error" variant="contained">
+                      {t("adminUserDeleteConfirm", { defaultValue: "Usuń" })}
+                    </Button>
+                  </DialogActions>
+                </Dialog>
+              </TabPanel>
+
+              {/* Dane Systemowe */}
+              <TabPanel value={activeTab} index={2}>
+                <Typography variant="h6" sx={{ mb: 3 }}>
+                  {t("adminSystemDataTitle", { defaultValue: "Dane systemowe" })}
+                </Typography>
+
+                {systemDataView === null ? (
+                  systemData ? (
+                    <Box sx={{ 
+                      display: 'flex', 
+                      justifyContent: 'space-evenly', 
+                      flexWrap: 'wrap',
+                      gap: 3,
+                      flexDirection: { xs: 'column', sm: 'row' }
+                    }}>
+                      {/* Statystyki użytkowników - nieklikalne */}
+                      <Card sx={{ flex: { xs: '1 1 100%', sm: '1 1 calc(50% - 12px)', md: '0 1 auto' }, minWidth: { xs: '100%', sm: '200px', md: '220px' } }}>
+                        <CardContent>
+                          <Typography variant="h6" sx={{ mb: 2 }}>
+                            👥 {t("adminSystemUsers", { defaultValue: "Użytkownicy" })}
+                          </Typography>
+                          <Typography variant="body2" color="text.secondary" sx={{ mb: 0.5 }}>
+                            {t("adminSystemTotalUsers", { defaultValue: "Wszystkich użytkowników" })}
+                          </Typography>
+                          <Typography variant="h4">{systemData?.totalUsers || 0}</Typography>
+                        </CardContent>
+                      </Card>
+
+                      {/* Statystyki akwariów - klikalne */}
+                      <Card 
+                        sx={{ 
+                          flex: { xs: '1 1 100%', sm: '1 1 calc(50% - 12px)', md: '0 1 auto' }, 
+                          minWidth: { xs: '100%', sm: '200px', md: '220px' },
+                          cursor: 'pointer',
+                          '&:hover': { boxShadow: 4, transform: 'translateY(-2px)', transition: 'all 0.2s' }
+                        }}
+                        onClick={() => handleSystemDataCardClick('aquariums')}
+                      >
+                        <CardContent>
+                          <Typography variant="h6" sx={{ mb: 2 }}>
+                            🐠 {t("adminSystemAquariums", { defaultValue: "Akwaria" })}
+                          </Typography>
+                          <Typography variant="body2" color="text.secondary" sx={{ mb: 0.5 }}>
+                            {t("adminSystemTotalAquariums", { defaultValue: "Wszystkich akwariów" })}
+                          </Typography>
+                          <Typography variant="h4">{systemData?.totalAquariums || 0}</Typography>
+                          <Typography variant="caption" color="text.secondary" sx={{ mt: 1, display: 'block' }}>
+                            {t("adminSystemClickToManage", { defaultValue: "Kliknij, aby zarządzać" })}
+                          </Typography>
+                        </CardContent>
+                      </Card>
+
+                      {/* Statystyki ryb - klikalne */}
+                      <Card 
+                        sx={{ 
+                          flex: { xs: '1 1 100%', sm: '1 1 calc(50% - 12px)', md: '0 1 auto' }, 
+                          minWidth: { xs: '100%', sm: '200px', md: '220px' },
+                          cursor: 'pointer',
+                          '&:hover': { boxShadow: 4, transform: 'translateY(-2px)', transition: 'all 0.2s' }
+                        }}
+                        onClick={() => handleSystemDataCardClick('fish')}
+                      >
+                        <CardContent>
+                          <Typography variant="h6" sx={{ mb: 2 }}>
+                            🐟 {t("adminSystemFish", { defaultValue: "Ryby" })}
+                          </Typography>
+                          <Typography variant="body2" color="text.secondary" sx={{ mb: 0.5 }}>
+                            {t("adminSystemTotalFish", { defaultValue: "Wszystkich ryb" })}
+                          </Typography>
+                          <Typography variant="h4">{(systemData?.totalFish || 0).toLocaleString()}</Typography>
+                          <Typography variant="caption" color="text.secondary" sx={{ mt: 1, display: 'block' }}>
+                            {t("adminSystemClickToManage", { defaultValue: "Kliknij, aby zarządzać" })}
+                          </Typography>
+                        </CardContent>
+                      </Card>
+
+                      {/* Statystyki roślin - klikalne */}
+                      <Card 
+                        sx={{ 
+                          flex: { xs: '1 1 100%', sm: '1 1 calc(50% - 12px)', md: '0 1 auto' }, 
+                          minWidth: { xs: '100%', sm: '200px', md: '220px' },
+                          cursor: 'pointer',
+                          '&:hover': { boxShadow: 4, transform: 'translateY(-2px)', transition: 'all 0.2s' }
+                        }}
+                        onClick={() => handleSystemDataCardClick('plants')}
+                      >
+                        <CardContent>
+                          <Typography variant="h6" sx={{ mb: 2 }}>
+                            🌿 {t("adminSystemPlants", { defaultValue: "Rośliny" })}
+                          </Typography>
+                          <Typography variant="body2" color="text.secondary" sx={{ mb: 0.5 }}>
+                            {t("adminSystemTotalPlants", { defaultValue: "Wszystkich roślin" })}
+                          </Typography>
+                          <Typography variant="h4">{(systemData?.totalPlants || 0).toLocaleString()}</Typography>
+                          <Typography variant="caption" color="text.secondary" sx={{ mt: 1, display: 'block' }}>
+                            {t("adminSystemClickToManage", { defaultValue: "Kliknij, aby zarządzać" })}
+                          </Typography>
+                        </CardContent>
+                      </Card>
+                    </Box>
+                  ) : (
+                    <Alert severity="info">
+                      {t("adminSystemDataLoading", { defaultValue: "Ładowanie danych systemowych..." })}
+                    </Alert>
+                  )
+                ) : systemDataView === 'aquariums' ? (
+                  <Box>
+                    <Box sx={{ display: 'flex', alignItems: 'center', mb: 3, gap: 2 }}>
+                      <IconButton onClick={handleBackToSystemData} sx={{ mr: 1 }}>
+                        <KeyboardReturnOutlinedIcon />
+                      </IconButton>
+                      <Typography variant="h6">
+                        {t("adminManageAquariums", { defaultValue: "Zarządzanie akwariami" })}
+                      </Typography>
+                    </Box>
+                    {allAquariums.length === 0 ? (
+                      <Alert severity="info">
+                        {t("adminNoAquariums", { defaultValue: "Brak akwariów do wyświetlenia" })}
+                      </Alert>
+                    ) : (
+                      <TableContainer>
+                        <Table>
+                          <TableHead>
+                            <TableRow>
+                              <TableCell><strong>{t("adminAquariumName", { defaultValue: "Nazwa" })}</strong></TableCell>
+                              <TableCell><strong>{t("adminAquariumOwner", { defaultValue: "Właściciel" })}</strong></TableCell>
+                              <TableCell><strong>{t("adminAquariumWaterType", { defaultValue: "Typ wody" })}</strong></TableCell>
+                              <TableCell><strong>{t("adminAquariumVolume", { defaultValue: "Objętość (L)" })}</strong></TableCell>
+                              <TableCell><strong>{t("adminAquariumCreated", { defaultValue: "Data utworzenia" })}</strong></TableCell>
+                              <TableCell><strong>{t("adminUserActions", { defaultValue: "Akcje" })}</strong></TableCell>
+                            </TableRow>
+                          </TableHead>
+                          <TableBody>
+                            {allAquariums.map((aquarium) => (
+                              <TableRow key={aquarium.id} hover>
+                                <TableCell>{aquarium.name}</TableCell>
+                                <TableCell>{aquarium.owner}</TableCell>
+                                <TableCell>{aquarium.waterType}</TableCell>
+                                <TableCell>{aquarium.volumeLiters}</TableCell>
+                                <TableCell>{formatDate(aquarium.createdAt)}</TableCell>
+                                <TableCell>
+                                  <Tooltip title={t("adminUserDelete", { defaultValue: "Usuń akwarium" })}>
+                                    <IconButton
+                                      size="small"
+                                      color="error"
+                                      onClick={() => handleDeleteAquarium(aquarium)}
+                                    >
+                                      <DeleteIcon fontSize="small" />
+                                    </IconButton>
+                                  </Tooltip>
+                                </TableCell>
+                              </TableRow>
                             ))}
-                            </tbody>
-                        </table>
-                    </div>
+                          </TableBody>
+                        </Table>
+                      </TableContainer>
+                    )}
+                  </Box>
+                ) : systemDataView === 'fish' ? (
+                  <Box>
+                    <Box sx={{ display: 'flex', alignItems: 'center', mb: 3, gap: 2 }}>
+                      <IconButton onClick={handleBackToSystemData} sx={{ mr: 1 }}>
+                        <KeyboardReturnOutlinedIcon />
+                      </IconButton>
+                      <Typography variant="h6">
+                        {t("adminManageFish", { defaultValue: "Zarządzanie rybami" })}
+                      </Typography>
+                    </Box>
+                    {allFish.length === 0 ? (
+                      <Alert severity="info">
+                        {t("adminNoFish", { defaultValue: "Brak ryb do wyświetlenia" })}
+                      </Alert>
+                    ) : (
+                      <TableContainer>
+                        <Table>
+                          <TableHead>
+                            <TableRow>
+                              <TableCell><strong>{t("adminFishSpecies", { defaultValue: "Gatunek" })}</strong></TableCell>
+                              <TableCell><strong>{t("adminFishAquarium", { defaultValue: "Akwarium" })}</strong></TableCell>
+                              <TableCell><strong>{t("adminFishOwner", { defaultValue: "Właściciel" })}</strong></TableCell>
+                              <TableCell><strong>{t("adminFishCount", { defaultValue: "Liczba" })}</strong></TableCell>
+                              <TableCell><strong>{t("adminAquariumCreated", { defaultValue: "Data dodania" })}</strong></TableCell>
+                              <TableCell><strong>{t("adminUserActions", { defaultValue: "Akcje" })}</strong></TableCell>
+                            </TableRow>
+                          </TableHead>
+                          <TableBody>
+                            {allFish.map((fish) => (
+                              <TableRow key={fish.id} hover>
+                                <TableCell>{fish.speciesName}</TableCell>
+                                <TableCell>{fish.aquariumName}</TableCell>
+                                <TableCell>{fish.owner}</TableCell>
+                                <TableCell>{fish.count}</TableCell>
+                                <TableCell>{formatDate(fish.createdAt)}</TableCell>
+                                <TableCell>
+                                  <Tooltip title={t("adminDeleteFish", { defaultValue: "Usuń ryby z akwarium" })}>
+                                    <IconButton
+                                      size="small"
+                                      color="error"
+                                      onClick={() => handleDeleteFish(fish)}
+                                    >
+                                      <DeleteIcon fontSize="small" />
+                                    </IconButton>
+                                  </Tooltip>
+                                </TableCell>
+                              </TableRow>
+                            ))}
+                          </TableBody>
+                        </Table>
+                      </TableContainer>
+                    )}
+                  </Box>
+                ) : systemDataView === 'plants' ? (
+                  <Box>
+                    <Box sx={{ display: 'flex', alignItems: 'center', mb: 3, gap: 2 }}>
+                      <IconButton onClick={handleBackToSystemData} sx={{ mr: 1 }}>
+                        <KeyboardReturnOutlinedIcon />
+                      </IconButton>
+                      <Typography variant="h6">
+                        {t("adminManagePlants", { defaultValue: "Zarządzanie roślinami" })}
+                      </Typography>
+                    </Box>
+                    {allPlants.length === 0 ? (
+                      <Alert severity="info">
+                        {t("adminNoPlants", { defaultValue: "Brak roślin do wyświetlenia" })}
+                      </Alert>
+                    ) : (
+                      <TableContainer>
+                        <Table>
+                          <TableHead>
+                            <TableRow>
+                              <TableCell><strong>{t("adminPlantName", { defaultValue: "Nazwa rośliny" })}</strong></TableCell>
+                              <TableCell><strong>{t("adminFishAquarium", { defaultValue: "Akwarium" })}</strong></TableCell>
+                              <TableCell><strong>{t("adminFishOwner", { defaultValue: "Właściciel" })}</strong></TableCell>
+                              <TableCell><strong>{t("adminFishCount", { defaultValue: "Liczba" })}</strong></TableCell>
+                              <TableCell><strong>{t("adminAquariumCreated", { defaultValue: "Data dodania" })}</strong></TableCell>
+                              <TableCell><strong>{t("adminUserActions", { defaultValue: "Akcje" })}</strong></TableCell>
+                            </TableRow>
+                          </TableHead>
+                          <TableBody>
+                            {allPlants.map((plant) => (
+                              <TableRow key={plant.id} hover>
+                                <TableCell>{plant.plantName}</TableCell>
+                                <TableCell>{plant.aquariumName}</TableCell>
+                                <TableCell>{plant.owner}</TableCell>
+                                <TableCell>{plant.count}</TableCell>
+                                <TableCell>{formatDate(plant.createdAt)}</TableCell>
+                                <TableCell>
+                                  <Tooltip title={t("adminDeletePlant", { defaultValue: "Usuń rośliny z akwarium" })}>
+                                    <IconButton
+                                      size="small"
+                                      color="error"
+                                      onClick={() => handleDeletePlant(plant)}
+                                    >
+                                      <DeleteIcon fontSize="small" />
+                                    </IconButton>
+                                  </Tooltip>
+                                </TableCell>
+                              </TableRow>
+                            ))}
+                          </TableBody>
+                        </Table>
+                      </TableContainer>
+                    )}
+                  </Box>
+                ) : (
+                  <Alert severity="info">
+                    {t("adminSystemDataLoading", { defaultValue: "Ładowanie danych systemowych..." })}
+                  </Alert>
                 )}
-
-                {/* --- AQUARIUMS TAB --- */}
-                {activeTab === 'aquariums' && (
-                    <div className="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden">
-                        <div className="p-5 border-b border-gray-100 bg-gray-50/50">
-                            <h2 className="font-semibold text-gray-800">Monitoring Parametrów Wody</h2>
-                        </div>
-                        <div className="overflow-x-auto">
-                            <table className="w-full text-left text-sm">
-                                <thead className="bg-gray-50 text-gray-500 border-b border-gray-200">
-                                <tr>
-                                    <th className="px-6 py-3">Nazwa</th>
-                                    <th className="px-6 py-3">Temp.</th>
-                                    <th className="px-6 py-3">pH</th>
-                                    <th className="px-6 py-3">Status</th>
-                                    <th className="px-6 py-3 text-right">Panel Sterowania</th>
-                                </tr>
-                                </thead>
-                                <tbody className="divide-y divide-gray-100">
-                                {aquariums.map(aq => (
-                                    <tr key={aq.id} className="hover:bg-gray-50">
-                                        <td className="px-6 py-4">
-                                            <div className="font-medium text-gray-900">{aq.name}</div>
-                                            <div className="text-xs text-gray-400">ID: #{aq.id}</div>
-                                        </td>
-                                        <td className={`px-6 py-4 font-mono font-bold ${aq.temp > 28 || aq.temp < 20 ? 'text-red-600 animate-pulse' : 'text-green-600'}`}>{aq.temp}°C</td>
-                                        <td className="px-6 py-4 font-mono">{aq.ph}</td>
-                                        <td className="px-6 py-4">
-                                            <span className={`px-2.5 py-0.5 rounded-full text-xs font-medium border ${aq.status === 'Aktywne' ? 'bg-green-50 text-green-700 border-green-100' : 'bg-gray-100 text-gray-700'}`}>{aq.status}</span>
-                                        </td>
-                                        <td className="px-6 py-4 text-right flex justify-end gap-2">
-                                            <button
-                                                onClick={() => setSelectedAquariumId(aq.id)}
-                                                className="bg-blue-50 text-blue-600 hover:bg-blue-100 px-3 py-1.5 rounded-md text-xs font-bold transition flex items-center gap-1"
-                                            >
-                                                <IconStats /> Szczegóły
-                                            </button>
-
-                                            <button onClick={() => handleRestartAquarium(aq.id)} disabled={aq.status !== 'Aktywne'} className="p-2 rounded-full text-gray-400 hover:text-blue-600 hover:bg-blue-50 transition" title="Restart">
-                                                <IconRefresh className={aq.status === 'Restartowanie...' ? 'animate-spin' : ''} />
-                                            </button>
-                                        </td>
-                                    </tr>
-                                ))}
-                                </tbody>
-                            </table>
-                        </div>
-                    </div>
-                )}
-
-                {/* --- CATALOG TAB --- */}
-                {activeTab === 'catalog' && (
-                    <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-                        <div className="lg:col-span-2 bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden">
-                            <div className="p-5 border-b border-gray-100 bg-gray-50/50"><h2 className="font-semibold text-gray-800">Katalog</h2></div>
-                            <table className="w-full text-sm text-left">
-                                <thead className="bg-gray-50 text-gray-500 border-b border-gray-200">
-                                <tr><th className="px-6 py-3">Nazwa</th><th className="px-6 py-3">Typ</th><th className="px-6 py-3">Śr. życie</th></tr>
-                                </thead>
-                                <tbody className="divide-y divide-gray-100">
-                                {catalog.map(item => (
-                                    <tr key={item.id} className="hover:bg-gray-50">
-                                        <td className="px-6 py-4 font-medium">{item.name}</td>
-                                        <td className="px-6 py-4 text-xs">{item.type}</td>
-                                        <td className="px-6 py-4 font-mono text-purple-600">{item.lifespan} lat</td>
-                                    </tr>
-                                ))}
-                                </tbody>
-                            </table>
-                        </div>
-                        <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-6 h-fit">
-                            <h3 className="font-bold mb-4">Dodaj Gatunek</h3>
-                            <form onSubmit={handleAddItem} className="space-y-4">
-                                <input type="text" placeholder="Nazwa" value={newItemName} onChange={e => setNewItemName(e.target.value)} className="w-full border p-2 rounded text-sm bg-white" />
-
-                                {/* SELECT DO WYBORU TYPU */}
-                                <select
-                                    value={newItemType}
-                                    onChange={(e) => setNewItemType(e.target.value)}
-                                    className="w-full border p-2 rounded text-sm bg-white"
-                                >
-                                    <option value="Ryba">Ryba</option>
-                                    <option value="Roślina">Roślina</option>
-                                </select>
-
-                                <input type="number" placeholder="Śr. życie (lat)" value={newItemLifespan} onChange={e => setNewItemLifespan(e.target.value)} className="w-full border p-2 rounded text-sm bg-white" />
-                                <button className="w-full bg-gray-900 text-white py-2 rounded text-sm font-bold">Dodaj</button>
-                            </form>
-                        </div>
-                    </div>
-                )}
-
-                {/* --- LOGS TAB --- */}
-                {activeTab === 'logs' && (
-                    <div className="bg-[#1e1e1e] rounded-xl shadow-lg border border-gray-800 overflow-hidden text-gray-300 font-mono text-sm h-[600px] overflow-y-auto p-4 space-y-2">
-                        {logs.map(log => (
-                            <div key={log.id} className="flex gap-4 border-b border-gray-800 pb-2 mb-2">
-                                <span className="text-gray-500">{log.timestamp}</span>
-                                <span className={log.level === 'ERROR' ? 'text-red-500' : log.level === 'WARN' ? 'text-yellow-500' : 'text-blue-400'}>[{log.level}]</span>
-                                <span className="text-purple-400">{log.action}</span>
-                                <span>{log.details}</span>
-                            </div>
-                        ))}
-                    </div>
-                )}
-
-            </div>
-            <style jsx>{`
-          @keyframes slide-up { from { transform: translateY(100%); opacity: 0; } to { transform: translateY(0); opacity: 1; } }
-          .animate-slide-up { animation: slide-up 0.3s ease-out forwards; }
-          @keyframes fade-in { from { opacity: 0; } to { opacity: 1; } }
-          .animate-fade-in { animation: fade-in 0.2s ease-out forwards; }
-        `}</style>
-        </div>
-    )
+              </TabPanel>
+            </>
+          )}
+        </Paper>
+      </Box>
+    </Box>
+  );
 }
