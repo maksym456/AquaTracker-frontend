@@ -94,6 +94,7 @@ export default function AquariumDetailPage() {
   const [availableFishes, setAvailableFishes] = useState([]);
   const [availablePlants, setAvailablePlants] = useState([]);
   const [selectedFishId, setSelectedFishId] = useState("");
+  const [previewFishId, setPreviewFishId] = useState("");
   const [selectedPlantId, setSelectedPlantId] = useState("");
   const [fishQuantity, setFishQuantity] = useState(1);
   const [plantQuantity, setPlantQuantity] = useState(1);
@@ -2556,6 +2557,7 @@ export default function AquariumDetailPage() {
         onClose={() => {
           setAddFishModalOpen(false);
           setSelectedFishId("");
+          setPreviewFishId("");
           setFishQuantity(1);
         }}
         sx={{
@@ -2581,7 +2583,10 @@ export default function AquariumDetailPage() {
             <Select
               value={selectedFishId}
               label={t("selectFish", { defaultValue: "Wybierz rybę" })}
-              onChange={(e) => setSelectedFishId(e.target.value)}
+              onChange={(e) => {
+                setSelectedFishId(e.target.value);
+                setPreviewFishId(e.target.value);
+              }}
               variant="outlined"
             >
               {(() => {
@@ -2623,6 +2628,8 @@ export default function AquariumDetailPage() {
                     <MenuItem 
                       key={`fish-${fish.id}`} 
                       value={fish.id}
+                      onMouseEnter={() => setPreviewFishId(fish.id)}
+                      onMouseLeave={() => setPreviewFishId(selectedFishId)}
                       sx={{
                         ...(isIncompatible && {
                           bgcolor: 'rgba(244, 67, 54, 0.1)',
@@ -2655,6 +2662,56 @@ export default function AquariumDetailPage() {
               })()}
             </Select>
           </FormControl>
+
+          {(() => {
+            const fishToShow =
+              availableFishes.find((f) => String(f.id) === String(previewFishId || selectedFishId)) || null;
+
+            if (!fishToShow) return null;
+
+            const temperature = fishToShow.temperature ?? "-";
+            const ph = fishToShow.ph ?? "-";
+            const hardness = fishToShow.hardnessDGH ?? "-";
+            const biotope = fishToShow.biotope ?? fishToShow.biotype ?? "-";
+            const temperament = fishToShow.temperament ?? "-";
+            const minSchool =
+              fishToShow.minShoalSize ?? fishToShow.minSchoolSize ?? "-";
+
+            return (
+              <Box
+                sx={{
+                  mb: 2,
+                  p: 1.5,
+                  borderRadius: 1.5,
+                  border: "1px solid",
+                  borderColor: darkMode ? "rgba(255,255,255,0.15)" : "divider",
+                  bgcolor: darkMode ? "rgba(255,255,255,0.04)" : "rgba(0,0,0,0.02)",
+                }}
+              >
+                <Typography sx={{ fontWeight: 700, mb: 0.5, color: darkMode ? "white" : "text.primary" }}>
+                  Parametry wybranej ryby
+                </Typography>
+                <Typography variant="body2" sx={{ color: darkMode ? "rgba(255,255,255,0.85)" : "text.secondary" }}>
+                  Temperatura: <strong>{temperature}</strong> °C
+                </Typography>
+                <Typography variant="body2" sx={{ color: darkMode ? "rgba(255,255,255,0.85)" : "text.secondary" }}>
+                  pH: <strong>{ph}</strong>
+                </Typography>
+                <Typography variant="body2" sx={{ color: darkMode ? "rgba(255,255,255,0.85)" : "text.secondary" }}>
+                  Twardość: <strong>{hardness}</strong> dGH
+                </Typography>
+                <Typography variant="body2" sx={{ color: darkMode ? "rgba(255,255,255,0.85)" : "text.secondary" }}>
+                  Biotyp: <strong>{biotope}</strong>
+                </Typography>
+                <Typography variant="body2" sx={{ color: darkMode ? "rgba(255,255,255,0.85)" : "text.secondary" }}>
+                  Usposobienie: <strong>{temperament}</strong>
+                </Typography>
+                <Typography variant="body2" sx={{ color: darkMode ? "rgba(255,255,255,0.85)" : "text.secondary" }}>
+                  Stado (min): <strong>{minSchool}</strong>
+                </Typography>
+              </Box>
+            );
+          })()}
 
           {/* Wyświetl ostrzeżenia kompatybilności - tylko gdy checkbox "Pokaż ostrzeżenia" jest zaznaczony */}
           {showCompatibilityFilter && compatibilityIssues.length > 0 && (
