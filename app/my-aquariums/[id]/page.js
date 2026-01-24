@@ -105,6 +105,7 @@ export default function AquariumDetailPage() {
   const [fishPanelExpanded, setFishPanelExpanded] = useState(false);
   const [plantPanelExpanded, setPlantPanelExpanded] = useState(false);
   const [compatibilityPanelExpanded, setCompatibilityPanelExpanded] = useState(false);
+  const [frontendStatusIssues, setFrontendStatusIssues] = useState([]);
   const [deathNotification, setDeathNotification] = useState(null);
   const [foodChainEnabled, setFoodChainEnabled] = useState(false); // Włącznik łańcucha pokarmowego
   const [osmoticShockEnabled, setOsmoticShockEnabled] = useState(false); // Włącznik szoku osmotycznego
@@ -342,6 +343,113 @@ export default function AquariumDetailPage() {
     void fetchAvailableData();
   }, []);
 
+  // Lokalna detekcja problemów (żeby pokazać wykrzyknik nawet bez statusu z backendu)
+  useEffect(() => {
+    const currentAquarium = aquariumRef.current;
+    const fishesDb = availableFishesRef.current;
+
+    if (!currentAquarium?.fishes || currentAquarium.fishes.length === 0 || !Array.isArray(fishesDb) || fishesDb.length === 0) {
+      setFrontendStatusIssues([]);
+      return;
+    }
+
+    const parseRangeString = (rangeString) => {
+      if (!rangeString) return null;
+      const s = String(rangeString).trim();
+      const parts = s.split('-').map((p) => parseFloat(p.trim()));
+      if (parts.length !== 2 || parts.some((n) => Number.isNaN(n))) return null;
+      return { min: Math.min(parts[0], parts[1]), max: Math.max(parts[0], parts[1]) };
+    };
+
+    const isValueInRange = (value, rangeString) => {
+      const range = parseRangeString(rangeString);
+      if (!range) return true;
+      const v = parseFloat(value);
+      if (Number.isNaN(v)) return true;
+      return v >= range.min && v <= range.max;
+    };
+
+    const aquariumTemperature = currentAquarium.temperature ?? currentAquarium.temperatureC ?? null;
+    const aquariumPh = currentAquarium.ph ?? null;
+    const aquariumHardness = currentAquarium.hardness ?? currentAquarium.hardnessDGH ?? null;
+    const aquariumBiotope = currentAquarium.biotope ?? null;
+    const aquariumWaterType = currentAquarium.waterType ?? null;
+
+    const issues = [];
+
+    // 1) Konflikt usposobień (żeby było sens włączyć łańcuch pokarmowy)
+    const fishesWithTemp = currentAquarium.fishes
+      .map((af) => {
+        const fishDetails = fishesDb.find((f) => f.id === af.fishId);
+        if (!fishDetails) return null;
+        return { ...af, details: fishDetails, temperament: normalizeTemperament(fishDetails.temperament) };
+      })
+      .filter(Boolean);
+
+    const hasPredators = fishesWithTemp.some((f) => f.temperament === "agresywne" || f.temperament === "pol_agresywne");
+    const hasPeaceful = fishesWithTemp.some((f) => f.temperament === "spokojne");
+    if (hasPredators && hasPeaceful) {
+      issues.push({
+        type: "TEMPERAMENT_INCOMPATIBILITY",
+        severity: "WARNING",
+        message: t("foodChainDescription", { defaultValue: "Agresywne ryby mogą zjeść spokojne" })
+      });
+    }
+
+    // 2) Niezgodne warunki środowiska (żeby było sens włączyć szok osmotyczny)
+    for (const aquariumFish of currentAquarium.fishes) {
+      const fishDetails = fishesDb.find((f) => f.id === aquariumFish.fishId);
+      if (!fishDetails) continue;
+
+      const reasons = [];
+
+      if (aquariumWaterType && fishDetails.waterType && !checkWaterTypeCompatibility(aquariumWaterType, fishDetails.waterType)) {
+        reasons.push("typ wody");
+      }
+      if (!isValueInRange(aquariumTemperature, fishDetails.temperature)) reasons.push("temperatura");
+      if (!isValueInRange(aquariumPh, fishDetails.ph)) reasons.push("pH");
+      if (!isValueInRange(aquariumHardness, fishDetails.hardnessDGH)) reasons.push("twardość");
+
+      const fishBiotope = fishDetails.biotope ?? fishDetails.biotype ?? null;
+      if (aquariumBiotope && fishBiotope) {
+        const a = String(aquariumBiotope).toLowerCase().trim();
+        const f = String(fishBiotope).toLowerCase().trim();
+        if (a && f && a !== f) reasons.push("biotyp");
+      }
+
+      const minSchool = fishDetails.minShoalSize ?? fishDetails.minSchoolSize ?? null;
+      const currentCount = aquariumFish.count ?? 1;
+      if (typeof minSchool === "number" && minSchool > 1 && currentCount < minSchool) reasons.push("stado");
+
+      if (reasons.length > 0) {
+        const translateReason = (reason) => {
+          const map = {
+            "typ wody": "fish.parameters.waterType",
+            "temperatura": "fish.parameters.temperature",
+            "pH": "fish.parameters.ph",
+            "twardość": "fish.parameters.hardness",
+            "biotyp": "fish.parameters.biotope",
+            "stado": "fish.parameters.minSchoolSize",
+          };
+          const key = map[reason];
+          return key ? t(key, { defaultValue: reason }) : reason;
+        };
+        const translatedReasons = reasons.map(translateReason).join(", ");
+        issues.push({
+          type: "ENVIRONMENT_MISMATCH",
+          severity: "ERROR",
+          message: t("osmoticShockMismatch", {
+            defaultValue: `Szok osmotyczny: ${translateSpeciesName(fishDetails.name, "fish")} – niezgodne: ${translatedReasons}.`,
+            fishName: translateSpeciesName(fishDetails.name, "fish"),
+            reasons: translatedReasons
+          })
+        });
+      }
+    }
+
+    setFrontendStatusIssues(issues);
+  }, [aquarium, availableFishes, t]);
+
   // Łańcuch pokarmowy - automatyczne usuwanie spokojnych ryb przez agresywne
   useEffect(() => {
     if (!foodChainEnabled || !aquariumId) return;
@@ -453,6 +561,22 @@ export default function AquariumDetailPage() {
     const OSMOTIC_SHOCK_INTERVAL = 6000; // 6 sekund (podobnie jak food chain)
     const DEATH_CHANCE = 0.50; // 50% szansy na śmierć w każdym cyklu
     const WARNING_DELAY = 4000; // 4 sekundy ostrzeżenia przed śmiercią
+
+    const parseRangeString = (rangeString) => {
+      if (!rangeString) return null;
+      const s = String(rangeString).trim();
+      const parts = s.split('-').map((p) => parseFloat(p.trim()));
+      if (parts.length !== 2 || parts.some((n) => Number.isNaN(n))) return null;
+      return { min: Math.min(parts[0], parts[1]), max: Math.max(parts[0], parts[1]) };
+    };
+
+    const isValueInRange = (value, rangeString) => {
+      const range = parseRangeString(rangeString);
+      if (!range) return true; // brak danych zakresu = nie egzekwuj
+      const v = parseFloat(value);
+      if (Number.isNaN(v)) return true; // brak danych akwarium = nie egzekwuj
+      return v >= range.min && v <= range.max;
+    };
     
     const osmoticShockInterval = setInterval(async () => {
       const currentAquarium = aquariumRef.current;
@@ -469,34 +593,69 @@ export default function AquariumDetailPage() {
         return;
       }
       
-      // Znajdź ryby z niezgodnym typem wody
+      const aquariumTemperature = currentAquarium.temperature ?? currentAquarium.temperatureC ?? null;
+      const aquariumPh = currentAquarium.ph ?? null;
+      const aquariumHardness = currentAquarium.hardness ?? currentAquarium.hardnessDGH ?? null;
+      const aquariumBiotope = currentAquarium.biotope ?? null;
+
+      // Znajdź ryby, które nie przeżyją w środowisku (woda/temperatura/pH/twardość/biotyp/stado)
       const incompatibleFishes = currentAquarium.fishes
-        .map(aquariumFish => {
-          const fishDetails = currentAvailableFishes.find(f => f.id === aquariumFish.fishId);
+        .map((aquariumFish) => {
+          const fishDetails = currentAvailableFishes.find((f) => f.id === aquariumFish.fishId);
           if (!fishDetails) {
             console.log(`[Szok osmotyczny] Nie znaleziono szczegółów dla ryby ID: ${aquariumFish.fishId}`);
             return null;
           }
-          
-          if (!fishDetails.waterType) {
-            console.log(`[Szok osmotyczny] Ryba ${fishDetails.name} nie ma zdefiniowanego typu wody`);
-            return null;
+
+          const reasons = [];
+
+          // Typ wody
+          if (fishDetails.waterType) {
+            const isCompatible = checkWaterTypeCompatibility(aquariumWaterType, fishDetails.waterType);
+            if (!isCompatible) reasons.push("niezgodny typ wody");
           }
-          
-          // Sprawdź zgodność typu wody
-          const isCompatible = checkWaterTypeCompatibility(aquariumWaterType, fishDetails.waterType);
-          
-          console.log(`[Szok osmotyczny] Ryba: ${fishDetails.name}, Typ akwarium: ${aquariumWaterType}, Typ ryby: ${fishDetails.waterType}, Zgodne: ${isCompatible}`);
-          
-          if (!isCompatible) {
-            return {
-              ...aquariumFish,
-              details: fishDetails
-            };
+
+          // Temperatura (zakres w fishDetails.temperature)
+          if (!isValueInRange(aquariumTemperature, fishDetails.temperature)) {
+            reasons.push("nieodpowiednia temperatura");
           }
-          return null;
+
+          // pH (zakres w fishDetails.ph)
+          if (!isValueInRange(aquariumPh, fishDetails.ph)) {
+            reasons.push("nieodpowiednie pH");
+          }
+
+          // Twardość (zakres w fishDetails.hardnessDGH)
+          if (!isValueInRange(aquariumHardness, fishDetails.hardnessDGH)) {
+            reasons.push("nieodpowiednia twardość");
+          }
+
+          // Biotyp/Biotop
+          const fishBiotope = fishDetails.biotope ?? fishDetails.biotype ?? null;
+          if (aquariumBiotope && fishBiotope) {
+            const a = String(aquariumBiotope).toLowerCase().trim();
+            const f = String(fishBiotope).toLowerCase().trim();
+            if (a && f && a !== f) {
+              reasons.push("niezgodny biotyp");
+            }
+          }
+
+          // Stado (min) — jeśli w akwarium jest mniej sztuk danego gatunku niż minimum
+          const minSchool = fishDetails.minShoalSize ?? fishDetails.minSchoolSize ?? null;
+          const currentCount = aquariumFish.count ?? 1;
+          if (typeof minSchool === "number" && minSchool > 1 && currentCount < minSchool) {
+            reasons.push(`za małe stado (min. ${minSchool})`);
+          }
+
+          if (reasons.length === 0) return null;
+
+          return {
+            ...aquariumFish,
+            details: fishDetails,
+            reasons
+          };
         })
-        .filter(f => f !== null);
+        .filter((f) => f !== null);
       
       console.log(`[Szok osmotyczny] Znaleziono ${incompatibleFishes.length} ryb z niezgodnym typem wody`);
       
@@ -524,10 +683,31 @@ export default function AquariumDetailPage() {
         })();
         
         // Pokaż ostrzeżenie przed śmiercią
+        const compactReasonKey = (reason) => {
+          const r = String(reason || "").toLowerCase();
+          if (r.includes("typ wody")) return "fish.parameters.waterType";
+          if (r.includes("temperatura")) return "fish.parameters.temperature";
+          if (r.includes("ph")) return "fish.parameters.ph";
+          if (r.includes("twardo")) return "fish.parameters.hardness";
+          if (r.includes("biotyp")) return "fish.parameters.biotope";
+          if (r.includes("stado")) return "fish.parameters.minSchoolSize";
+          return null;
+        };
+
+        const reasonsText = Array.isArray(fishToDie.reasons)
+          ? Array.from(new Set(
+              fishToDie.reasons
+                .map(compactReasonKey)
+                .filter(Boolean)
+                .map((k) => t(k, { defaultValue: k }))
+            )).join(", ")
+          : "";
+
         setDeathNotification({
-          message: t('fishCannotSurviveInWater', {
+          message: t("osmoticShockWarning", {
+            defaultValue: `⚠️ ${fishName} nie jest w stanie przeżyć w tym środowisku (niezgodne: ${reasonsText}). Nastąpi szok osmotyczny...`,
             fishName,
-            waterType: aquariumWaterTypeName
+            reasons: reasonsText
           }),
           severity: 'warning',
           countdown: WARNING_DELAY / 1000
@@ -556,7 +736,10 @@ export default function AquariumDetailPage() {
             
             // Pokaż powiadomienie o śmierci
             setDeathNotification({
-              message: `💀 ${fishName} nie przeżyła w tym typie wody (Szok osmotyczny)!`,
+              message: t("osmoticShockDeath", {
+                defaultValue: `💀 ${fishName} nie przeżyła w tym środowisku (Szok osmotyczny)!`,
+                fishName
+              }),
               severity: 'error'
             });
             
@@ -1603,14 +1786,20 @@ export default function AquariumDetailPage() {
       {/* Status akwarium - ostrzeżenia o kompatybilności w prawym górnym rogu */}
       {/* Pokazuj tylko gdy jest co najmniej 2 ryby (wtedy może być niekompatybilność) */}
       {/* Pokazuj tylko dla problemów z temperamentem (agresywne + spokojne) lub typem wody */}
-      {aquarium?.status && 
-       aquarium.status.issues && 
-       aquarium.status.issues.some(issue => 
-         issue.type === 'TEMPERAMENT_INCOMPATIBILITY' || 
-         issue.type === 'WATER_TYPE_MISMATCH'
-       ) && 
-       aquarium?.fishes && 
-       (aquarium.status.issues.some(issue => issue.type === 'WATER_TYPE_MISMATCH') || aquarium.fishes.length >= 2) && (
+      {(() => {
+        const backendIssues = aquarium?.status?.issues || [];
+        const mergedIssues = [...backendIssues, ...(frontendStatusIssues || [])];
+        const hasAnyIssues = mergedIssues.some((issue) =>
+          ["TEMPERAMENT_INCOMPATIBILITY", "WATER_TYPE_MISMATCH", "ENVIRONMENT_MISMATCH"].includes(issue.type)
+        );
+        const hasWaterOrEnv = mergedIssues.some((issue) => ["WATER_TYPE_MISMATCH", "ENVIRONMENT_MISMATCH"].includes(issue.type));
+        const canShow = hasAnyIssues && aquarium?.fishes && (hasWaterOrEnv || aquarium.fishes.length >= 2);
+        if (!canShow) return null;
+
+        const derivedLevel = mergedIssues.some((i) => i.severity === "ERROR") ? "ERROR" : "WARNING";
+        const statusLevel = aquarium?.status?.level || derivedLevel;
+
+        return (
         <Box sx={{
           position: 'fixed',
           top: { xs: 100, sm: 110, md: 120 },
@@ -1635,12 +1824,12 @@ export default function AquariumDetailPage() {
                 <IconButton
                   onClick={() => setCompatibilityPanelExpanded(true)}
                   sx={{
-                    bgcolor: aquarium.status.level === 'ERROR' ? '#f44336' : '#ff9800',
+                    bgcolor: statusLevel === 'ERROR' ? '#f44336' : '#ff9800',
                     color: 'white',
                     width: 48,
                     height: 48,
                     '&:hover': {
-                      bgcolor: aquarium.status.level === 'ERROR' ? '#d32f2f' : '#f57c00',
+                      bgcolor: statusLevel === 'ERROR' ? '#d32f2f' : '#f57c00',
                     },
                     boxShadow: 4,
                     borderRadius: '50%',
@@ -1661,8 +1850,8 @@ export default function AquariumDetailPage() {
                 backdropFilter: 'blur(10px)',
                 borderRadius: 2,
                 boxShadow: 4,
-                border: aquarium.status.level === 'ERROR' ? '2px solid #f44336' : 
-                        aquarium.status.level === 'WARNING' ? '2px solid #ff9800' : 'none'
+                border: statusLevel === 'ERROR' ? '2px solid #f44336' : 
+                        statusLevel === 'WARNING' ? '2px solid #ff9800' : 'none'
               }}
             >
               <Box sx={{ display: 'flex', alignItems: 'flex-start', gap: 1.5, mb: 1 }}>
@@ -1681,7 +1870,7 @@ export default function AquariumDetailPage() {
                   fontSize: '1.5rem',
                   lineHeight: 1
                 }}>
-                  {aquarium.status.level === 'ERROR' ? '🔴' : '⚠️'}
+                  {statusLevel === 'ERROR' ? '🔴' : '⚠️'}
                 </Typography>
                 <Box sx={{ flex: 1, minWidth: 0 }}>
                   <Typography variant="subtitle2" sx={{ 
@@ -1693,8 +1882,8 @@ export default function AquariumDetailPage() {
                     {t("compatibilityIssues", { defaultValue: "Problemy z kompatybilnością" })}
                   </Typography>
                   <Box sx={{ display: 'flex', flexDirection: 'column', gap: 0.75 }}>
-                    {aquarium.status.issues
-                      .filter(issue => issue.type === 'TEMPERAMENT_INCOMPATIBILITY' || issue.type === 'WATER_TYPE_MISMATCH')
+                    {mergedIssues
+                      .filter(issue => issue.type === 'TEMPERAMENT_INCOMPATIBILITY' || issue.type === 'WATER_TYPE_MISMATCH' || issue.type === 'ENVIRONMENT_MISMATCH')
                       .slice(0, 3) // Pokaż maksymalnie 3 pierwsze problemy
                       .map((issue, index) => (
                         <Box 
@@ -1703,7 +1892,7 @@ export default function AquariumDetailPage() {
                             p: 1,
                             bgcolor: darkMode ? 'rgba(255,255,255,0.05)' : 'rgba(0,0,0,0.03)',
                             borderRadius: 1,
-                            borderLeft: issue.type === 'WATER_TYPE_MISMATCH' ? '3px solid #f44336' : 'none'
+                            borderLeft: (issue.type === 'WATER_TYPE_MISMATCH' || issue.type === 'ENVIRONMENT_MISMATCH') ? '3px solid #f44336' : 'none'
                           }}
                         >
                           <Typography 
@@ -1824,7 +2013,7 @@ export default function AquariumDetailPage() {
                               
                               return msg;
                             })()}
-                            {issue.type === 'WATER_TYPE_MISMATCH' && (
+                            {(issue.type === 'WATER_TYPE_MISMATCH' || issue.type === 'ENVIRONMENT_MISMATCH') && (
                               <Typography component="span" sx={{ 
                                 display: 'block', 
                                 mt: 0.5, 
@@ -1838,12 +2027,12 @@ export default function AquariumDetailPage() {
                           </Typography>
                         </Box>
                       ))}
-                    {aquarium.status.issues.filter(issue => issue.type === 'TEMPERAMENT_INCOMPATIBILITY' || issue.type === 'WATER_TYPE_MISMATCH').length > 3 && (
+                    {mergedIssues.filter(issue => issue.type === 'TEMPERAMENT_INCOMPATIBILITY' || issue.type === 'WATER_TYPE_MISMATCH' || issue.type === 'ENVIRONMENT_MISMATCH').length > 3 && (
                       <Typography variant="caption" sx={{
                         color: darkMode ? 'rgba(255,255,255,0.7)' : 'text.secondary',
                         fontStyle: 'italic'
                       }}>
-                        + {aquarium.status.issues.filter(issue => issue.type === 'TEMPERAMENT_INCOMPATIBILITY' || issue.type === 'WATER_TYPE_MISMATCH').length - 3} {t("more", { defaultValue: "więcej" })}
+                        + {mergedIssues.filter(issue => issue.type === 'TEMPERAMENT_INCOMPATIBILITY' || issue.type === 'WATER_TYPE_MISMATCH' || issue.type === 'ENVIRONMENT_MISMATCH').length - 3} {t("more", { defaultValue: "więcej" })}
                       </Typography>
                     )}
                   </Box>
@@ -1931,7 +2120,8 @@ export default function AquariumDetailPage() {
             </Paper>
           )}
         </Box>
-      )}
+        );
+      })()}
 
       {/* Ikony w dolnym lewym rogu do zwijania/rozwijania paneli */}
       <Box sx={{
