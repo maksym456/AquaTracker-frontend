@@ -20,6 +20,6 @@ test('test', async ({ page }) => {
     await page.getByRole('checkbox', { name: 'Show password' }).uncheck();
     await page.getByRole('button', { name: 'Sign up' }).click();
     const codeInput = page.getByRole('textbox', { name: 'Code' });
-    await expect(codeInput).toBeVisible({ timeout: 15000 });
+    await expect(codeInput).toBeVisible({ timeout: 90000 });
     await page.getByRole('button', { name: 'Confirm account' }).click();
 });

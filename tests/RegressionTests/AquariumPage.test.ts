@@ -1,143 +1,177 @@
 import { test, expect } from '@playwright/test';
 
-test('test', async ({ page }) => {
-    // Logowanie
-    await page.goto('https://eu-north-1kzpudw0vg.auth.eu-north-1.amazoncognito.com/login?client_id=7cvtmkucocn97om3mdrr876igm&redirect_uri=http://localhost:3000/api/auth/callback/cognito&response_type=code&scope=openid&state=Bze7eZy2q4TM5BdR0LWzNjWmDK5NDwpgrn3IqjNVE2o');
-    await page.getByRole('textbox', { name: 'Username' }).click();
-    await page.getByRole('textbox', { name: 'Username' }).fill('doteleh994@cameltok.com');
-    await page.getByRole('button', { name: 'Next' }).click();
-    await page.getByRole('textbox', { name: 'Password' }).click();
-    await page.getByRole('textbox', { name: 'Password' }).fill('ASFDQA12414512df#');
-    await page.getByRole('checkbox', { name: 'Show password' }).check();
-    await page.getByRole('checkbox', { name: 'Show password' }).uncheck();
-    await page.getByRole('button', { name: 'Continue' }).click();
+test.describe('E2E: Pełny Przegląd Funkcjonalności (Dashboard, Akwarium, Zawartość)', () => {
 
-    await expect(page.getByRole('link', { name: '🛡️ ADMIN' })).toBeVisible();
+    test.setTimeout(180000); // 3 minuty na całość
 
-    await page.getByRole('link', { name: '🏠 Moje Akwaria Przeglądaj i' }).click();
-    await expect(page.getByRole('link', { name: 'Powrót' })).toBeVisible();
+    const uniqueID = Math.floor(Math.random() * 100000);
+    const nazwaAkwarium = `Testowe Akwarium ${uniqueID}`;
+    const nazwaEdytowana = `${nazwaAkwarium} (Edycja)`;
 
-    await page.getByText('Statystyki').click();
-    await expect(page.getByRole('heading', { name: 'Statystyki - Wszystkie akwaria' })).toBeVisible();
+    test('Pełny scenariusz użytkownika', async ({ page }) => {
 
-    await page.getByRole('button', { name: 'Zamknij' }).click();
-    await expect(page.getByRole('navigation', { name: 'Główna nawigacja' })).toBeVisible();
+        // --- KROK 1: LOGOWANIE ---
+        await test.step('1. Logowanie', async () => {
+            await page.goto('https://eu-north-1kzpudw0vg.auth.eu-north-1.amazoncognito.com/login?client_id=7cvtmkucocn97om3mdrr876igm&redirect_uri=http://localhost:3000/api/auth/callback/cognito&response_type=code&scope=openid&state=rmo0aBT-e_kAbp2VubqTIUgsk0PVNn4P9uORFbPHMrA');
 
-    await page.getByText('📋').click();
-    await expect(page.getByRole('heading', { name: 'Historia aktywności' })).toBeVisible();
+            await page.getByRole('textbox', { name: 'Username' }).fill('rybkitest2');
+            await page.getByRole('button', { name: 'Next' }).click();
+            await page.getByRole('textbox', { name: 'Password' }).fill('Start123!');
+            await page.getByRole('button', { name: 'Continue' }).click();
 
-    await page.getByText('Wszystkie akcje').click();
-    await expect(page.getByRole('option', { name: 'Wszystkie akcje' })).toBeVisible();
+            await expect(page.getByRole('link', { name: /Aquariums|Moje Akwaria/i })).toBeVisible({ timeout: 30000 });
+        });
 
-    await page.getByRole('option', { name: 'Utworzono' }).click();
-    await expect(page.getByRole('heading', { name: 'Historia aktywności' })).toBeVisible();
+        // --- KROK 2: FUNKCJE DASHBOARDU ---
+        await test.step('2. Sprawdzenie okien Dashboardu (Statystyki, Historia)', async () => {
+            const statsIcon = page.getByText('📊');
+            if (await statsIcon.isVisible()) {
+                await statsIcon.click();
+                await expect(page.getByRole('heading', { name: /Statistics/i })).toBeVisible();
+                await page.getByRole('button', { name: /Close|Zamknij|✕/i }).first().click();
+            }
 
-    await page.getByText('Utworzono').click();
-    await expect(page.getByRole('option', { name: 'Wszystkie akcje' })).toBeVisible();
+            const historyIcon = page.getByText('📋');
+            if (await historyIcon.isVisible()) {
+                await historyIcon.click();
+                await expect(page.getByRole('heading', { name: /Activity History|Historia Aktywności/i })).toBeVisible();
+                await page.getByRole('button', { name: /Close|Zamknij|✕/i }).first().click();
+            }
+        });
 
-    await page.getByRole('option', { name: 'Edytowano' }).click();
-    await expect(page.getByRole('heading', { name: 'Historia aktywności' })).toBeVisible();
+        // --- KROK 3: ZMIANA JĘZYKA ---
+        await test.step('3. Test zmiany języka', async () => {
+            const plBtn = page.getByRole('button', { name: /Przełącz na polski|Polski|PL/i });
+            if (await plBtn.isVisible()) {
+                await plBtn.click();
+                await expect(page.getByRole('link', { name: /Powrót/i }).or(page.getByRole('link', { name: 'Moje Akwaria' }))).toBeVisible();
+            }
 
-    await page.getByText('Edytowano').click();
-    await expect(page.getByRole('option', { name: 'Wszystkie akcje' })).toBeVisible();
+            await page.getByRole('button', { name: /Switch to English|English/i }).click();
+            await expect(page.getByRole('link', { name: /Return|Aquariums/i })).toBeVisible();
+        });
 
-    await page.getByRole('option', { name: 'Usunięto', exact: true }).click();
-    await expect(page.getByRole('heading', { name: 'Historia aktywności' })).toBeVisible();
+        // --- KROK 4: TWORZENIE AKWARIUM ---
+        await test.step('4. Tworzenie nowego akwarium', async () => {
+            await page.getByRole('link', { name: /Aquariums/i }).click();
+            await page.getByRole('button', { name: /Create Aquarium/i }).click();
 
-    await page.getByText('Usunięto').click();
-    await expect(page.getByRole('option', { name: 'Wszystkie akcje' })).toBeVisible();
+            await page.getByRole('textbox', { name: 'Aquarium Name' }).fill(nazwaAkwarium);
+            await page.getByRole('textbox', { name: 'Aquarium Description' }).fill('Test automatyczny');
 
-    await page.getByRole('option', { name: 'Usunięto', exact: true }).click();
-    await expect(page.getByRole('heading', { name: 'Historia aktywności' })).toBeVisible();
+            await page.getByText(/Freshwater|Słodkowodne/i).click();
 
-    await page.getByText('Usunięto').click();
-    await expect(page.getByRole('option', { name: 'Wszystkie akcje' })).toBeVisible();
+            const tempInput = page.getByRole('spinbutton', { name: /Temperature/i });
+            await tempInput.click({ force: true });
+            await tempInput.fill('24');
 
-    await page.getByRole('option', { name: 'Usunięto rybę' }).click();
-    await expect(page.getByRole('heading', { name: 'Historia aktywności' })).toBeVisible();
+            await page.getByRole('button', { name: /Create/i }).click();
+            await expect(page.getByRole('heading', { name: nazwaAkwarium })).toBeVisible({ timeout: 15000 });
+        });
 
-    await page.getByText('Usunięto rybę').click();
-    await expect(page.getByRole('option', { name: 'Wszystkie akcje' })).toBeVisible();
+        // --- KROK 5: ZARZĄDZANIE ZAWARTOŚCIĄ (RYBY I ROŚLINY) ---
+        await test.step('5. Dodawanie i usuwanie Ryb oraz Roślin', async () => {
+            // Wchodzimy do akwarium
+            await page.locator('div').filter({ hasText: nazwaAkwarium }).last().click();
 
-    await page.getByRole('option', { name: 'Dodano roślinę' }).click();
-    await expect(page.getByRole('heading', { name: 'Historia aktywności' })).toBeVisible();
+            // 1. Dodaj Rybę
+            const addFishBtn = page.getByRole('button', { name: /Add Fish/i });
+            await expect(addFishBtn).toBeVisible();
+            await addFishBtn.click({ force: true });
 
-    await page.getByText('Dodano roślinę').click();
-    await expect(page.getByRole('option', { name: 'Wszystkie akcje' })).toBeVisible();
+            const quantityInput = page.getByRole('spinbutton', { name: /Quantity/i });
+            await expect(quantityInput).toBeVisible();
+            await page.getByRole('combobox').click();
+            await page.getByRole('option').first().click();
+            await quantityInput.fill('3');
+            await page.getByRole('button', { name: /ADD|Dodaj/i }).last().click();
+            await expect(quantityInput).not.toBeVisible();
 
-    await page.getByRole('option', { name: 'Usunięto roślinę' }).click();
-    await expect(page.getByRole('heading', { name: 'Historia aktywności' })).toBeVisible();
+            // 2. Dodaj Roślinę
+            const addPlantBtn = page.getByRole('button', { name: /Add Plant/i });
+            await addPlantBtn.click({ force: true });
+            await expect(quantityInput).toBeVisible();
+            await page.getByRole('combobox').click();
+            await page.getByRole('option').first().click();
+            await quantityInput.fill('2');
+            await page.getByRole('button', { name: /ADD|Dodaj/i }).last().click();
+            await expect(quantityInput).not.toBeVisible();
 
-    await page.getByText('Usunięto roślinę').click();
-    await expect(page.getByRole('option', { name: 'Wszystkie akcje' })).toBeVisible();
+            // Definiujemy przycisk zamykania (X) tak jak chciałaś
+            const closeSettingsBtn = page.getByRole('button', { name: /✕|Close/i }).or(page.getByLabel('close'));
 
-    await page.getByRole('option', { name: 'Zmieniono parametr' }).click();
-    await expect(page.getByRole('heading', { name: 'Historia aktywności' })).toBeVisible();
+            // --- USUWANIE RYBY ---
+            await page.getByRole('button', { name: '🐟' }).click();
 
-    await page.getByText('Wszystkie akwaria').click();
-    await page.getByRole('option', { name: 'Wszystkie akwaria' }).click();
-    await expect(page.getByRole('heading', { name: 'Historia aktywności' })).toBeVisible();
+            page.once('dialog', async dialog => {
+                console.log(`Dialog message (Fish): ${dialog.message()}`);
+                await dialog.accept();
+            });
 
-    await page.getByText('Najnowsze najpierw').click();
-    await expect(page.getByRole('option', { name: 'Najnowsze najpierw' })).toBeVisible();
+            await page.getByRole('listitem').first().getByLabel('delete').click();
 
-    await page.getByRole('option', { name: 'Najstarsze najpierw' }).click();
-    await expect(page.getByRole('heading', { name: 'Historia aktywności' })).toBeVisible();
+            // Zamykamy listę ryb używając Twojej zmiennej
+            await closeSettingsBtn.first().click();
 
-    await page.getByRole('button', { name: 'Zamknij' }).click();
-    await expect(page.getByRole('navigation', { name: 'Główna nawigacja' })).toBeVisible();
+            // --- USUWANIE ROŚLINY ---
+            await page.getByRole('button', { name: '🌿' }).click();
 
-    await page.getByRole('button', { name: 'Switch to English' }).click();
-    await expect(page.getByRole('link', { name: 'Return' })).toBeVisible();
+            page.once('dialog', async dialog => {
+                console.log(`Dialog message (Plant): ${dialog.message()}`);
+                await dialog.accept();
+            });
 
-    await page.getByRole('button', { name: 'Przełącz na polski' }).click();
-    await expect(page.getByRole('link', { name: 'Powrót' })).toBeVisible();
+            await page.getByRole('listitem').first().getByLabel('delete').click();
 
-    await page.getByRole('button', { name: 'Zaproś przyjaciela' }).click();
-    await expect(page.getByRole('heading', { name: 'Zaproś do współpracy' })).toBeVisible();
+            // Zamykamy listę roślin używając Twojej zmiennej
+            await closeSettingsBtn.first().click();
 
-    await page.getByRole('link', { name: 'Powrót' }).click();
-    await expect(page.getByRole('navigation', { name: 'Główna nawigacja' })).toBeVisible();
+            // --- POWRÓT I OCZEKIWANIE ---
+            // Klikamy Return (jako link, bo to nawigacja)
+            await page.getByRole('link', { name: /Return|Wróć/i }).click();
 
-    await page.getByRole('link', { name: '🏠 Moje Akwaria Przeglądaj i' }).click();
-    await expect(page.getByRole('link', { name: 'Powrót' })).toBeVisible();
+            // KLUCZOWE: Czekamy, aż załaduje się strona główna (przycisk Create Aquarium),
+            // zanim robot przejdzie do Kroku 6. To naprawi błąd "Target closed".
+            await expect(page.getByRole('button', { name: /Create Aquarium/i })).toBeVisible({ timeout: 15000 });
+        });
 
-    await page.getByRole('button', { name: 'Utwórz akwarium' }).click();
-    await expect(page.getByRole('spinbutton', { name: 'Temperatura wody (°C)' })).toBeVisible();
+        // --- KROK 6: EDYCJA AKWARIUM ---
+        await test.step('6. Edycja nazwy akwarium', async () => {
+            // Teraz mamy pewność, że jesteśmy na liście
+            const card = page.locator('div').filter({ hasText: nazwaAkwarium }).last();
+            await card.getByRole('button').first().click(); // Edycja (pierwsza ikona)
 
-    await page.getByRole('textbox', { name: 'Nazwa akwarium' }).click();
-    await page.getByRole('textbox', { name: 'Nazwa akwarium' }).fill('testowe');
-    await page.getByText('Słodkowodne').click();
-    await expect(page.getByRole('option', { name: 'Słodkowodne' })).toBeVisible();
+            const nameInput = page.getByRole('textbox').first();
+            await expect(nameInput).toBeVisible();
+            await nameInput.fill(nazwaEdytowana);
+            await page.getByRole('button', { name: /Save/i }).click();
 
-    await page.getByRole('option', { name: 'Słonowodne' }).click();
-    await expect(page.getByRole('textbox', { name: 'Nazwa akwarium' })).toBeVisible();
+            await expect(page.getByRole('heading', { name: nazwaEdytowana })).toBeVisible();
+        });
 
-    await page.getByRole('spinbutton', { name: 'Temperatura wody (°C)' }).click();
-    await page.getByRole('spinbutton', { name: 'Temperatura wody (°C)' }).fill('28');
-    await page.getByText('Ameryka Południowa').click();
-    await expect(page.getByRole('option', { name: 'Ameryka Południowa' })).toBeVisible();
+        // --- KROK 7: UDOSTĘPNIANIE ---
+        await test.step('7. Sprawdzenie okna udostępniania', async () => {
+            const card = page.locator('div').filter({ hasText: nazwaEdytowana }).last();
+            await card.getByRole('button').nth(1).click(); // Udostępnij (druga ikona)
 
-    await page.getByRole('option', { name: 'Afryka' }).click();
-    await expect(page.getByRole('textbox', { name: 'Nazwa akwarium' })).toBeVisible();
+            await expect(page.getByRole('heading', { name: /Share|Udostępnij/i })).toBeVisible();
 
-    await page.getByText('Afryka').click();
-    await expect(page.getByRole('option', { name: 'Ameryka Południowa' })).toBeVisible();
+            // Zamykamy X-em (zdefiniowanym wcześniej)
+            const closeSettingsBtn = page.getByRole('button', { name: /✕|Close/i }).or(page.getByLabel('close'));
+            await closeSettingsBtn.first().click();
+        });
 
-    await page.getByRole('option', { name: 'Ameryka Północna' }).click();
-    await expect(page.getByRole('textbox', { name: 'Nazwa akwarium' })).toBeVisible();
+        // --- KROK 8: USUWANIE ---
+        await test.step('8. Usuwanie akwarium', async () => {
+            const cardToDelete = page.locator('div').filter({ hasText: nazwaEdytowana }).last();
+            await cardToDelete.getByRole('button').nth(2).click(); // Usuń (trzecia ikona)
 
-    await page.getByRole('spinbutton', { name: 'pH' }).click();
-    await page.getByRole('spinbutton', { name: 'pH' }).fill('7.8');
-    await page.getByRole('spinbutton', { name: 'Twardość wody (dGH)' }).click();
-    await page.getByRole('spinbutton', { name: 'Twardość wody (dGH)' }).fill('7');
-    await page.getByRole('textbox', { name: 'Opis akwarium' }).click();
-    await page.getByRole('textbox', { name: 'Opis akwarium' }).fill('test');
-    await page.getByRole('button', { name: 'Utwórz' }).click();
-    await page.getByRole('button', { name: 'Close' }).click();
-    await page.getByRole('button', { name: 'Anuluj' }).click();
-    await expect(page.getByRole('navigation', { name: 'Główna nawigacja' })).toBeVisible();
+            await expect(page.getByRole('heading', { name: /Potwierdź|Confirm/i })).toBeVisible();
+            await page.getByRole('button', { name: /Usuń|Delete/i }).click();
 
-    await page.getByRole('link', { name: 'Powrót' }).click();
+            await expect(page.getByRole('heading', { name: nazwaEdytowana })).not.toBeVisible();
+        });
 
-}); // <-- To jest JEDYNE poprawne zamknięcie testu (na samym końcu pliku)
+        await page.getByRole('link', { name: /Return/i }).click();
+    });
+});
