@@ -5,40 +5,8 @@
   </component>
   <component name="ChangeListManager">
     <list default="true" id="3e1dcb7d-ed08-49a0-9ff9-f0c8beeee611" name="Changes" comment="button admin page">
-      <change afterPath="$PROJECT_DIR$/.idea/shelf/Uncommitted_changes_before_Checkout_at_23_01_2026_15_08_[Changes]/shelved.patch" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/.idea/shelf/Uncommitted_changes_before_Checkout_at_23_01_2026_15_08__Changes_.xml" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/.idea/shelf/Uncommitted_changes_before_Update_at_23_01_2026_16_32_[Changes]/shelved.patch" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/.idea/shelf/Uncommitted_changes_before_Update_at_23_01_2026_16_32__Changes_.xml" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/.idea/shelf/Uncommitted_changes_before_Update_at_24_01_2026_13_32_[Changes]/shelved.patch" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/.idea/shelf/Uncommitted_changes_before_Update_at_24_01_2026_13_32__Changes_.xml" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/.idea/shelf/Uncommitted_changes_before_Update_at_24_01_2026_14_48_[Changes]/shelved.patch" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/.idea/shelf/Uncommitted_changes_before_Update_at_24_01_2026_14_48__Changes_.xml" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/app/lib/fishUtils.js" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/.idea/shelf/Uncommitted_changes_before_Update_at_14_01_2026_17_17_[Changes]/shelved.patch" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/.idea/shelf/Uncommitted_changes_before_Update_at_14_01_2026_17_17__Changes_.xml" beforeDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/CHANGELOG.md" beforeDir="false" afterPath="$PROJECT_DIR$/CHANGELOG.md" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/app/admin/page.js" beforeDir="false" afterPath="$PROJECT_DIR$/app/admin/page.js" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/app/components/Dashboard.js" beforeDir="false" afterPath="$PROJECT_DIR$/app/components/Dashboard.js" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/app/components/LanguageSwitcher.js" beforeDir="false" afterPath="$PROJECT_DIR$/app/components/LanguageSwitcher.js" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/app/contacts/page.js" beforeDir="false" afterPath="$PROJECT_DIR$/app/contacts/page.js" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/app/fish-database/page.js" beforeDir="false" afterPath="$PROJECT_DIR$/app/fish-database/page.js" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/app/globals.css" beforeDir="false" afterPath="$PROJECT_DIR$/app/globals.css" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/app/i18n.js" beforeDir="false" afterPath="$PROJECT_DIR$/app/i18n.js" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/app/layout.js" beforeDir="false" afterPath="$PROJECT_DIR$/app/layout.js" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/app/lib/api.js" beforeDir="false" afterPath="$PROJECT_DIR$/app/lib/api.js" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/app/lib/fishCompatibility.js" beforeDir="false" afterPath="$PROJECT_DIR$/app/lib/fishCompatibility.js" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/app/my-aquariums/[id]/page.js" beforeDir="false" afterPath="$PROJECT_DIR$/app/my-aquariums/[id]/page.js" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/app/my-aquariums/page.js" beforeDir="false" afterPath="$PROJECT_DIR$/app/my-aquariums/page.js" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/app/plant-database/page.js" beforeDir="false" afterPath="$PROJECT_DIR$/app/plant-database/page.js" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/app/version.js" beforeDir="false" afterPath="$PROJECT_DIR$/app/version.js" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/designs/fonts/Montserrat-Italic.ttf" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/designs/fonts/Montserrat.ttf" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/designs/index.html" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/designs/script.js" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/designs/style.css" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/package-lock.json" beforeDir="false" afterPath="$PROJECT_DIR$/package-lock.json" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/package.json" beforeDir="false" afterPath="$PROJECT_DIR$/package.json" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -104,7 +72,7 @@
     "RunOnceActivity.git.unshallow": "true",
     "RunOnceActivity.typescript.service.memoryLimit.init": "true",
     "com.intellij.ml.llm.matterhorn.ej.ui.settings.DefaultModelSelectionForGA.v1": "true",
-    "git-widget-placeholder": "Merging master",
+    "git-widget-placeholder": "master",
     "javascript.preferred.runtime.type.id": "node",
     "js.debugger.nextJs.config.created.client": "true",
     "js.debugger.nextJs.config.created.server": "true",
