@@ -328,17 +328,30 @@ export default function Dashboard() {
                     bgcolor: darkMode ? 'rgba(40, 40, 40, 0.9)' : 'rgba(255, 255, 255, 0.6)'
                   },
                   cursor: 'pointer',
-                  minHeight: { xs: '40px', md: '48px' },
-                  minWidth: { xs: '40px', md: '48px' },
+                  // Stały rozmiar (nie zależy od długości tekstu w tłumaczeniach)
+                  width: { xs: 72, md: 84 },
+                  height: { xs: 56, md: 68 },
                   display: 'flex',
                   flexDirection: 'column',
                   alignItems: 'center',
                   justifyContent: 'center',
-                  position: 'relative'
+                  position: 'relative',
+                  boxSizing: 'border-box'
                 }}
             >
               <Typography sx={{ fontSize: { xs: 18, md: 20 }, mb: 0.2, textAlign: 'center' }}>⚙️</Typography>
-              <Typography variant="body2" sx={{ fontWeight: 600, color: "text.primary", textAlign: 'center', fontSize: { xs: '0.5rem', md: '0.6rem' } }}>
+              <Typography
+                variant="body2"
+                sx={{
+                  fontWeight: 600,
+                  color: "text.primary",
+                  textAlign: 'center',
+                  fontSize: { xs: '0.55rem', md: '0.65rem' },
+                  lineHeight: 1.05,
+                  maxWidth: '100%',
+                  wordBreak: 'break-word'
+                }}
+              >
                 {t("settings")}
               </Typography>
             </Box>
@@ -388,6 +401,14 @@ export default function Dashboard() {
             borderRadius: '12px',
             backdropFilter: 'blur(15px)',
             width: '100%',
+            // Stały rozmiar (żeby nie "podskakiwało" przy zmianie języka)
+            // Uwaga: używamy `height` (nie `minHeight`), bo przy krótszym EN blok zostawał niższy niż w PL.
+            height: { xs: 240, sm: 260, md: 300 },
+            display: 'flex',
+            flexDirection: 'column',
+            justifyContent: 'center',
+            boxSizing: 'border-box',
+            overflow: 'hidden',
           }}>
             <Typography
               variant="h2"
@@ -398,7 +419,9 @@ export default function Dashboard() {
                 mb: 1,
                 fontSize: { xs: '1.8rem', sm: '2.2rem', md: '2.8rem' },
                 '@media (max-height: 750px)': { fontSize: '2rem' },
-                textAlign: { xs: 'center', lg: 'left' },
+                // Dla PL nagłówek ma być wyśrodkowany (żeby wyglądał jak w projekcie),
+                // a dla pozostałych języków zostawiamy dotychczasowy układ.
+                textAlign: i18n.language?.startsWith('pl') ? 'center' : { xs: 'center', lg: 'left' },
                 lineHeight: 1.2
               }}
             >
@@ -439,13 +462,14 @@ export default function Dashboard() {
                    bgcolor: darkMode ? 'rgba(40, 40, 40, 0.9)' : 'rgba(255, 255, 255, 0.6)'
                  },
                  cursor: 'pointer',
-                 minHeight: { xs: '100px', md: '120px' },
-                 '@media (max-height: 750px)': { minHeight: '90px', p: 1 },
+                 // Stały rozmiar (żeby kafelki nie zmieniały wysokości wraz z tłumaczeniem)
+                 height: { xs: 120, md: 140 },
+                 '@media (max-height: 750px)': { height: 100, p: 1 },
                  display: 'flex',
                  flexDirection: 'column',
                  alignItems: 'center',
                  justifyContent: 'center',
-                 height: '100%'
+                 overflow: 'hidden'
               }}>
                 <Typography sx={{ fontSize: 32, mb: 1, '@media (max-height: 750px)': { fontSize: 24, mb: 0.5 } }}>🏠</Typography>
                 <Typography variant="h6" sx={{ fontWeight: 600, color: "text.primary", fontSize: '0.9rem', textAlign: 'center' }}>
@@ -471,13 +495,14 @@ export default function Dashboard() {
                    bgcolor: darkMode ? 'rgba(40, 40, 40, 0.9)' : 'rgba(255, 255, 255, 0.6)'
                  },
                  cursor: 'pointer',
-                 minHeight: { xs: '100px', md: '120px' },
-                 '@media (max-height: 750px)': { minHeight: '90px', p: 1 },
+                 // Stały rozmiar (żeby kafelki nie zmieniały wysokości wraz z tłumaczeniem)
+                 height: { xs: 120, md: 140 },
+                 '@media (max-height: 750px)': { height: 100, p: 1 },
                  display: 'flex',
                  flexDirection: 'column',
                  alignItems: 'center',
                  justifyContent: 'center',
-                 height: '100%'
+                 overflow: 'hidden'
               }}>
                 <Typography sx={{ fontSize: 32, mb: 1, '@media (max-height: 750px)': { fontSize: 24, mb: 0.5 } }}>🐠</Typography>
                 <Typography variant="h6" sx={{ fontWeight: 600, color: "text.primary", fontSize: '0.9rem', textAlign: 'center' }}>
@@ -503,13 +528,14 @@ export default function Dashboard() {
                    bgcolor: darkMode ? 'rgba(40, 40, 40, 0.9)' : 'rgba(255, 255, 255, 0.6)'
                  },
                  cursor: 'pointer',
-                 minHeight: { xs: '100px', md: '120px' },
-                 '@media (max-height: 750px)': { minHeight: '90px', p: 1 },
+                 // Stały rozmiar (żeby kafelki nie zmieniały wysokości wraz z tłumaczeniem)
+                 height: { xs: 120, md: 140 },
+                 '@media (max-height: 750px)': { height: 100, p: 1 },
                  display: 'flex',
                  flexDirection: 'column',
                  alignItems: 'center',
                  justifyContent: 'center',
-                 height: '100%'
+                 overflow: 'hidden'
               }}>
                 <Typography sx={{ fontSize: 32, mb: 1, '@media (max-height: 750px)': { fontSize: 24, mb: 0.5 } }}>👥</Typography>
                 <Typography variant="h6" sx={{ fontWeight: 600, color: "text.primary", fontSize: '0.9rem', textAlign: 'center' }}>
@@ -535,13 +561,14 @@ export default function Dashboard() {
                    bgcolor: darkMode ? 'rgba(40, 40, 40, 0.9)' : 'rgba(255, 255, 255, 0.6)'
                  },
                  cursor: 'pointer',
-                 minHeight: { xs: '100px', md: '120px' },
-                 '@media (max-height: 750px)': { minHeight: '90px', p: 1 },
+                 // Stały rozmiar (żeby kafelki nie zmieniały wysokości wraz z tłumaczeniem)
+                 height: { xs: 120, md: 140 },
+                 '@media (max-height: 750px)': { height: 100, p: 1 },
                  display: 'flex',
                  flexDirection: 'column',
                  alignItems: 'center',
                  justifyContent: 'center',
-                 height: '100%'
+                 overflow: 'hidden'
               }}>
                 <Typography sx={{ fontSize: 32, mb: 1, '@media (max-height: 750px)': { fontSize: 24, mb: 0.5 } }}>🌿</Typography>
                 <Typography variant="h6" sx={{ fontWeight: 600, color: "text.primary", fontSize: '0.9rem', textAlign: 'center' }}>

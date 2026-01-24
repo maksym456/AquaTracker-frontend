@@ -3805,4 +3805,3 @@ export default function AquariumDetailPage() {
     </Box>
   );
 }
-
