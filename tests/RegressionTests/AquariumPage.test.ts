@@ -59,7 +59,6 @@ test.describe('E2E: Pełny Przegląd Funkcjonalności (Dashboard, Akwarium, Zawa
             await page.getByRole('textbox', { name: 'Aquarium Name' }).fill(nazwaAkwarium);
             await page.getByRole('textbox', { name: 'Aquarium Description' }).fill('Test automatyczny');
 
-            await page.getByText(/Freshwater|Słodkowodne/i).click();
 
             const tempInput = page.getByRole('spinbutton', { name: /Temperature/i });
             await tempInput.click({ force: true });
