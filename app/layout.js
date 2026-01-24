@@ -1,5 +1,6 @@
 "use client";
 
+import React from "react";
 import { Geist, Geist_Mono, Caveat } from "next/font/google";
 import "./globals.css";
 import "./i18n";
@@ -38,10 +39,25 @@ function ThemeWrapper({ children }) {
 
 function LanguageWrapper({ children }) {
   const { i18n } = useTranslation();
-  const currentLang = i18n.language || "en";
+  const [mounted, setMounted] = React.useState(false);
+  const [currentLang, setCurrentLang] = React.useState("en");
   
+  React.useEffect(() => {
+    setMounted(true);
+    // Odczytaj język z localStorage po zamontowaniu komponentu
+    if (typeof window !== 'undefined') {
+      const savedLang = localStorage.getItem('i18nextLng') || i18n.language || "en";
+      setCurrentLang(savedLang);
+      if (savedLang !== i18n.language) {
+        i18n.changeLanguage(savedLang);
+      }
+    }
+  }, [i18n]);
+  
+  // Użyj suppressHydrationWarning, aby uniknąć błędu hydratacji
+  // Język zostanie zaktualizowany po zamontowaniu komponentu
   return (
-    <html lang={currentLang}>
+    <html lang={mounted ? currentLang : "en"} suppressHydrationWarning>
       {children}
     </html>
   );

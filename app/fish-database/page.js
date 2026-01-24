@@ -1,10 +1,11 @@
 "use client";
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { Box, Typography, IconButton, Button, useTheme, useMediaQuery, List, ListItemButton, ListItemText, Divider, TextField, FormControl, InputLabel, Select, MenuItem, CircularProgress, Alert, Modal, Paper } from "@mui/material";
 import { useTranslation } from "react-i18next";
 import { useTheme as useCustomTheme } from "../contexts/ThemeContext";
 import { useAuth } from "../contexts/AuthContext";
 import Link from "next/link";
+import Image from "next/image";
 import { useRouter } from "next/navigation";
 import LanguageSwitcher from "../components/LanguageSwitcher";
 import KeyboardReturnOutlinedIcon from '@mui/icons-material/KeyboardReturnOutlined';
@@ -20,14 +21,21 @@ export default function FishDatabasePage() {
   const { darkMode } = useCustomTheme();
   const isMobile = useMediaQuery(theme.breakpoints.down('md'));
   
+  // Funkcja pomocnicza do usuwania wszystkich treści w nawiasach z nazw ryb
+  const cleanFishName = (name) => {
+    if (!name) return name;
+    // Usuń wszystkie wystąpienia (tekst) z nazwy
+    return name.replace(/\s*\([^)]*\)/g, '').trim();
+  };
+  
   // Funkcja pomocnicza do mapowania nazw ryb na ścieżki ikon
   const getFishImage = (fishName) => {
     const imageMap = {
-      "Welonka (Złota rybka)": "/fish/Welonka__Złota_rybka.png",
-      "Gupik (Głupik)": "/fish/Gupik__Głupik.png",
+      "Welonka": "/fish/Welonka__Złota_rybka.png",
+      "Gupik": "/fish/Gupik__Głupik.png",
       "Bojownik syjamski": "/fish/Bojownik_syjamski.png",
       "Neon Innesa": "/fish/Neon_Innesa.png",
-      "Skalar (Żaglowiec)": "/fish/Skalar__Żaglowiec.png",
+      "Skalar": "/fish/Skalar__Żaglowiec.png",
       "Mieczyk Hellera": "/fish/Mieczyk_Hellera.png",
       "Molinezja": "/fish/Molinezja.png",
       "Gurami mozaikowy": "/fish/Gurami_mozaikowy.png",
@@ -36,12 +44,12 @@ export default function FishDatabasePage() {
       "Razbora klinowa": "/fish/Razbora_klinowa.png",
       "Tęczanka neonowa": "/fish/Tęczanka_neonowa.png",
       "Kirys pstry": "/fish/Kirys_pstry.png",
-      "Glonojad (Zbrojnik)": "/fish/GlonojadZbrojnik-.png",
+      "Glonojad": "/fish/GlonojadZbrojnik-.png",
       "Błazenek pomarańczowy": "/fish/Błazenek_pomarańczowy.png",
       "Pirania czerwona": "/fish/Pirania_czerwona.png",
       "Pokolec królewski": "/fish/Pokolec_królewski.png",
       "Proporczykowiec": "/fish/Proporczykowiec.png",
-      "Pyszczak (Malawi)": "/fish/Pyszczak__Malawi.png",
+      "Pyszczak": "/fish/Pyszczak__Malawi.png",
       "Księżniczka z Burundi": "/fish/Księżniczka_z_Burundi.png",
       "Kolcobrzuch karłowaty": "/fish/Kolcobrzuch_karłowaty.png",
       "Mandaryn wspaniały": "/fish/Mandaryn_wspaniały.png",
@@ -61,7 +69,7 @@ export default function FishDatabasePage() {
   const getTemperamentLabel = (temperament) => {
     const map = {
       "spokojne": "calm",
-      "pół-agresywne": "semiAggressive",
+      "pol_agresywne": "semiAggressive",
       "umiarkowane": "calm",
       "agresywne": "aggressive",
       "bardzo agresywne": "veryAggressive"
@@ -119,13 +127,13 @@ export default function FishDatabasePage() {
   // Funkcja pomocnicza do konwersji formatu API v1 na format używany w UI
   // Dla początkujących: API zwraca dane w jednym formacie, a UI potrzebuje w innym
   // Ta funkcja "tłumaczy" dane z formatu API na format UI
-  const convertApiFishToUI = (fish) => {
+  const convertApiFishToUI = useCallback((fish) => {
     // Konwersja waterType z polskiego na angielski (dla filtrowania)
     // API zwraca: "Słodkowodna", UI potrzebuje: "freshwater"
     const waterTypeMap = {
-      "Słodkowodna": "freshwater",
-      "Słonowodna": "saltwater",
-      "Słonawa": "brackish"
+      "slodkowodna": "freshwater",
+      "slonowodna": "saltwater",
+      "slonawa": "brackish"
     };
     const waterType = waterTypeMap[fish.waterType] || "freshwater";
     
@@ -178,7 +186,7 @@ export default function FishDatabasePage() {
       minSchoolSize: fish.minShoalSize || fish.minSchoolSize || 1, // API v1 używa minShoalSize
       lifespan: fish.lifeSpan || fish.lifespan || "3-5 lat" // API v1 używa lifeSpan
     };
-  };
+  }, []);
 
   useEffect(() => {
     async function fetchFishData() {
@@ -213,7 +221,7 @@ export default function FishDatabasePage() {
     }
     
     fetchFishData();
-  }, []);
+  }, [convertApiFishToUI]);
 
   // Lista przefiltrowana i posortowana dla panelu
   const filteredFish = fishCards
@@ -225,11 +233,11 @@ export default function FishDatabasePage() {
     })
     .sort((a, b) => {
       if (sortAggressiveness === "asc") {
-        const order = { "spokojne": 1, "pół-agresywne": 2, "umiarkowane": 3, "agresywne": 4, "bardzo agresywne": 5 };
+        const order = { "spokojne": 1, "pol_agresywne": 2, "umiarkowane": 3, "agresywne": 4, "bardzo agresywne": 5 };
         return (order[a.temperament] || 0) - (order[b.temperament] || 0);
       }
       if (sortAggressiveness === "desc") {
-        const order = { "spokojne": 1, "pół-agresywne": 2, "umiarkowane": 3, "agresywne": 4, "bardzo agresywne": 5 };
+        const order = { "spokojne": 1, "pol_agresywne": 2, "umiarkowane": 3, "agresywne": 4, "bardzo agresywne": 5 };
         return (order[b.temperament] || 0) - (order[a.temperament] || 0);
       }
       return 0;
@@ -458,7 +466,9 @@ export default function FishDatabasePage() {
             size="small"
             placeholder={t('searchFish', { defaultValue: 'Szukaj ryb...' })}
             variant="outlined"
-            InputProps={{ sx: { bgcolor: 'rgba(255,255,255,0.08)', color: 'white' } }}
+            slotProps={{
+              input: { sx: { bgcolor: 'rgba(255,255,255,0.08)', color: 'white' } }
+            }}
           />
           <FormControl size="small">
             <InputLabel sx={{ color: 'white' }}>{t('waterType', { defaultValue: 'Typ wody' })}</InputLabel>
@@ -467,10 +477,10 @@ export default function FishDatabasePage() {
               label={t('waterType', { defaultValue: 'Typ wody' })}
               onChange={(e) => setWaterFilter(e.target.value)}
               sx={{ color: 'white', '& .MuiOutlinedInput-notchedOutline': { borderColor: 'rgba(255,255,255,0.2)' } }}
+              variant="outlined"
             >
               <MenuItem value="all">{t('all', { defaultValue: 'Wszystkie' })}</MenuItem>
               <MenuItem value="freshwater">{t('freshwater', { defaultValue: 'Słodka' })}</MenuItem>
-              <MenuItem value="brackish">{t('brackish', { defaultValue: 'Słonawa' })}</MenuItem>
               <MenuItem value="saltwater">{t('saltwater', { defaultValue: 'Słona' })}</MenuItem>
             </Select>
           </FormControl>
@@ -481,10 +491,11 @@ export default function FishDatabasePage() {
               label={t('temperament', { defaultValue: 'Usposobienie' })}
               onChange={(e) => setSortAggressiveness(e.target.value)}
               sx={{ color: 'white', '& .MuiOutlinedInput-notchedOutline': { borderColor: 'rgba(255,255,255,0.2)' } }}
+              variant="outlined"
             >
               <MenuItem value="none">{t('noSort', { defaultValue: 'Bez sortowania' })}</MenuItem>
-              <MenuItem value="asc">{t('leastAggressive', { defaultValue: 'Najspokojniejsze' })}</MenuItem>
-              <MenuItem value="desc">{t('mostAggressive', { defaultValue: 'Najagresywniejsze' })}</MenuItem>
+              <MenuItem value="asc">{t('leastAggressive', { defaultValue: 'Spokojne' })}</MenuItem>
+              <MenuItem value="desc">{t('mostAggressive', { defaultValue: 'Agresywne' })}</MenuItem>
             </Select>
           </FormControl>
         </Box>
@@ -506,10 +517,12 @@ export default function FishDatabasePage() {
                 }}
               >
                 <ListItemText
-                  primary={t(`fish.species.${fish.name}.name`, { defaultValue: fish.name })}
+                  primary={t(`fish.species.${fish.name}.name`, { defaultValue: cleanFishName(fish.name) })}
                   secondary={`${getWaterTypeLabel(fish.waterType)} • ${getTemperamentLabel(fish.temperament)}`}
-                  primaryTypographyProps={{ sx: { color: 'white', fontWeight: 600 } }}
-                  secondaryTypographyProps={{ sx: { color: 'rgba(255,255,255,0.7)', fontSize: '0.8rem' } }}
+                  slotProps={{ 
+                    primary: { sx: { color: 'white', fontWeight: 600 } },
+                    secondary: { sx: { color: 'rgba(255,255,255,0.7)', fontSize: '0.8rem' } }
+                  }}
                 />
               </ListItemButton>
             ))}
@@ -779,22 +792,19 @@ export default function FishDatabasePage() {
                   }
                 }}>
                   {fish.image && !failedImages.has(fish.id) ? (
-                    <img 
+                    <Image 
                       src={fish.image}
                       alt={fish.name}
-                      loading="lazy"
+                      fill
+                      unoptimized
                       onError={() => {
                         console.error(`Failed to load image: ${fish.image} for fish: ${fish.name}`);
                         setFailedImages(prev => new Set([...prev, fish.id]));
                       }}
-                      onLoad={() => {
-                        console.log(`Successfully loaded image: ${fish.image} for fish: ${fish.name}`);
-                      }}
                       style={{
-                        width: '100%',
-                        height: '100%',
                         objectFit: 'contain'
                       }}
+                      sizes="(max-width: 768px) 100vw, 50vw"
                     />
                   ) : (
                     <Box 
@@ -847,7 +857,7 @@ export default function FishDatabasePage() {
                       }
                     }}
                   >
-                    {t(`fish.species.${fish.name}.name`, { defaultValue: fish.name })}
+                    {t(`fish.species.${fish.name}.name`, { defaultValue: cleanFishName(fish.name) })}
                   </Typography>
                   
                   {/* Opis */}

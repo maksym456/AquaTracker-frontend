@@ -8,7 +8,7 @@ import {Alert, Box, Button, Modal, Switch, TextField, Typography} from "@mui/mat
 import {APP_VERSION} from "../version";
 import {useTheme} from "../contexts/ThemeContext";
 import Link from "next/link";
-import { syncUser } from "../lib/api";
+import { syncUser, checkAdminAccess } from "../lib/api";
 
 
 
@@ -95,6 +95,29 @@ export default function Dashboard() {
         }
     }, [session]);
 
+    // Sprawdzenie uprawnień administratora
+    useEffect(() => {
+        const checkAdmin = async () => {
+            if (!session?.user?.id) {
+                setIsAdmin(false);
+                setAdminCheckLoading(false);
+                return;
+            }
+
+            try {
+                const hasAdminAccess = await checkAdminAccess(session.user.id);
+                setIsAdmin(hasAdminAccess);
+            } catch (error) {
+                console.error('Error checking admin access:', error);
+                setIsAdmin(false);
+            } finally {
+                setAdminCheckLoading(false);
+            }
+        };
+
+        checkAdmin();
+    }, [session]);
+
     const logout = async () => {
         localStorage.removeItem("sessionLoginTime");
 
@@ -128,6 +151,8 @@ export default function Dashboard() {
   const [sessionInfoOpen, setSessionInfoOpen] = useState(false);
   const [sessionDuration, setSessionDuration] = useState("");
   const sessionIntervalRef = useRef(null);
+  const [isAdmin, setIsAdmin] = useState(false);
+  const [adminCheckLoading, setAdminCheckLoading] = useState(true);
   const handleOpenSettings = () => setSettingsOpen(true);
   const handleCloseSettings = () => setSettingsOpen(false);
   const toggleDataSource = () => setDataSourceExpanded(!dataSourceExpanded);
@@ -286,36 +311,6 @@ export default function Dashboard() {
             ml: 'auto'
           }}>
             <LanguageSwitcher />
-
-              <Link href="/admin.js" style={{ textDecoration: 'none' }}>
-                  <Box
-                      sx={{
-                          bgcolor: darkMode ? 'rgba(211, 47, 47, 0.6)' : 'rgba(211, 47, 47, 0.5)',
-                          p: 1,
-                          borderRadius: 1.5,
-                          boxShadow: 2,
-                          transition: "all 0.3s",
-                          backdropFilter: 'blur(8px)',
-                          "&:hover": {
-                              boxShadow: 4,
-                              transform: "translateY(-2px)",
-                              bgcolor: darkMode ? 'rgba(211, 47, 47, 0.8)' : 'rgba(211, 47, 47, 0.7)'
-                          },
-                          cursor: 'pointer',
-                          minHeight: { xs: '40px', md: '48px' },
-                          minWidth: { xs: '40px', md: '48px' },
-                          display: 'flex',
-                          flexDirection: 'column',
-                          alignItems: 'center',
-                          justifyContent: 'center',
-                      }}
-                  >
-                      <Typography sx={{ fontSize: { xs: 18, md: 20 }, mb: 0.2, textAlign: 'center' }}>🛡️</Typography>
-                      <Typography variant="body2" sx={{ fontWeight: 600, color: "white", textAlign: 'center', fontSize: { xs: '0.5rem', md: '0.6rem' } }}>
-                          ADMIN
-                      </Typography>
-                  </Box>
-              </Link>
 
             {/* Settings button */}
             <Box
@@ -714,6 +709,36 @@ export default function Dashboard() {
                   </Box>
                   <Typography variant="body2" color="text.secondary">{APP_VERSION}</Typography>
                 </Box>
+
+                {/* Panel Admina - tylko dla administratorów */}
+                {!adminCheckLoading && isAdmin && (
+                  <Link href="/admin" style={{ textDecoration: 'none' }}>
+                    <Box sx={{
+                      display: 'flex',
+                      alignItems: 'center',
+                      justifyContent: 'space-between',
+                      p: 2,
+                      mb: 1,
+                      borderRadius: 2,
+                      cursor: 'pointer',
+                      bgcolor: 'rgba(156, 39, 176, 0.1)',
+                      border: '1px solid rgba(156, 39, 176, 0.3)',
+                      '&:hover': { 
+                        bgcolor: 'rgba(156, 39, 176, 0.2)',
+                        border: '1px solid rgba(156, 39, 176, 0.5)',
+                        transform: 'translateY(-2px)',
+                        boxShadow: 2
+                      },
+                      transition: 'all 0.3s ease'
+                    }}>
+                      <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
+                        <Typography sx={{ fontSize: 24 }}>🔐</Typography>
+                        <Typography variant="body1" sx={{ fontWeight: 500 }}>{t("adminPanel", { defaultValue: "Panel Admina" })}</Typography>
+                      </Box>
+                      <Typography sx={{ fontSize: 20 }}>→</Typography>
+                    </Box>
+                  </Link>
+                )}
               </Box>
               {/* Footer z Logout */}
               <Box sx={{
