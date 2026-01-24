@@ -62,48 +62,40 @@ async function fetchAPI(endpoint, options = {}) {
       
       if (!response.ok) {
         const errorText = await response.text();
-        console.error(`API Error Response:`, errorText);
-        
-        // Spróbuj sparsować błąd jako JSON, aby wyciągnąć komunikat błędu
         let errorMessage = `API Error: ${response.status} ${response.statusText}`;
+        let validationErrors = null;
         try {
           if (errorText) {
-            // Usuń zewnętrzne cudzysłowy jeśli istnieją (gdy JSON jest zwracany jako string)
             let textToParse = errorText.trim();
             if (textToParse.startsWith('"') && textToParse.endsWith('"')) {
               textToParse = JSON.parse(textToParse);
             }
-            
-            // Spróbuj sparsować jako JSON
             const errorJson = typeof textToParse === 'string' ? JSON.parse(textToParse) : textToParse;
             if (errorJson && errorJson.error) {
               errorMessage = errorJson.error;
             }
+            if (Array.isArray(errorJson?.validationErrors) && errorJson.validationErrors.length > 0) {
+              validationErrors = errorJson.validationErrors;
+            }
           }
         } catch (parseError) {
-          // Jeśli nie można sparsować jako JSON, użyj tekstu bezpośrednio (bez zewnętrznych cudzysłowów)
           if (errorText && errorText.trim()) {
             let cleanText = errorText.trim();
-            // Usuń zewnętrzne cudzysłowy jeśli istnieją
             if (cleanText.startsWith('"') && cleanText.endsWith('"')) {
               try {
                 cleanText = JSON.parse(cleanText);
-                // Jeśli to nadal JSON string, sparsuj jeszcze raz
                 if (typeof cleanText === 'string' && cleanText.startsWith('{')) {
                   const parsed = JSON.parse(cleanText);
-                  if (parsed.error) {
-                    cleanText = parsed.error;
-                  }
+                  if (parsed.error) cleanText = parsed.error;
                 }
-              } catch (e) {
-                // Jeśli nie można sparsować, użyj oryginalnego tekstu
-              }
+              } catch (e) { /* ignore */ }
             }
             errorMessage = typeof cleanText === 'string' ? cleanText : errorText;
           }
         }
-        
-        throw new Error(errorMessage);
+        const err = new Error(errorMessage);
+        if (validationErrors) err.validationErrors = validationErrors;
+        throw err;
       }
 
       // 204 No Content nie ma body, więc zwróć null bez parsowania

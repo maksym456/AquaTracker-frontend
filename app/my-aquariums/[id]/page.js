@@ -846,8 +846,11 @@ export default function AquariumDetailPage() {
       setCompatibilityIssues([]);
       setAddFishModalOpen(false);
     } catch (err) {
-      console.error("Error adding fish:", err);
-      setError(err.message || "Nie udało się dodać ryby.");
+      if (err.validationErrors && Array.isArray(err.validationErrors) && err.validationErrors.length > 0) {
+        setError(err.validationErrors.map((m) => `• ${m}`).join("\n"));
+      } else {
+        setError(err.message || "Nie udało się dodać ryby.");
+      }
     } finally {
       setIsAddingFish(false);
     }
@@ -2749,6 +2752,7 @@ export default function AquariumDetailPage() {
           setSelectedFishId("");
           setPreviewFishId("");
           setFishQuantity(1);
+          setError(null);
         }}
         sx={{
           display: 'flex',
@@ -2767,6 +2771,12 @@ export default function AquariumDetailPage() {
           <Typography variant="h6" sx={{ mb: 2, fontWeight: 600, color: darkMode ? 'white' : 'inherit' }}>
             {t("addFish", { defaultValue: "Dodaj rybę" })}
           </Typography>
+
+          {error && (
+            <Alert severity="error" sx={{ mb: 2, whiteSpace: "pre-line" }} onClose={() => setError(null)}>
+              {error}
+            </Alert>
+          )}
           
           <FormControl fullWidth sx={{ mb: 2 }}>
             <InputLabel>{t("selectFish", { defaultValue: "Wybierz rybę" })}</InputLabel>
