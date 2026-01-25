@@ -609,7 +609,8 @@ export default function AdminPanelPage() {
           margin: '0 auto',
           bgcolor: darkMode ? 'rgba(30, 30, 30, 0.95)' : '#ffffff',
           borderRadius: 3,
-          boxShadow: '0 8px 24px rgba(0, 0, 0, 0.12)'
+          boxShadow: '0 8px 24px rgba(0, 0, 0, 0.12)',
+          overflow: 'hidden'
         }}>
           {/* Header */}
           <Box sx={{
@@ -859,7 +860,7 @@ export default function AdminPanelPage() {
                                 )}
                               </TableCell>
                               <TableCell>
-                                <Typography variant="body2" sx={{ maxWidth: '400px', textOverflow: 'ellipsis' }}>
+                                <Typography variant="body2" sx={{ maxWidth: '400px', overflow: 'hidden', textOverflow: 'ellipsis' }}>
                                   {log.message || log.title || '-'}
                                 </Typography>
                               </TableCell>
@@ -1067,7 +1068,6 @@ export default function AdminPanelPage() {
                   onClose={handleCloseUserDetails}
                   maxWidth="md"
                   fullWidth
-                  disableScrollLock
                 >
                   <DialogTitle>
                     {t("adminUserDetailsTitle", { defaultValue: "Szczegóły użytkownika" })}
@@ -1149,7 +1149,6 @@ export default function AdminPanelPage() {
                 <Dialog 
                   open={deleteConfirmDialog} 
                   onClose={handleCancelDelete}
-                  disableScrollLock
                 >
                   <DialogTitle>
                     {t("adminUserDeleteConfirmTitle", { defaultValue: "Potwierdź usunięcie użytkownika" })}
@@ -1173,7 +1172,7 @@ export default function AdminPanelPage() {
                 </Dialog>
 
                 {/* Dialogi potwierdzenia usunięcia dla danych systemowych */}
-                <Dialog open={aquariumDeleteDialog} onClose={handleCancelSystemDelete} disableScrollLock>
+                <Dialog open={aquariumDeleteDialog} onClose={handleCancelSystemDelete}>
                   <DialogTitle>
                     {t("adminDeleteAquariumConfirmTitle", { defaultValue: "Potwierdź usunięcie akwarium" })}
                   </DialogTitle>
@@ -1219,7 +1218,7 @@ export default function AdminPanelPage() {
                   </DialogActions>
                 </Dialog>
 
-                <Dialog open={plantDeleteDialog} onClose={handleCancelSystemDelete} disableScrollLock>
+                <Dialog open={plantDeleteDialog} onClose={handleCancelSystemDelete}>
                   <DialogTitle>
                     {t("adminDeletePlantConfirmTitle", { defaultValue: "Potwierdź usunięcie roślin" })}
                   </DialogTitle>
