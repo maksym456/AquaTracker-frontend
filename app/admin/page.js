@@ -609,8 +609,7 @@ export default function AdminPanelPage() {
           margin: '0 auto',
           bgcolor: darkMode ? 'rgba(30, 30, 30, 0.95)' : '#ffffff',
           borderRadius: 3,
-          boxShadow: '0 8px 24px rgba(0, 0, 0, 0.12)',
-          overflow: 'hidden'
+          boxShadow: '0 8px 24px rgba(0, 0, 0, 0.12)'
         }}>
           {/* Header */}
           <Box sx={{
@@ -860,7 +859,7 @@ export default function AdminPanelPage() {
                                 )}
                               </TableCell>
                               <TableCell>
-                                <Typography variant="body2" sx={{ maxWidth: '400px', overflow: 'hidden', textOverflow: 'ellipsis' }}>
+                                <Typography variant="body2" sx={{ maxWidth: '400px', textOverflow: 'ellipsis' }}>
                                   {log.message || log.title || '-'}
                                 </Typography>
                               </TableCell>
