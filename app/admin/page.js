@@ -65,6 +65,7 @@ export default function AdminPanelPage() {
   useEffect(() => {
     setMounted(true);
   }, []);
+
   const [logs, setLogs] = useState([]);
   const [allLogs, setAllLogs] = useState([]); // Wszystkie logi przed filtrowaniem
   const [users, setUsers] = useState([]);
@@ -1067,6 +1068,7 @@ export default function AdminPanelPage() {
                   onClose={handleCloseUserDetails}
                   maxWidth="md"
                   fullWidth
+                  disableScrollLock
                 >
                   <DialogTitle>
                     {t("adminUserDetailsTitle", { defaultValue: "Szczegóły użytkownika" })}
@@ -1148,6 +1150,7 @@ export default function AdminPanelPage() {
                 <Dialog 
                   open={deleteConfirmDialog} 
                   onClose={handleCancelDelete}
+                  disableScrollLock
                 >
                   <DialogTitle>
                     {t("adminUserDeleteConfirmTitle", { defaultValue: "Potwierdź usunięcie użytkownika" })}
@@ -1171,7 +1174,7 @@ export default function AdminPanelPage() {
                 </Dialog>
 
                 {/* Dialogi potwierdzenia usunięcia dla danych systemowych */}
-                <Dialog open={aquariumDeleteDialog} onClose={handleCancelSystemDelete}>
+                <Dialog open={aquariumDeleteDialog} onClose={handleCancelSystemDelete} disableScrollLock>
                   <DialogTitle>
                     {t("adminDeleteAquariumConfirmTitle", { defaultValue: "Potwierdź usunięcie akwarium" })}
                   </DialogTitle>
@@ -1217,7 +1220,7 @@ export default function AdminPanelPage() {
                   </DialogActions>
                 </Dialog>
 
-                <Dialog open={plantDeleteDialog} onClose={handleCancelSystemDelete}>
+                <Dialog open={plantDeleteDialog} onClose={handleCancelSystemDelete} disableScrollLock>
                   <DialogTitle>
                     {t("adminDeletePlantConfirmTitle", { defaultValue: "Potwierdź usunięcie roślin" })}
                   </DialogTitle>
