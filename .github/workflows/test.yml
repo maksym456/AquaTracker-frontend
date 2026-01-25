@@ -27,6 +27,26 @@ jobs:
         run: npm test tests/Unit_tests
         continue-on-error: true
 
+  api-tests:
+    name: API Tests
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v3
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v3
+        with:
+          node-version: 22.x
+
+      - name: Install dependencies
+        run: npm install
+
+      - name: Run API Tests
+        run: npm test tests/Api_tests
+        continue-on-error: true
+
   integration-tests:
     name: Integration Tests
     runs-on: ubuntu-latest
@@ -47,7 +67,7 @@ jobs:
         run: npm test tests/Integration_tests
         continue-on-error: true
 
-  playwright-e2e:                     
+  playwright-e2e:
     name: Playwright E2E Tests
     runs-on: ubuntu-latest
     timeout-minutes: 60
